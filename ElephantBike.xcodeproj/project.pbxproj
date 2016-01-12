@@ -1,0 +1,524 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		422384731C453FD300A9C793 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 422384721C453FD300A9C793 /* main.m */; };
+		422384761C453FD300A9C793 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 422384751C453FD300A9C793 /* AppDelegate.m */; };
+		422384791C453FD300A9C793 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 422384781C453FD300A9C793 /* ViewController.m */; };
+		4223847C1C453FD300A9C793 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4223847A1C453FD300A9C793 /* Main.storyboard */; };
+		4223847E1C453FD300A9C793 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4223847D1C453FD300A9C793 /* Assets.xcassets */; };
+		422384811C453FD300A9C793 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4223847F1C453FD300A9C793 /* LaunchScreen.storyboard */; };
+		4223848C1C453FD300A9C793 /* ElephantBikeTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4223848B1C453FD300A9C793 /* ElephantBikeTests.m */; };
+		422384971C453FD300A9C793 /* ElephantBikeUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 422384961C453FD300A9C793 /* ElephantBikeUITests.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		422384881C453FD300A9C793 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 422384661C453FD300A9C793 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4223846D1C453FD300A9C793;
+			remoteInfo = ElephantBike;
+		};
+		422384931C453FD300A9C793 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 422384661C453FD300A9C793 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4223846D1C453FD300A9C793;
+			remoteInfo = ElephantBike;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		4223846E1C453FD300A9C793 /* ElephantBike.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ElephantBike.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		422384721C453FD300A9C793 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		422384741C453FD300A9C793 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		422384751C453FD300A9C793 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		422384771C453FD300A9C793 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
+		422384781C453FD300A9C793 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		4223847B1C453FD300A9C793 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		4223847D1C453FD300A9C793 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		422384801C453FD300A9C793 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		422384821C453FD300A9C793 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		422384871C453FD300A9C793 /* ElephantBikeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ElephantBikeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4223848B1C453FD300A9C793 /* ElephantBikeTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ElephantBikeTests.m; sourceTree = "<group>"; };
+		4223848D1C453FD300A9C793 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		422384921C453FD300A9C793 /* ElephantBikeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ElephantBikeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		422384961C453FD300A9C793 /* ElephantBikeUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ElephantBikeUITests.m; sourceTree = "<group>"; };
+		422384981C453FD300A9C793 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		4223846B1C453FD300A9C793 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		422384841C453FD300A9C793 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4223848F1C453FD300A9C793 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		422384651C453FD300A9C793 = {
+			isa = PBXGroup;
+			children = (
+				422384701C453FD300A9C793 /* ElephantBike */,
+				4223848A1C453FD300A9C793 /* ElephantBikeTests */,
+				422384951C453FD300A9C793 /* ElephantBikeUITests */,
+				4223846F1C453FD300A9C793 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		4223846F1C453FD300A9C793 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4223846E1C453FD300A9C793 /* ElephantBike.app */,
+				422384871C453FD300A9C793 /* ElephantBikeTests.xctest */,
+				422384921C453FD300A9C793 /* ElephantBikeUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		422384701C453FD300A9C793 /* ElephantBike */ = {
+			isa = PBXGroup;
+			children = (
+				422384741C453FD300A9C793 /* AppDelegate.h */,
+				422384751C453FD300A9C793 /* AppDelegate.m */,
+				422384771C453FD300A9C793 /* ViewController.h */,
+				422384781C453FD300A9C793 /* ViewController.m */,
+				4223847A1C453FD300A9C793 /* Main.storyboard */,
+				4223847D1C453FD300A9C793 /* Assets.xcassets */,
+				4223847F1C453FD300A9C793 /* LaunchScreen.storyboard */,
+				422384821C453FD300A9C793 /* Info.plist */,
+				422384711C453FD300A9C793 /* Supporting Files */,
+			);
+			path = ElephantBike;
+			sourceTree = "<group>";
+		};
+		422384711C453FD300A9C793 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				422384721C453FD300A9C793 /* main.m */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		4223848A1C453FD300A9C793 /* ElephantBikeTests */ = {
+			isa = PBXGroup;
+			children = (
+				4223848B1C453FD300A9C793 /* ElephantBikeTests.m */,
+				4223848D1C453FD300A9C793 /* Info.plist */,
+			);
+			path = ElephantBikeTests;
+			sourceTree = "<group>";
+		};
+		422384951C453FD300A9C793 /* ElephantBikeUITests */ = {
+			isa = PBXGroup;
+			children = (
+				422384961C453FD300A9C793 /* ElephantBikeUITests.m */,
+				422384981C453FD300A9C793 /* Info.plist */,
+			);
+			path = ElephantBikeUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		4223846D1C453FD300A9C793 /* ElephantBike */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4223849B1C453FD300A9C793 /* Build configuration list for PBXNativeTarget "ElephantBike" */;
+			buildPhases = (
+				4223846A1C453FD300A9C793 /* Sources */,
+				4223846B1C453FD300A9C793 /* Frameworks */,
+				4223846C1C453FD300A9C793 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ElephantBike;
+			productName = ElephantBike;
+			productReference = 4223846E1C453FD300A9C793 /* ElephantBike.app */;
+			productType = "com.apple.product-type.application";
+		};
+		422384861C453FD300A9C793 /* ElephantBikeTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4223849E1C453FD300A9C793 /* Build configuration list for PBXNativeTarget "ElephantBikeTests" */;
+			buildPhases = (
+				422384831C453FD300A9C793 /* Sources */,
+				422384841C453FD300A9C793 /* Frameworks */,
+				422384851C453FD300A9C793 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				422384891C453FD300A9C793 /* PBXTargetDependency */,
+			);
+			name = ElephantBikeTests;
+			productName = ElephantBikeTests;
+			productReference = 422384871C453FD300A9C793 /* ElephantBikeTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		422384911C453FD300A9C793 /* ElephantBikeUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 422384A11C453FD300A9C793 /* Build configuration list for PBXNativeTarget "ElephantBikeUITests" */;
+			buildPhases = (
+				4223848E1C453FD300A9C793 /* Sources */,
+				4223848F1C453FD300A9C793 /* Frameworks */,
+				422384901C453FD300A9C793 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				422384941C453FD300A9C793 /* PBXTargetDependency */,
+			);
+			name = ElephantBikeUITests;
+			productName = ElephantBikeUITests;
+			productReference = 422384921C453FD300A9C793 /* ElephantBikeUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		422384661C453FD300A9C793 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0700;
+				ORGANIZATIONNAME = "黄杰锋";
+				TargetAttributes = {
+					4223846D1C453FD300A9C793 = {
+						CreatedOnToolsVersion = 7.0.1;
+						DevelopmentTeam = 893B7AB67K;
+					};
+					422384861C453FD300A9C793 = {
+						CreatedOnToolsVersion = 7.0.1;
+						DevelopmentTeam = 893B7AB67K;
+						TestTargetID = 4223846D1C453FD300A9C793;
+					};
+					422384911C453FD300A9C793 = {
+						CreatedOnToolsVersion = 7.0.1;
+						DevelopmentTeam = 893B7AB67K;
+						TestTargetID = 4223846D1C453FD300A9C793;
+					};
+				};
+			};
+			buildConfigurationList = 422384691C453FD300A9C793 /* Build configuration list for PBXProject "ElephantBike" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 422384651C453FD300A9C793;
+			productRefGroup = 4223846F1C453FD300A9C793 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				4223846D1C453FD300A9C793 /* ElephantBike */,
+				422384861C453FD300A9C793 /* ElephantBikeTests */,
+				422384911C453FD300A9C793 /* ElephantBikeUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		4223846C1C453FD300A9C793 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				422384811C453FD300A9C793 /* LaunchScreen.storyboard in Resources */,
+				4223847E1C453FD300A9C793 /* Assets.xcassets in Resources */,
+				4223847C1C453FD300A9C793 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		422384851C453FD300A9C793 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		422384901C453FD300A9C793 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4223846A1C453FD300A9C793 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				422384791C453FD300A9C793 /* ViewController.m in Sources */,
+				422384761C453FD300A9C793 /* AppDelegate.m in Sources */,
+				422384731C453FD300A9C793 /* main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		422384831C453FD300A9C793 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4223848C1C453FD300A9C793 /* ElephantBikeTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4223848E1C453FD300A9C793 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				422384971C453FD300A9C793 /* ElephantBikeUITests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		422384891C453FD300A9C793 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4223846D1C453FD300A9C793 /* ElephantBike */;
+			targetProxy = 422384881C453FD300A9C793 /* PBXContainerItemProxy */;
+		};
+		422384941C453FD300A9C793 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4223846D1C453FD300A9C793 /* ElephantBike */;
+			targetProxy = 422384931C453FD300A9C793 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		4223847A1C453FD300A9C793 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				4223847B1C453FD300A9C793 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		4223847F1C453FD300A9C793 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				422384801C453FD300A9C793 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		422384991C453FD300A9C793 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		4223849A1C453FD300A9C793 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		4223849C1C453FD300A9C793 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = ElephantBike/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = jf.ElephantBike;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		4223849D1C453FD300A9C793 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = ElephantBike/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = jf.ElephantBike;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		4223849F1C453FD300A9C793 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				INFOPLIST_FILE = ElephantBikeTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = jf.ElephantBikeTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ElephantBike.app/ElephantBike";
+			};
+			name = Debug;
+		};
+		422384A01C453FD300A9C793 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				INFOPLIST_FILE = ElephantBikeTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = jf.ElephantBikeTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ElephantBike.app/ElephantBike";
+			};
+			name = Release;
+		};
+		422384A21C453FD300A9C793 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = ElephantBikeUITests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = jf.ElephantBikeUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_TARGET_NAME = ElephantBike;
+				USES_XCTRUNNER = YES;
+			};
+			name = Debug;
+		};
+		422384A31C453FD300A9C793 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = ElephantBikeUITests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = jf.ElephantBikeUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_TARGET_NAME = ElephantBike;
+				USES_XCTRUNNER = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		422384691C453FD300A9C793 /* Build configuration list for PBXProject "ElephantBike" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				422384991C453FD300A9C793 /* Debug */,
+				4223849A1C453FD300A9C793 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4223849B1C453FD300A9C793 /* Build configuration list for PBXNativeTarget "ElephantBike" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4223849C1C453FD300A9C793 /* Debug */,
+				4223849D1C453FD300A9C793 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		4223849E1C453FD300A9C793 /* Build configuration list for PBXNativeTarget "ElephantBikeTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4223849F1C453FD300A9C793 /* Debug */,
+				422384A01C453FD300A9C793 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		422384A11C453FD300A9C793 /* Build configuration list for PBXNativeTarget "ElephantBikeUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				422384A21C453FD300A9C793 /* Debug */,
+				422384A31C453FD300A9C793 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 422384661C453FD300A9C793 /* Project object */;
+}
