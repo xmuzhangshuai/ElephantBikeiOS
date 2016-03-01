@@ -7,18 +7,135 @@
 //
 
 #import "AppDelegate.h"
+#import "LoginViewController.h"
+#import "InfoViewController.h"
+#import "UISize.h"
+#import "QRCodeScanViewController.h"
+#import "MyURLConnection.h"
 
-@interface AppDelegate ()
+#pragma mark - 百度模块
+#import <BaiduMapAPI_Base/BMKBaseComponent.h>
 
+@interface AppDelegate () <MyURLConnectionDelegate>
+
+@property (nonatomic, strong) UINavigationController    *navigationgController;
+@property (nonatomic, strong) QRCodeScanViewController  *qRCodeScanViewController;
 @end
 
-@implementation AppDelegate
-
+@implementation AppDelegate {
+    BMKMapManager   *_mapManager;
+    NSUserDefaults  *userDefaults;
+}
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
+    
+    self.balance = @"";
+    userDefaults = [NSUserDefaults standardUserDefaults];
+    if (![userDefaults boolForKey:@"everLaunched"]) {
+        [userDefaults setBool:NO forKey:@"isLogin"];
+        [userDefaults setBool:YES forKey:@"everLaunched"];
+    }
+    self.isLogin = [userDefaults boolForKey:@"isLogin"];
+    self.isRestart = NO;
+    NSLog(@"%d", self.isLogin);
+    if (self.isLogin) {
+        // 已经登录
+        
+        // 可以设置一个变量，没有获取到该账户的数据就在qrcodeview页面提示，并且无法使用软件扫描。
+        
+        NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
+        // 在登录了的情况下 去服务器获取余额
+        NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/balance"];
+        NSURL *url = [NSURL URLWithString:urlStr];
+        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
+        NSString *dataStr = [NSString stringWithFormat:@"phone=%@", phoneNumber];
+        NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
+        [request setHTTPBody:data];
+        [request setHTTPMethod:@"POST"];
+        MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"balance"];
+    }
+    
+    // 请求服务器
+    
+
+
+    // 初始状态
+//    self.isIdentify = false;
+//    self.isFreeze = false;
+//    self.isEndPay = false;
+//    self.isEndRiding = false;
+    
+    // 百度模块
+    _mapManager = [[BMKMapManager alloc] init];
+    BOOL ret = [_mapManager start:@"jR2M4PEO3DL9TRFHIGQgi81p" generalDelegate:nil];
+    if (!ret) {
+        NSLog(@"无法定位");
+    }
+    
+    _qRCodeScanViewController = [[QRCodeScanViewController alloc] init];
+    
+    _navigationgController = [[UINavigationController alloc] initWithRootViewController:_qRCodeScanViewController];
+    
+    _window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    [_window setRootViewController:_navigationgController];
+    _window.backgroundColor = [UIColor whiteColor];
+    [_window makeKeyAndVisible];
+    
+    [NSThread sleepForTimeInterval:2];
+    
     return YES;
 }
+
+- (void)MyConnection:(MyURLConnection *)connection didReceiveData:(NSData *)data {
+    NSDictionary *receiveJson = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableLeaves error:nil];
+    if ([connection.name isEqualToString:@"balance"]) {
+        NSString *status = receiveJson[@"status"];
+        NSString *balance = receiveJson[@"balance"];
+        if (status) {
+            self.balance = balance;
+            //请求服务器 同步post 请求该账户的状态，除了是否登陆保存在本地  在已经登陆的情况下才请求，否则不请求
+            //拿取本地缓存数据 只需手机和isLogin，和短信验证用的是一个api，不需要验证码
+            NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
+            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/user/logi"];
+            NSURL *url = [NSURL URLWithString:urlStr];
+            NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+            NSString *dataStr = [NSString stringWithFormat:@"phone=%@&islogin=%d", phoneNumber, self.isLogin];
+            NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
+            [request setHTTPBody:data];
+            [request setHTTPMethod:@"POST"];
+            MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"isLogined"];
+        }
+    }else if ([connection.name isEqualToString:@"isLogined"]) {
+        NSString *status = receiveJson[@"status"];
+        NSString *isFrozen = receiveJson[@"isfrozen"];
+        NSString *isFinish = receiveJson[@"isfinish"];
+        NSString *isPay = receiveJson[@"ispay"];
+        if ([status isEqualToString:@"success"]) {
+            if ([isFrozen isEqualToString:@"-1"]) {
+                self.isFreeze = true;
+                self.isIdentify = true;
+            }else if([isFrozen isEqualToString:@"0"]) {
+                self.isFreeze = false;
+                self.isIdentify = false;
+            }else {
+                self.isFreeze = false;
+                self.isIdentify = YES;
+            }
+            if ([isFinish isEqualToString:@"1"]) {
+                self.isEndRiding = false;
+                self.isRestart = YES;
+            }
+            if ([isPay isEqualToString:@"1"]) {
+                self.isEndPay = false;
+                self.isRestart = YES;
+            }
+            
+        }
+        // 设置相应页面的跳转，正常情况 跳转扫描页面，其他分三种情况
+    }
+}
+
 
 - (void)applicationWillResignActive:(UIApplication *)application {
     // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
