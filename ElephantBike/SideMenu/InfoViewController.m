@@ -124,6 +124,7 @@
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
     if (indexPath.row == 0) {
         NSString *str = [@"余额:" stringByAppendingString:myAppDelegate.balance];
+        NSLog(@"balance %@", myAppDelegate.balance);
         NSString *str1 = [str stringByAppendingString:@"元"];
         cell.detailTextLabel.text = str1;
     }

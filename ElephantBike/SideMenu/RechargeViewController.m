@@ -41,6 +41,8 @@
     NSUserDefaults *userDefaults;
     
     AppDelegate *MyAppDelegate;
+    
+    BOOL        isConnect;
 }
 
 - (void)UIInit {
@@ -54,6 +56,7 @@
     wayDetails          = @[@"推荐微信支付已绑定信用卡的用户使用", @"推荐已安装支付宝客户端的用户使用"];
     userDefaults        = [NSUserDefaults standardUserDefaults];
     MyAppDelegate       = [[UIApplication sharedApplication] delegate];
+    isConnect           = NO;
     
     [self NavigationInit];
     [self UILayout];
@@ -131,14 +134,17 @@
     NSString *accessToken = [userDefaults objectForKey:@"accessToken"];
     
     // 异步请求服务器
-    NSString *urlStr = [IP stringByAppendingString:@"ElephantBike/api/money/recharge"];
+    NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/recharge"];
     NSURL *url = [NSURL URLWithString:urlStr];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
     NSString *dataStr = [NSString stringWithFormat:@"phone=%@&value=%@&access_token=%@", phoneNumber, moneyTF.text, accessToken];
+    NSLog(@"%@", moneyTF.text);
     NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
-    [request setHTTPBody:data];
+//    [request setHTTPBody:data];
     [request setHTTPMethod:@"POST"];
-    [NSURLConnection connectionWithRequest:request delegate:self];
+    NSURLConnection *connection = [NSURLConnection connectionWithRequest:request delegate:self];
+    NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
+    [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
 }
 
 #pragma mark - 服务器返回
@@ -148,6 +154,7 @@
     NSString *status = receiveJson[@"status"];
     NSString *message = receiveJson[@"message"];
     if (status) {
+        isConnect = YES;
         // 充值成功 跳转我的钱包页面 并且本地的金额加上来
         CGFloat balan = [MyAppDelegate.balance floatValue];
         CGFloat money = [moneyTF.text floatValue];
@@ -166,6 +173,62 @@
         
         [self.navigationController popViewControllerAnimated:YES];
     }
+}
+
+- (void)stopRequest {
+    if (!isConnect) {
+        [cover removeFromSuperview];
+        // 收到验证码  进行提示
+        cover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+        cover.alpha = 1;
+        // 半黑膜
+        UIView *containerView1 = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+        containerView1.backgroundColor = [UIColor blackColor];
+        containerView1.alpha = 0.6;
+        containerView1.layer.cornerRadius = CORNERRADIUS*2;
+        [cover addSubview:containerView1];
+        // 一个控件
+        UILabel *hintMes = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView1.frame.size.height, containerView1.frame.size.width, 0.2*containerView1.frame.size.height)];
+        hintMes.text = @"无法连接服务器";
+        hintMes.textColor = [UIColor whiteColor];
+        hintMes.textAlignment = NSTextAlignmentCenter;
+        [containerView1 addSubview:hintMes];
+        [self.view addSubview:cover];
+        // 显示时间
+        NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(removeView) userInfo:nil repeats:NO];
+        [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
+    }
+    isConnect = NO;
+}
+
+- (void)removeView {
+    [cover removeFromSuperview];
+}
+
+#pragma mark - 服务器超时
+- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {
+    isConnect = YES;
+    [cover removeFromSuperview];
+    // 收到验证码  进行提示
+    cover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    cover.alpha = 1;
+    // 半黑膜
+    UIView *containerView1 = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+    containerView1.backgroundColor = [UIColor blackColor];
+    containerView1.alpha = 0.6;
+    containerView1.layer.cornerRadius = CORNERRADIUS*2;
+    [cover addSubview:containerView1];
+    // 一个控件
+    UILabel *hintMes = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView1.frame.size.height, containerView1.frame.size.width, 0.2*containerView1.frame.size.height)];
+    hintMes.text = @"无法连接网络";
+    hintMes.textColor = [UIColor whiteColor];
+    hintMes.textAlignment = NSTextAlignmentCenter;
+    [containerView1 addSubview:hintMes];
+    [self.view addSubview:cover];
+    // 显示时间
+    NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(removeView) userInfo:nil repeats:NO];
+    [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
+    NSLog(@"网络超时");
 }
 
 - (void)dismissImageView {

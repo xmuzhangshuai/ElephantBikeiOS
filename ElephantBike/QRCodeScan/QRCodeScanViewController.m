@@ -38,6 +38,8 @@
     UIImageView                 *discountImageView;
     // 缓存
     NSUserDefaults              *userDefaults;
+    
+    BOOL                        isConnect;
 }
 
 
@@ -93,6 +95,8 @@
     }else {
         [session startRunning];
     }
+    
+    isConnect = NO;
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath
@@ -392,8 +396,41 @@
             [request setHTTPBody:data];
             [request setHTTPMethod:@"POST"];
             [NSURLConnection connectionWithRequest:request delegate:self];
+            
+            NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
+            [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
         }
     }
+}
+
+- (void)stopRequest {
+    if (!isConnect) {
+        [cover removeFromSuperview];
+        // 收到验证码  进行提示
+        cover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+        cover.alpha = 1;
+        // 半黑膜
+        UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+        containerView.backgroundColor = [UIColor blackColor];
+        containerView.alpha = 0.6;
+        containerView.layer.cornerRadius = CORNERRADIUS*2;
+        [cover addSubview:containerView];
+        // 一个控件
+        UILabel *hintMes = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
+        hintMes.text = @"无法连接服务器";
+        hintMes.textColor = [UIColor whiteColor];
+        hintMes.textAlignment = NSTextAlignmentCenter;
+        [containerView addSubview:hintMes];
+        [self.view addSubview:cover];
+        // 显示时间
+        NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(removeView) userInfo:nil repeats:NO];
+        [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
+    }
+    isConnect = NO;
+}
+
+- (void)removeView {
+    [cover removeFromSuperview];
 }
 
 #pragma mark - 服务器返回
@@ -405,6 +442,7 @@
     NSString *status = receiveJson[@"status"];
     NSString *password = receiveJson[@"pass"];
     if ([status isEqualToString:@"success"]) {
+        isConnect = YES;
         ChargeViewController *chargeViewController = [[ChargeViewController alloc] init];
         self.delegate = chargeViewController;
         [self.delegate getBikeNO:bikeNO andPassword:password];
@@ -414,6 +452,32 @@
         alert.tag = 1;
         [alert show];
     }
+}
+
+#pragma mark - 服务器超时
+- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {
+    isConnect = YES;
+    [cover removeFromSuperview];
+    // 收到验证码  进行提示
+    cover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    cover.alpha = 1;
+    // 半黑膜
+    UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+    containerView.backgroundColor = [UIColor blackColor];
+    containerView.alpha = 0.6;
+    containerView.layer.cornerRadius = CORNERRADIUS*2;
+    [cover addSubview:containerView];
+    // 一个控件
+    UILabel *hintMes = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
+    hintMes.text = @"无法连接网络";
+    hintMes.textColor = [UIColor whiteColor];
+    hintMes.textAlignment = NSTextAlignmentCenter;
+    [containerView addSubview:hintMes];
+    [self.view addSubview:cover];
+    // 显示时间
+    NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(removeView) userInfo:nil repeats:NO];
+    [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
+    NSLog(@"网络超时");
 }
 
 #pragma mark - uialertview delegate

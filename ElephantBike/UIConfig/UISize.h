@@ -26,7 +26,7 @@
 
 #define MARGIN                   0.075*SCREEN_HEIGHT
 
-#define IP                      @"http://192.168.0.105:8080"
+#define IP                      @"http://192.168.0.103:8080"
 
 
 #endif /* UISize_h */

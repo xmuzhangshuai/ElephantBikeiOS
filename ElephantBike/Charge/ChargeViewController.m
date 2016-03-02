@@ -102,6 +102,8 @@
     // 百度地图模块
     BMKLocationService  *_locSerview;
     NSString            *bikePosition;
+    
+    BOOL        isConnect;
 }
 
 - (id)init {
@@ -117,9 +119,41 @@
             [request setHTTPBody:data];
             [request setHTTPMethod:@"POST"];
             MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"getBikeNoAndPass"];
+            NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
+            [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
         }
     }
     return self;
+}
+
+- (void)stopRequest {
+    if (!isConnect) {
+        [errorCover removeFromSuperview];
+        // 收到验证码  进行提示
+        errorCover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+        errorCover.alpha = 1;
+        // 半黑膜
+        UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+        containerView.backgroundColor = [UIColor blackColor];
+        containerView.alpha = 0.6;
+        containerView.layer.cornerRadius = CORNERRADIUS*2;
+        [errorCover addSubview:containerView];
+        // 一个控件
+        UILabel *hintMes1 = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
+        hintMes1.text = @"无法连接服务器";
+        hintMes1.textColor = [UIColor whiteColor];
+        hintMes1.textAlignment = NSTextAlignmentCenter;
+        [containerView addSubview:hintMes1];
+        [self.view addSubview:errorCover];
+        // 显示时间
+        NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(removeView) userInfo:nil repeats:NO];
+        [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
+    }
+    isConnect = NO;
+}
+
+- (void)removeView {
+    [errorCover removeFromSuperview];
 }
 
 - (void)UIInit {
@@ -142,6 +176,8 @@
     hintMesButtom   = [[UILabel alloc]init];
     returnBike      = [[UIButton alloc]init];
     restoreBike     = [[UIButton alloc]init];
+    
+    isConnect       = NO;
     
     cover           = [[UIView alloc] initWithFrame:CGRectMake(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)];
         [self.navigationController.view addSubview:cover];
@@ -384,6 +420,8 @@
     [request setHTTPBody:data];
     [request setHTTPMethod:@"POST"];
     MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"askForMoney"];
+    NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
+    [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
     NSLog(@"requestformoney");
 }
 
@@ -437,6 +475,8 @@
         [request setHTTPBody:data];
         [request setHTTPMethod:@"POST"];
         MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"returnBike"];
+        NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
+        [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
     }];
     
     __weak ModalPayView *weakView = view;
@@ -502,6 +542,8 @@
         [request setHTTPBody:data];
         [request setHTTPMethod:@"POST"];
         MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"restoreBike"];
+        NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
+        [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
     }];
     __weak ModalPayView *weakView = view;
     view.exitBtnClicked = ^{ // 点击了退出按钮
@@ -517,9 +559,6 @@
 
 }
 
-- (void)removeView {
-    [errorCover removeFromSuperview];
-}
 
 #pragma mark - 服务器返回
 - (void)MyConnection:(MyURLConnection *)connection didReceiveData:(NSData *)data {
@@ -537,8 +576,10 @@
         //服务器要返回时密码错误还是不在校园内 后面再添加
         // 密码验证成功
         if ([status isEqualToString:@"success"]) {
+            isConnect = YES;
             bikePosition = @"";
             // 请求服务器 异步post
+            // 密码正确 请求位置是否正确
             NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
             NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/bike/bikelocation"];
             NSURL *url = [NSURL URLWithString:urlStr];
@@ -548,6 +589,8 @@
             [request setHTTPBody:data];
             [request setHTTPMethod:@"POST"];
             MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"location"];
+            NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
+            [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
         }else {
             // 集成api  此处是膜
             errorCover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
@@ -579,6 +622,8 @@
         //服务器要返回时密码错误还是不在校园内 后面再添加
         
         if ([status isEqualToString:@"success"]) {
+            isConnect = YES;
+            
             // 显示返回的新的解锁密码
         }else {
             // 集成api  此处是膜
@@ -615,8 +660,10 @@
         //服务器要返回时密码错误还是不在校园内 后面再添加
         
         if ([status isEqualToString:@"success"]) {
-            // 更新钱数和使用赶时间
+            isConnect = YES;
+            // 更新钱数和使用时间
             // 设置timer 对获取到的使用时长计数
+            // 可以设置一个60秒的timer 就计时用
         }else {
             // 集成api  此处是膜
             errorCover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
@@ -647,6 +694,7 @@
         NSString *status = receiveJson[@"status"];
         NSString *message = receiveJson[@"message"];
         if ([status isEqualToString:@"success"]) {
+            isConnect = YES;
             // 请求服务器 异步post
             NSString *accessToken = [userDefaults objectForKey:@"accessToken"];
             NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
@@ -658,6 +706,8 @@
             [request setHTTPBody:data];
             [request setHTTPMethod:@"POST"];
             MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"getMoney"];
+            NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
+            [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
         }else {
             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"您没有把车停在有效范围内" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
             [alertView show];
@@ -668,6 +718,7 @@
         NSString *money = receiveJson[@"fee"];
         NSString *time = receiveJson[@"time"];
         if ([status isEqualToString:@"success"]) {
+            isConnect = YES;
             PayViewController *payViewController = [[PayViewController alloc] init];
             self.delegate = payViewController;
             [self.delegate getMoney:money andTime:time];
@@ -681,12 +732,38 @@
         NSString *bikeNO = receiveJson[@"bikeid"];
         NSString *pass = receiveJson[@"pass"];
         if ([status isEqualToString:@"success"]) {
+            isConnect = YES;
             bikeNo = bikeNO;
             // 讲单车编号写入缓存
             [userDefaults setObject:bikeNO forKey:@"bikeNo"];
             [passwordNumber setNumber:[pass integerValue] withAnimationType:HJFScrollNumberAnimationTypeRand animationTime:2];
         }
     }
+}
+
+- (void)MyConnection:(MyURLConnection *)connection didFailWithError:(NSError *)error    {
+    isConnect = YES;
+    [errorCover removeFromSuperview];
+    // 收到验证码  进行提示
+    errorCover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    errorCover.alpha = 1;
+    // 半黑膜
+    UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+    containerView.backgroundColor = [UIColor blackColor];
+    containerView.alpha = 0.6;
+    containerView.layer.cornerRadius = CORNERRADIUS*2;
+    [errorCover addSubview:containerView];
+    // 一个控件
+    UILabel *hintMes1 = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
+    hintMes1.text = @"无法连接网络";
+    hintMes1.textColor = [UIColor whiteColor];
+    hintMes1.textAlignment = NSTextAlignmentCenter;
+    [containerView addSubview:hintMes1];
+    [self.view addSubview:errorCover];
+    // 显示时间
+    NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(removeView) userInfo:nil repeats:NO];
+    [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
+    NSLog(@"网络超时");
 }
 
 - (void)questionBtnClicked {

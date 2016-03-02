@@ -12,6 +12,8 @@
 #import "UISize.h"
 #import "QRCodeScanViewController.h"
 #import "MyURLConnection.h"
+#import "ChargeViewController.h"
+#import "PayViewController.h"
 
 #pragma mark - 百度模块
 #import <BaiduMapAPI_Base/BMKBaseComponent.h>
@@ -30,6 +32,13 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
     
+//    初始状态
+    self.isIdentify = NO;
+    self.isFreeze = NO;
+    self.isEndPay = YES;
+    self.isEndRiding = YES;
+
+    
     self.balance = @"";
     userDefaults = [NSUserDefaults standardUserDefaults];
     if (![userDefaults boolForKey:@"everLaunched"]) {
@@ -46,6 +55,7 @@
         
         NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
         // 在登录了的情况下 去服务器获取余额
+        // 只能用同步post 不然的话余额获取会有问题
         NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/balance"];
         NSURL *url = [NSURL URLWithString:urlStr];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
@@ -53,18 +63,30 @@
         NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
         [request setHTTPBody:data];
         [request setHTTPMethod:@"POST"];
-        MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"balance"];
+//        MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"balance"];
+        NSData *receiveData = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
+        NSDictionary *receive = [NSJSONSerialization JSONObjectWithData:receiveData options:NSJSONReadingMutableLeaves error:nil];
+        NSString *status = receive[@"status"];
+        NSString *receiveBalance = receive[@"balance"];
+        if (status) {
+            self.balance = receiveBalance;
+            //拿取本地缓存数据 只需手机和isLogin，和短信验证用的是一个api，不需要验证码
+            NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
+            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/user/login"];
+            NSURL *url = [NSURL URLWithString:urlStr];
+            NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+            NSString *dataStr = [NSString stringWithFormat:@"phone=%@&islogin=%d", phoneNumber, self.isLogin];
+            NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
+            [request setHTTPBody:data];
+            [request setHTTPMethod:@"POST"];
+            MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"isLogined"];
+        }
     }
     
     // 请求服务器
     
 
 
-    // 初始状态
-//    self.isIdentify = false;
-//    self.isFreeze = false;
-//    self.isEndPay = false;
-//    self.isEndRiding = false;
     
     // 百度模块
     _mapManager = [[BMKMapManager alloc] init];
@@ -89,24 +111,7 @@
 
 - (void)MyConnection:(MyURLConnection *)connection didReceiveData:(NSData *)data {
     NSDictionary *receiveJson = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableLeaves error:nil];
-    if ([connection.name isEqualToString:@"balance"]) {
-        NSString *status = receiveJson[@"status"];
-        NSString *balance = receiveJson[@"balance"];
-        if (status) {
-            self.balance = balance;
-            //请求服务器 同步post 请求该账户的状态，除了是否登陆保存在本地  在已经登陆的情况下才请求，否则不请求
-            //拿取本地缓存数据 只需手机和isLogin，和短信验证用的是一个api，不需要验证码
-            NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/user/logi"];
-            NSURL *url = [NSURL URLWithString:urlStr];
-            NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-            NSString *dataStr = [NSString stringWithFormat:@"phone=%@&islogin=%d", phoneNumber, self.isLogin];
-            NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
-            [request setHTTPBody:data];
-            [request setHTTPMethod:@"POST"];
-            MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"isLogined"];
-        }
-    }else if ([connection.name isEqualToString:@"isLogined"]) {
+    if ([connection.name isEqualToString:@"isLogined"]) {
         NSString *status = receiveJson[@"status"];
         NSString *isFrozen = receiveJson[@"isfrozen"];
         NSString *isFinish = receiveJson[@"isfinish"];
@@ -133,6 +138,16 @@
             
         }
         // 设置相应页面的跳转，正常情况 跳转扫描页面，其他分三种情况
+        if (!self.isEndRiding) {
+            ChargeViewController *chargeViewController = [[ChargeViewController alloc] init];
+            [_qRCodeScanViewController.navigationController pushViewController:chargeViewController animated:YES];
+        }else if (!self.isEndPay) {
+            // 跳到支付页面
+            PayViewController *payViewController = [[PayViewController alloc] init];
+            [_qRCodeScanViewController.navigationController pushViewController:payViewController animated:YES];
+        }else {
+            [_qRCodeScanViewController.navigationController popViewControllerAnimated:YES];
+        }
     }
 }
 

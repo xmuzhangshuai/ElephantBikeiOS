@@ -13,6 +13,7 @@
 @protocol MyURLConnectionDelegate <NSObject>
 
 - (void)MyConnection:(MyURLConnection *)connection didReceiveData:(NSData *)data;
+- (void)MyConnection:(MyURLConnection *)connection didFailWithError:(NSError *)error;
 
 @end
 

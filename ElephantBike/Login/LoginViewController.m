@@ -32,6 +32,7 @@
     NSUserDefaults  *userDefaults;
     NSString        *phoneNumber;
     AppDelegate     *MyAppDelegate;
+    BOOL            isConnect;
 }
 int countDown = 5;
 
@@ -45,6 +46,7 @@ int countDown = 5;
         mesButton       = [[UIButton alloc] init];
         userDefaults    = [NSUserDefaults standardUserDefaults];
         MyAppDelegate   = [[UIApplication sharedApplication] delegate];
+        isConnect       = NO;
     }
     return self;
 }
@@ -199,10 +201,44 @@ int countDown = 5;
         [containerView addSubview:hintMes];
         
         [self.view addSubview:cover];
+        
+        NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/msg/sms"];
+        NSURL *url = [NSURL URLWithString:urlStr];
+        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+        NSString *dataStr = [NSString stringWithFormat:@"phone=%@", phoneNumber];
+        NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
+        [request setHTTPBody:data];
+        [request setHTTPMethod:@"POST"];
+        MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"getNumber"];
+        NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
+        [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
+    }
+}
+
+- (void)stopRequest {
+    if (!isConnect) {
+        [cover removeFromSuperview];
+        // 收到验证码  进行提示
+        cover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+        cover.alpha = 1;
+        // 半黑膜
+        UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+        containerView.backgroundColor = [UIColor blackColor];
+        containerView.alpha = 0.6;
+        containerView.layer.cornerRadius = CORNERRADIUS*2;
+        [cover addSubview:containerView];
+        // 一个控件
+        UILabel *hintMes = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
+        hintMes.text = @"无法连接服务器";
+        hintMes.textColor = [UIColor whiteColor];
+        hintMes.textAlignment = NSTextAlignmentCenter;
+        [containerView addSubview:hintMes];
+        [self.view addSubview:cover];
         // 显示时间
         NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(removeView) userInfo:nil repeats:NO];
         [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
     }
+    isConnect = NO;
 }
 
 - (void)removeView {
@@ -253,16 +289,18 @@ int countDown = 5;
         [request setHTTPBody:data];
         [request setHTTPMethod:@"POST"];
         MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"Login"];
+        NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
+        [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
         
 //        NSLog(@"%@", status);
 //        NSLog(@"%@", isfrozen);
 //        NSLog(@"%@", accessToken);
     }
 }
-
+#pragma mark - 服务器返回
 - (void)MyConnection:(MyURLConnection *)connection didReceiveData:(NSData *)data {
-    if ([connection.name isEqualToString:@"isLogin"]) {
-        NSDictionary *receiveJson = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableLeaves error:nil];
+    NSDictionary *receiveJson = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableLeaves error:nil];
+    if ([connection.name isEqualToString:@"Login"]) {
         NSString *status = receiveJson[@"status"];
         NSString *isfrozen = receiveJson[@"isfrozen"];
         NSString *isFinish = receiveJson[@"isfinish"];
@@ -270,6 +308,7 @@ int countDown = 5;
         NSString *accessToken = receiveJson[@"access_token"];
         [userDefaults setValue:accessToken forKey:@"accessToken"];//缓存access_token
         if ([status isEqualToString:@"success"]) {
+            isConnect = YES;
             if ([isfrozen isEqualToString:@"-1"]) {
                 MyAppDelegate.isFreeze = true;
                 MyAppDelegate.isIdentify = true;
@@ -299,12 +338,14 @@ int countDown = 5;
             [request setHTTPBody:data];
             [request setHTTPMethod:@"POST"];
             MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"balance"];
+            NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
+            [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
         }
     }else if ([connection.name isEqualToString:@"balance"]) {
-        NSDictionary *receiveJson = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableLeaves error:nil];
         NSString *status = receiveJson[@"status"];
         NSString *balance = receiveJson[@"balance"];
         if (status) {
+            isConnect = YES;
             MyAppDelegate.balance = balance;
             if (!MyAppDelegate.isEndRiding) {
                 ChargeViewController *chargeViewController = [[ChargeViewController alloc] init];
@@ -317,8 +358,59 @@ int countDown = 5;
                 [self.navigationController popViewControllerAnimated:YES];
             }
         }
-
+    }else if ([connection.name isEqualToString:@"getNumber"]) {
+        NSString *status = receiveJson[@"status"];
+        NSString *message = receiveJson[@"message"];
+        if (status) {
+            isConnect = YES;
+            [cover removeFromSuperview];
+            // 收到验证码  进行提示
+            cover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+            cover.alpha = 1;
+            // 半黑膜
+            UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+            containerView.backgroundColor = [UIColor blackColor];
+            containerView.alpha = 0.6;
+            containerView.layer.cornerRadius = CORNERRADIUS*2;
+            [cover addSubview:containerView];
+            // 一个控件
+            UILabel *hintMes = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
+            hintMes.text = @"已发送";
+            hintMes.textColor = [UIColor whiteColor];
+            hintMes.textAlignment = NSTextAlignmentCenter;
+            [containerView addSubview:hintMes];
+            [self.view addSubview:cover];
+            // 显示时间
+            NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(removeView) userInfo:nil repeats:NO];
+            [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
+            NSLog(@"收到验证码");
+        }
     }
+}
+
+- (void)MyConnection:(MyURLConnection *)connection didFailWithError:(NSError *)error {
+    isConnect = YES;
+    [cover removeFromSuperview];
+    // 收到验证码  进行提示
+    cover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    cover.alpha = 1;
+    // 半黑膜
+    UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+    containerView.backgroundColor = [UIColor blackColor];
+    containerView.alpha = 0.6;
+    containerView.layer.cornerRadius = CORNERRADIUS*2;
+    [cover addSubview:containerView];
+    // 一个控件
+    UILabel *hintMes = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
+    hintMes.text = @"无法连接网络";
+    hintMes.textColor = [UIColor whiteColor];
+    hintMes.textAlignment = NSTextAlignmentCenter;
+    [containerView addSubview:hintMes];
+    [self.view addSubview:cover];
+    // 显示时间
+    NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(removeView) userInfo:nil repeats:NO];
+    [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
+    NSLog(@"网络超时");
 }
 
 - (void)back {

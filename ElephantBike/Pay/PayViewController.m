@@ -15,6 +15,7 @@
 #import "MyURLConnection.h"
 #import "ChargeViewController.h"
 #import "QuestionViewController.h"
+#import "RechargeViewController.h"
 
 #define CHARGEVIEW_HEIGHT       0.16*SCREEN_HEIGHT
 #define STATUSLABEL_WIDTH       0.33*SCREEN_WIDTH
@@ -34,7 +35,7 @@
 #define CONFIRMBUTTON_WIDTH     0.9*SCREEN_WIDTH
 #define CONFIRMBUTTON_HEIGHT    SAME_HEIGHT
 
-@interface PayViewController ()<UITableViewDataSource, UITableViewDelegate, InfoViewControllerDelegate, MyURLConnectionDelegate, ChargeViewControllerDelegate, QuestionViewControllerDelegate>
+@interface PayViewController ()<UITableViewDataSource, UITableViewDelegate, InfoViewControllerDelegate, MyURLConnectionDelegate, ChargeViewControllerDelegate, QuestionViewControllerDelegate, UIAlertViewDelegate>
 
 @end
 
@@ -69,6 +70,8 @@
     InfoViewController          *infoViewController;
     UIView                      *cover;
     UISwipeGestureRecognizer    *leftSwipGestureRecognizer;
+    
+    BOOL        isConnect;
 }
 
 - (id)init {
@@ -90,6 +93,8 @@
             [request setHTTPBody:data];
             [request setHTTPMethod:@"POST"];
             MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"getBikeNoAndPass"];
+            NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
+            [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
         }
 
     }
@@ -107,6 +112,8 @@
     hintMes             = [[UILabel alloc] init];
     totalTimeLabel      = [[UILabel alloc]init];
     timeLabel           = [[UILabel alloc]init];
+    
+    isConnect           = NO;
     
     payWay              = @[@"大象钱包", @"微信支付", @"支付宝"];
     wayDetails          = @[@"免密码支付，推荐懒人使用", @"推荐微信支付已绑定信用卡的用户使用", @"推荐已安装支付宝客户端的用户使用"];
@@ -252,6 +259,8 @@
     [request setHTTPBody:data];
     [request setHTTPMethod:@"POST"];
     MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"balance"];
+    NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
+    [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
 }
 
 #pragma mark - 服务器返回
@@ -262,6 +271,7 @@
         NSString *status = receiveJson[@"status"];
         NSString *message = receiveJson[@"message"];
         if ([status isEqualToString:@"success"]) {
+            isConnect = YES;
             // 付费成功 跳转扫描页面 并且对本地的balance扣除相应的金额
             CGFloat balan = [myAppdelegate.balance floatValue];
             CGFloat money = [_money floatValue];
@@ -279,6 +289,7 @@
         NSString *money = receiveJson[@"fee"];
         NSString *time = receiveJson[@"time"];
         if ([status isEqualToString:@"success"]) {
+            isConnect = YES;
             if ([time isEqualToString:@""]) {
                 totalPayLabel.text = @"费用总计:";
                 NSString *temp = [@"￥" stringByAppendingString:money];
@@ -299,6 +310,7 @@
         NSString *bikeNo = receiveJson[@"bikeid"];
 //        NSString *pass = receiveJson[@"pass"];  //在支付页面解锁密码没有用
         if ([status isEqualToString:@"success"]) {
+            isConnect = YES;
             // 讲单车编号写入缓存
             [userDefaults setObject:bikeNo forKey:@"bikeNo"];
             // 获取到单车编号后再请求服务器获取使用时长还有金额数量
@@ -313,36 +325,104 @@
             [request setHTTPBody:data];
             [request setHTTPMethod:@"POST"];
             MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"getMoney"];
+            NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
+            [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
         }
     }else if ([connection.name isEqualToString:@"balance"]) {
-        // 付款api
-        // 从本地拿取accessToken
-        userDefaults = [NSUserDefaults standardUserDefaults];
-        NSString *accessToken = [userDefaults objectForKey:@"accessToken"];
-        // 从本地拿取bikeNo
-        NSString *bikeNo = [userDefaults objectForKey:@"bikeNo"];
-        // 从本地拿取电话
-        NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
-        // 判断选择了哪一种支付方式
-        NSIndexPath *indexPath = [payListTableView indexPathForSelectedRow];
-        NSInteger selectPayWayNumber = indexPath.row;
+        NSString *status = receiveJson[@"status"];
+        NSString *balance = receiveJson[@"balance"];
+        if ([status isEqualToString:@"success"]) {
+            isConnect = YES;
+            CGFloat shouldPayMoney = [_money floatValue];
+            CGFloat havaMoney = [balance floatValue];
+            if (havaMoney > shouldPayMoney) {
+                // 付款api
+                // 从本地拿取accessToken
+                userDefaults = [NSUserDefaults standardUserDefaults];
+                NSString *accessToken = [userDefaults objectForKey:@"accessToken"];
+                // 从本地拿取bikeNo
+                NSString *bikeNo = [userDefaults objectForKey:@"bikeNo"];
+                // 从本地拿取电话
+                NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
+                // 判断选择了哪一种支付方式
+                NSIndexPath *indexPath = [payListTableView indexPathForSelectedRow];
+                NSInteger selectPayWayNumber = indexPath.row;
+                
+                NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/returnpay"];
+                NSURL *url = [NSURL URLWithString:urlStr];
+                NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
+                NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&phone=%@&paymode=%@&access_token=%@", bikeNo, phoneNumber, [payWay objectAtIndex:selectPayWayNumber],  accessToken];
+                NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
+                [request setHTTPBody:data];
+                [request setHTTPMethod:@"POST"];
+                MyURLConnection *connectionn = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"pay"];
+                NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
+                [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
+            }else {
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"余额不足，请充值" delegate:self cancelButtonTitle:@"去充值" otherButtonTitles:@"取消", nil];
+                [alertView show];
+                // 余额不足
+            }
+        }
         
-        NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/returnpay"];
-        NSURL *url = [NSURL URLWithString:urlStr];
-        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
-        NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&phone=%@&paymode=%@&access_token=%@", bikeNo, phoneNumber, [payWay objectAtIndex:selectPayWayNumber],  accessToken];
-        NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
-        [request setHTTPBody:data];
-        [request setHTTPMethod:@"POST"];
-        MyURLConnection *connectionn = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"pay"];
     }
 }
 // 链接超时 需要提醒用户
--(void)connection:(NSURLConnection *)connection
- didFailWithError:(NSError *)error
-{
-    NSLog(@"网络请求出错：%@",[error localizedDescription]);
+- (void)MyConnection:(MyURLConnection *)connection didFailWithError:(NSError *)error {
+    isConnect = YES;
+    [waitCover removeFromSuperview];
+    // 收到验证码  进行提示
+    waitCover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    waitCover.alpha = 1;
+    // 半黑膜
+    UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+    containerView.backgroundColor = [UIColor blackColor];
+    containerView.alpha = 0.6;
+    containerView.layer.cornerRadius = CORNERRADIUS*2;
+    [cover addSubview:containerView];
+    // 一个控件
+    UILabel *hintMes1 = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
+    hintMes1.text = @"无法连接网络";
+    hintMes1.textColor = [UIColor whiteColor];
+    hintMes1.textAlignment = NSTextAlignmentCenter;
+    [containerView addSubview:hintMes1];
+    [self.view addSubview:waitCover];
+    // 显示时间
+    NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(removeView) userInfo:nil repeats:NO];
+    [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
+    NSLog(@"网络超时");
 }
+
+- (void)stopRequest {
+    if (!isConnect) {
+        [waitCover removeFromSuperview];
+        // 收到验证码  进行提示
+        waitCover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+        waitCover.alpha = 1;
+        // 半黑膜
+        UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+        containerView.backgroundColor = [UIColor blackColor];
+        containerView.alpha = 0.6;
+        containerView.layer.cornerRadius = CORNERRADIUS*2;
+        [waitCover addSubview:containerView];
+        // 一个控件
+        UILabel *hintMes1 = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
+        hintMes1.text = @"无法连接服务器";
+        hintMes1.textColor = [UIColor whiteColor];
+        hintMes1.textAlignment = NSTextAlignmentCenter;
+        [containerView addSubview:hintMes1];
+        [self.view addSubview:waitCover];
+        // 显示时间
+        NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(removeView) userInfo:nil repeats:NO];
+        [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
+    }
+    isConnect = NO;
+}
+
+- (void)removeView {
+    [waitCover removeFromSuperview];
+}
+
 
 - (void)hiddenCover {
     [self hiddenMenu];
@@ -487,7 +567,12 @@
     return PAYLISTTABLEVIEW_HEIGHT/3;
 }
 
-
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
+    if (buttonIndex == 0) {
+        RechargeViewController *rechargeViewController = [[RechargeViewController alloc] init];
+        [self.navigationController pushViewController:rechargeViewController animated:YES];
+    }
+}
 
 #pragma mark - lifeCycle
 - (void)viewWillAppear:(BOOL)animated {

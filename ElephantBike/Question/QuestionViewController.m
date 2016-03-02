@@ -19,7 +19,7 @@
 #define WIDTH           0.9*SCREEN_WIDTH
 #define HEIGHT          0.04*SCREEN_HEIGHT
 
-@interface QuestionViewController ()<UITableViewDataSource, UITableViewDelegate, UIAlertViewDelegate, UITextFieldDelegate, BMKLocationServiceDelegate, BMKGeoCodeSearchDelegate, MyURLConnectionDelegate>
+@interface QuestionViewController ()<UITableViewDataSource, UITableViewDelegate, UIAlertViewDelegate, UITextFieldDelegate, BMKLocationServiceDelegate, BMKGeoCodeSearchDelegate, MyURLConnectionDelegate, UIActionSheetDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate>
 @end
 
 @implementation QuestionViewController {
@@ -32,6 +32,15 @@
     UIImageView *pictureView;
     UIButton    *cameraButton;
     UILabel     *hintMes;
+    
+    UIImageView *imageView1;
+    UIImageView *imageView2;
+    UIImageView *imageView3;
+    
+    int         imageViewNumber;
+    BOOL        firstDelete;
+    BOOL        secondDelete;
+    BOOL        thirdDelete;
     
     UILabel     *typeLabel;
     UILabel     *describeLabel;
@@ -47,6 +56,7 @@
     CGFloat     keyboardHeight;
     
     BOOL        isBack;
+    BOOL        isConnect;
     
     // 百度地图模块
     BMKLocationService  *_locSerview;
@@ -72,6 +82,13 @@
     cameraButton        = [[UIButton alloc] init];
     hintMes             = [[UILabel alloc] init];
     
+    imageView1          = [[UIImageView alloc] init];
+    imageView2          = [[UIImageView alloc] init];
+    imageView3          = [[UIImageView alloc] init];
+    firstDelete         = YES;
+    secondDelete        = YES;
+    thirdDelete         = YES;
+    
     typeLabel           = [[UILabel alloc] init];
     describeLabel       = [[UILabel alloc] init];
     describeLabel1      = [[UILabel alloc] init];
@@ -86,6 +103,7 @@
                                                  name:UIKeyboardWillShowNotification
                                                object:nil];
     isBack = true;
+    isConnect = NO;
     
     [self NavigationInit];
     [self UILayout];
@@ -155,7 +173,6 @@
     positionLabel.frame = CGRectMake(0.05*SCREEN_WIDTH, NAVIGATIONBAR_HEIGHT+STATUS_HEIGHT+HEIGHT*11, WIDTH, HEIGHT);
     positionLabel.textAlignment = NSTextAlignmentLeft;
     positionLabel.text = @"单车的位置*";
-    positionLabel.enabled = NO;
     positionLabel.hidden = YES;
     
     positionTF.frame = CGRectMake(0, 0, WIDTH, HEIGHT);
@@ -174,19 +191,36 @@
     pictureView.frame = CGRectMake(0.05*SCREEN_WIDTH, NAVIGATIONBAR_HEIGHT+STATUS_HEIGHT+HEIGHT*14, WIDTH, HEIGHT*1.3);
     [pictureView setImage:[UIImage imageNamed:@"上传照片边框"]];
     pictureView.contentMode = UIViewContentModeScaleAspectFill;
+    pictureView.userInteractionEnabled = YES;
     pictureView.hidden = YES;
     
     cameraButton.frame = CGRectMake(0, 0, 0.15*WIDTH, HEIGHT);
     [cameraButton setImage:[UIImage imageNamed:@"照相机"] forState:UIControlStateNormal];
     cameraButton.contentMode = UIViewContentModeScaleAspectFit;
+    [cameraButton addTarget:self action:@selector(selectPicture) forControlEvents:UIControlEventTouchUpInside];
     
     hintMes.frame = CGRectMake(0.5*WIDTH, 0, 0.45*WIDTH, HEIGHT);
     hintMes.text = @"上传凭证 最多3张";
     hintMes.textAlignment = NSTextAlignmentRight;
     hintMes.textColor = [UIColor grayColor];
+    hintMes.hidden = NO;
     if (SCREEN_WIDTH == 320) {
         hintMes.font = [UIFont systemFontOfSize:12];
     }
+    
+    imageView1.hidden = YES;
+    imageView2.hidden = YES;
+    imageView3.hidden = YES;
+    imageView1 = [[UIImageView alloc] initWithFrame:CGRectMake(0,0,0,0)];
+    imageView2 = [[UIImageView alloc] initWithFrame:CGRectMake(0,0,0,0)];
+    imageView3 = [[UIImageView alloc] initWithFrame:CGRectMake(0,0,0,0)];
+    imageView1.userInteractionEnabled = YES;
+    imageView2.userInteractionEnabled = YES;
+    imageView3.userInteractionEnabled = YES;
+    
+    UITapGestureRecognizer *tap1 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(delete)];
+    [pictureView addGestureRecognizer:tap1];
+    
     
     commitButton.frame = CGRectMake((SCREEN_WIDTH-COMMIT_WIDTH)/2, SCREEN_HEIGHT-2*HEIGHT-COMMIT_HEIGHT, COMMIT_WIDTH, COMMIT_HEIGHT);
     commitButton.backgroundColor = UICOLOR;
@@ -204,9 +238,12 @@
     [self.view addSubview:positionLabel];
     [self.view addSubview:positionTFView];
     [positionTFView addSubview:positionTF];
-    [self.view addSubview:pictureView];
-    [pictureView addSubview:cameraButton];
     [pictureView addSubview:hintMes];
+    [pictureView addSubview:cameraButton];
+    [pictureView addSubview:imageView1];
+    [pictureView addSubview:imageView2];
+    [pictureView addSubview:imageView3];
+    [self.view addSubview:pictureView];
     [self.view addSubview:commitButton];
 }
 
@@ -261,6 +298,8 @@
              [request setHTTPBody:data];
              [request setHTTPMethod:@"POST"];
              MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"commitQuestion"];
+            NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
+            [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
              [self visible];
         }
             break;
@@ -274,6 +313,116 @@
     pictureView.hidden = NO;
     positionLabel.hidden = NO;
     positionTFView.hidden = NO;
+}
+
+- (void)selectPicture {
+    if (imageViewNumber == 3) {
+        
+    }else {
+        UIActionSheet *sheet;
+        if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
+            sheet = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"取消" destructiveButtonTitle:@"拍照" otherButtonTitles:@"从相册中选择", nil];
+        } else {
+            sheet = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"取消" destructiveButtonTitle:nil otherButtonTitles:@"从相册中选择", nil];
+        }
+        [sheet showInView:self.view];
+    }
+}
+
+- (void)delete {
+    if (imageViewNumber > 0) {
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"确定要删除吗" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:@"取消", nil];
+        alertView.tag = 4;
+        [alertView show];
+    }
+}
+
+#pragma mark - actionSheetDelegate
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
+    NSUInteger sourceType = 0;
+    if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
+        switch (buttonIndex) {
+            case 2:
+                return;
+                break;
+            case 0:
+                sourceType = UIImagePickerControllerSourceTypeCamera;
+                break;
+            case 1:
+                sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+                break;
+            default:
+                break;
+        }
+    } else {
+        if (buttonIndex == 1) {
+            return  ;
+        } else {
+            sourceType = UIImagePickerControllerSourceTypeSavedPhotosAlbum;
+        }
+    }
+    UIImagePickerController *imagePickerController = [[UIImagePickerController alloc] init];
+    imagePickerController.delegate = self;
+    imagePickerController.allowsEditing = YES;
+    imagePickerController.sourceType = sourceType;
+    [self presentViewController:imagePickerController animated:YES completion:nil];
+
+}
+// 选好照片后
+#pragma mark - ImagePicker Delegate
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info {
+    [picker dismissViewControllerAnimated:YES completion:^{}];
+    UIImage *savedImage = [info objectForKey:UIImagePickerControllerOriginalImage];
+    if (firstDelete) {
+        [imageView1 setImage:savedImage];
+        imageViewNumber++;
+        firstDelete = NO;
+    }else if(secondDelete) {
+        [imageView2 setImage:savedImage];
+        imageViewNumber++;
+        secondDelete = NO;
+    }else if (thirdDelete) {
+        [imageView3 setImage:savedImage];
+        imageViewNumber++;
+        thirdDelete = NO;
+    }
+    [self setImageViewPosition];
+}
+
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)setImageViewPosition {
+    if (imageViewNumber == 0) {
+        hintMes.hidden = NO;
+    }else if (imageViewNumber == 1) {
+        imageView1.frame = CGRectMake(0.95*WIDTH-HEIGHT, 0, HEIGHT, HEIGHT);
+        imageView2.frame = CGRectMake(0, 0, 0, 0);
+        imageView3.frame = CGRectMake(0, 0, 0, 0);
+        imageView1.hidden = NO;
+        imageView2.hidden = YES;
+        imageView3.hidden = YES;
+        hintMes.hidden = YES;
+    }else if (imageViewNumber == 2) {
+        // 设置view1和view2的位置
+        imageView2.frame = CGRectMake(0.95*WIDTH-HEIGHT, 0, HEIGHT, HEIGHT);
+        imageView1.frame = CGRectMake(0.9*WIDTH-2*HEIGHT, 0, HEIGHT, HEIGHT);
+        imageView3.frame = CGRectMake(0,0,0,0);
+        imageView1.hidden = NO;
+        imageView2.hidden = NO;
+        imageView3.hidden = YES;
+        hintMes.hidden = YES;
+    }else if (imageViewNumber ==3 ) {
+        // 设置
+        imageView3.frame = CGRectMake(0.95*WIDTH-HEIGHT, 0, HEIGHT, HEIGHT);
+        imageView2.frame = CGRectMake(0.9*WIDTH-2*HEIGHT, 0, HEIGHT, HEIGHT);
+        imageView1.frame = CGRectMake(0.85*WIDTH-3*HEIGHT, 0, HEIGHT, HEIGHT);
+        imageView1.hidden = NO;
+        imageView2.hidden = NO;
+        imageView3.hidden = NO;
+        hintMes.hidden = YES;
+    }
 }
 
 #pragma mark - TableViewDelegate
@@ -355,7 +504,36 @@
             [request setHTTPBody:data];
             [request setHTTPMethod:@"POST"];
             MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"commitQuestion"];
+            NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
+            [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
         }
+        //验证等待动画
+        // 集成api  此处是膜
+        cover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+        cover.alpha = 1;
+        // 半黑膜
+        UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+        containerView.backgroundColor = [UIColor blackColor];
+        containerView.alpha = 0.6;
+        containerView.layer.cornerRadius = CORNERRADIUS*2;
+        [cover addSubview:containerView];
+        // 两个控件
+        UIActivityIndicatorView *waitActivityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+        waitActivityView.frame = CGRectMake(0.33*containerView.frame.size.width, 0.1*containerView.frame.size.width, 0.33*containerView.frame.size.width, 0.4*containerView.frame.size.height);
+        [waitActivityView startAnimating];
+        [containerView addSubview:waitActivityView];
+        
+        UILabel *hintMes1 = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.7*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
+        hintMes1.text = @"请稍后...";
+        hintMes1.textColor = [UIColor whiteColor];
+        hintMes1.textAlignment = NSTextAlignmentCenter;
+        [containerView addSubview:hintMes1];
+        [self.view addSubview:cover];
+        
+        if (alertView.tag == 1) {
+            bikePosition = @"";
+        }
+
     }else if (alertView.tag == 2) {
         myDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
         myDelegate.isFreeze = true;
@@ -371,6 +549,36 @@
         [request setHTTPBody:data];
         [request setHTTPMethod:@"POST"];
         MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"frozen"];
+        NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
+        [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
+        
+        //验证等待动画
+        // 集成api  此处是膜
+        cover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+        cover.alpha = 1;
+        // 半黑膜
+        UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+        containerView.backgroundColor = [UIColor blackColor];
+        containerView.alpha = 0.6;
+        containerView.layer.cornerRadius = CORNERRADIUS*2;
+        [cover addSubview:containerView];
+        // 两个控件
+        UIActivityIndicatorView *waitActivityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+        waitActivityView.frame = CGRectMake(0.33*containerView.frame.size.width, 0.1*containerView.frame.size.width, 0.33*containerView.frame.size.width, 0.4*containerView.frame.size.height);
+        [waitActivityView startAnimating];
+        [containerView addSubview:waitActivityView];
+        
+        UILabel *hintMes1 = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.7*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
+        hintMes1.text = @"请稍后...";
+        hintMes1.textColor = [UIColor whiteColor];
+        hintMes1.textAlignment = NSTextAlignmentCenter;
+        [containerView addSubview:hintMes1];
+        [self.view addSubview:cover];
+        
+        if (alertView.tag == 1) {
+            bikePosition = @"";
+        }
+
     }else if (alertView.tag == 3) {
         isBack = YES;
         
@@ -390,43 +598,68 @@
         [request setHTTPBody:data];
         [request setHTTPMethod:@"POST"];
         MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"commitQuestion"];
-    }
-    //验证等待动画
-    // 集成api  此处是膜
-    cover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
-    cover.alpha = 1;
-    // 半黑膜
-    UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
-    containerView.backgroundColor = [UIColor blackColor];
-    containerView.alpha = 0.6;
-    containerView.layer.cornerRadius = CORNERRADIUS*2;
-    [cover addSubview:containerView];
-    // 两个控件
-    UIActivityIndicatorView *waitActivityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-    waitActivityView.frame = CGRectMake(0.33*containerView.frame.size.width, 0.1*containerView.frame.size.width, 0.33*containerView.frame.size.width, 0.4*containerView.frame.size.height);
-    [waitActivityView startAnimating];
-    [containerView addSubview:waitActivityView];
-    
-    UILabel *hintMes1 = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.7*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
-    hintMes1.text = @"请稍后...";
-    hintMes1.textColor = [UIColor whiteColor];
-    hintMes1.textAlignment = NSTextAlignmentCenter;
-    [containerView addSubview:hintMes1];
-    [self.view addSubview:cover];
-    
-    if (alertView.tag == 1) {
-        bikePosition = @"";
+        
+        NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
+        [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
+        
+        //验证等待动画
+        // 集成api  此处是膜
+        cover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+        cover.alpha = 1;
+        // 半黑膜
+        UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+        containerView.backgroundColor = [UIColor blackColor];
+        containerView.alpha = 0.6;
+        containerView.layer.cornerRadius = CORNERRADIUS*2;
+        [cover addSubview:containerView];
+        // 两个控件
+        UIActivityIndicatorView *waitActivityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+        waitActivityView.frame = CGRectMake(0.33*containerView.frame.size.width, 0.1*containerView.frame.size.width, 0.33*containerView.frame.size.width, 0.4*containerView.frame.size.height);
+        [waitActivityView startAnimating];
+        [containerView addSubview:waitActivityView];
+        
+        UILabel *hintMes1 = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.7*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
+        hintMes1.text = @"请稍后...";
+        hintMes1.textColor = [UIColor whiteColor];
+        hintMes1.textAlignment = NSTextAlignmentCenter;
+        [containerView addSubview:hintMes1];
+        [self.view addSubview:cover];
+        
+        if (alertView.tag == 1) {
+            bikePosition = @"";
+        }
+    }else if (alertView.tag == 4) {
+        if (buttonIndex == 0) {
+            NSLog(@"确认删除");
+            NSLog(@"%d", imageViewNumber);
+            if (imageViewNumber == 1) {
+                imageView1.hidden = YES;
+                firstDelete = YES;
+                hintMes.hidden = NO;
+                imageViewNumber--;
+            }else if (imageViewNumber == 2) {
+                imageView2.hidden = YES;
+                secondDelete = YES;
+                imageViewNumber--;
+            }else if (imageViewNumber == 3) {
+                imageView3.hidden = YES;
+                thirdDelete = YES;
+                imageViewNumber--;
+            }
+            [self setImageViewPosition];
+        }
     }
 }
 
 #pragma mark - 服务器返回
-- (void)connection:(MyURLConnection *)connection didReceiveData:(NSData *)data  {
+- (void)MyConnection:(MyURLConnection *)connection didReceiveData:(NSData *)data  {
     // 提交问题成功后执行
     NSDictionary *receiveJson = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableLeaves error:nil];
     if ([connection.name isEqualToString:@"frozen"]) {
         NSString *status = receiveJson[@"status"];
         NSString *message = receiveJson[@"message"];
         if ([status isEqualToString:@"success"]) {
+            isConnect = YES;
             // 冻结成功 提交问题类型 然后获取数据
             isBack = NO;
             
@@ -446,6 +679,10 @@
             [request setHTTPBody:data];
             [request setHTTPMethod:@"POST"];
             MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"commitQuestion"];
+            
+            NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
+            [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
+            
         }
     }else if ([connection.name isEqualToString:@"getMoney"]) {
         // 解析数据
@@ -454,6 +691,7 @@
         NSString *fee = receiveJson[@"fee"];
         NSString *time = receiveJson[@"time"];
         if (status) {
+            isConnect = YES;
             [cover removeFromSuperview];
             PayViewController *payViewController = [[PayViewController alloc] init];
             self.delegate = payViewController;
@@ -468,6 +706,7 @@
         NSString *status = receiveJson[@"status"];
         NSString *message = receiveJson[@"message"];
         if ([status isEqualToString:@"success"]) {
+            isConnect = YES;
             if (isBack) {
                 // 下面三个问题类型
                 [cover removeFromSuperview];
@@ -487,9 +726,69 @@
                 [request setHTTPBody:data];
                 [request setHTTPMethod:@"POST"];
                 MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"getMoney"];
+                
+                NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
+                [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
+                
             }
         }
     }
+}
+
+#pragma mark - 服务器超时
+- (void)MyConnection:(MyURLConnection *)connection didFailWithError:(NSError *)error    {
+    isConnect = YES;
+    [cover removeFromSuperview];
+    // 收到验证码  进行提示
+    cover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    cover.alpha = 1;
+    // 半黑膜
+    UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+    containerView.backgroundColor = [UIColor blackColor];
+    containerView.alpha = 0.6;
+    containerView.layer.cornerRadius = CORNERRADIUS*2;
+    [cover addSubview:containerView];
+    // 一个控件
+    UILabel *hintMes1 = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
+    hintMes1.text = @"无法连接网络";
+    hintMes1.textColor = [UIColor whiteColor];
+    hintMes1.textAlignment = NSTextAlignmentCenter;
+    [containerView addSubview:hintMes1];
+    [self.view addSubview:cover];
+    // 显示时间
+    NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(removeView) userInfo:nil repeats:NO];
+    [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
+    NSLog(@"网络超时");
+}
+
+- (void)stopRequest {
+    if (!isConnect) {
+        [cover removeFromSuperview];
+        // 收到验证码  进行提示
+        cover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+        cover.alpha = 1;
+        // 半黑膜
+        UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+        containerView.backgroundColor = [UIColor blackColor];
+        containerView.alpha = 0.6;
+        containerView.layer.cornerRadius = CORNERRADIUS*2;
+        [cover addSubview:containerView];
+        // 一个控件
+        UILabel *hintMes1 = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
+        hintMes1.text = @"无法连接服务器";
+        hintMes1.textColor = [UIColor whiteColor];
+        hintMes1.textAlignment = NSTextAlignmentCenter;
+        [containerView addSubview:hintMes1];
+        [self.view addSubview:cover];
+        // 显示时间
+        NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(removeView) userInfo:nil repeats:NO];
+        [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
+    }
+    isConnect = NO;
+}
+
+- (void)removeView {
+    [cover removeFromSuperview];
 }
 
 #pragma mark - UITextFieldDelegate
@@ -547,13 +846,13 @@
     if(flag)
     {
         NSLog(@"反geo检索发送成功");
+        [_locSerview stopUserLocationService];
     }
     else
     {
         NSLog(@"反geo检索发送失败");
     }
     NSLog(@"didUpdateUserLocation lat %f,long %f",userLocation.location.coordinate.latitude,userLocation.location.coordinate.longitude);
-    [_locSerview stopUserLocationService];
 }
 
 - (void)onGetReverseGeoCodeResult:(BMKGeoCodeSearch *)searcher result:(BMKReverseGeoCodeResult *)result errorCode:(BMKSearchErrorCode)error {

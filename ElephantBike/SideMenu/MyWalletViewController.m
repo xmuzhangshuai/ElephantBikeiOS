@@ -187,7 +187,8 @@
     NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/balancelist"];
     NSURL *url = [NSURL URLWithString:urlStr];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-    NSString *dataStr = [NSString stringWithFormat:@"phone=%@", phoneNumber];
+    NSString *dataStr = [NSString stringWithFormat:@"phone=%@&count=%d", phoneNumber, page];
+    NSLog(@"%@", phoneNumber);
     NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
     [request setHTTPBody:data];
     [request setHTTPMethod:@"POST"];

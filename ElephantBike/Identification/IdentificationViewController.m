@@ -180,11 +180,11 @@
 #pragma mark - ImagePicker Delegate
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info {
     [picker dismissViewControllerAnimated:YES completion:^{}];
-    UIImage *image = [info objectForKey:UIImagePickerControllerOriginalImage];
-    [self saveImage:image withName:@"currentImage.png"];
-    
-    NSString *fullPath = [[NSHomeDirectory() stringByAppendingPathComponent:@"Documents"] stringByAppendingPathComponent:@"currentImage.png"];
-    UIImage *savedImage = [[UIImage alloc] initWithContentsOfFile:fullPath];
+    UIImage *savedImage = [info objectForKey:UIImagePickerControllerOriginalImage];
+//    [self saveImage:image withName:@"currentImage.png"];
+//    
+//    NSString *fullPath = [[NSHomeDirectory() stringByAppendingPathComponent:@"Documents"] stringByAppendingPathComponent:@"currentImage.png"];
+//    UIImage *savedImage = [[UIImage alloc] initWithContentsOfFile:fullPath];
     if (isButton1) {
         [identificationFront setImage:savedImage];
         [selectButton1 removeFromSuperview];
@@ -200,13 +200,13 @@
 }
 
 #pragma mark - 保存图片到沙盒
-- (void)saveImage:(UIImage *)currentImage withName:(NSString *)imageName {
-    // 高保真压缩图片方法
-    NSData *imageData = UIImageJPEGRepresentation(currentImage, 0.5);
-    // 沙盒目录
-    NSString *fullPath = [[NSHomeDirectory() stringByAppendingPathComponent:@"Documents"] stringByAppendingPathComponent:imageName];
-    [imageData writeToFile:fullPath atomically:NO];
-}
+//- (void)saveImage:(UIImage *)currentImage withName:(NSString *)imageName {
+//    // 高保真压缩图片方法
+//    NSData *imageData = UIImageJPEGRepresentation(currentImage, 0.5);
+//    // 沙盒目录
+//    NSString *fullPath = [[NSHomeDirectory() stringByAppendingPathComponent:@"Documents"] stringByAppendingPathComponent:imageName];
+//    [imageData writeToFile:fullPath atomically:NO];
+//}
 
 #pragma mark - 点击图片预览，滑动放大缩小，带动画
 /*

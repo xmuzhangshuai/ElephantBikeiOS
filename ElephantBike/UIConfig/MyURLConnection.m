@@ -25,4 +25,10 @@
     [self.delegate MyConnection:MyConnection didReceiveData:data];
 }
 
+- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {
+    MyURLConnection *MyConnection = [[MyURLConnection alloc] init];
+    MyConnection.connection = connection;
+    [self.delegate MyConnection:MyConnection didFailWithError:error];
+}
+
 @end
