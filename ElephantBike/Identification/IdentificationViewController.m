@@ -8,6 +8,8 @@
 
 #import "IdentificationViewController.h"
 #import "UISize.h"
+#import "MyURLConnection.h"
+#import "AppDelegate.h"
 
 #define SELECTBUTTON1_WIDTH  0.8*SAME_WIDTH
 #define SELECTBUTTON1_HEIGHT 0.15*IDENTIFICATION_HEIGHT
@@ -16,7 +18,7 @@
 #define RESULTLABEL_WIDTH    SAME_WIDTH
 #define RESULTLABEL_HEIGHT   COMMIT_HEIGHT
 
-@interface IdentificationViewController () <UIActionSheetDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate>
+@interface IdentificationViewController () <UIActionSheetDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, MyURLConnectionDelegate>
 
 @end
 
@@ -28,7 +30,18 @@
     UIButton    *commitButton;
     UILabel     *resultLabel;
     
+    NSData      *IDCard;
+    NSData      *studentCard;
+    
+    NSString    *IDCardUrl;
+    NSString    *studentCardUrl;
+    
     BOOL        isButton1;
+    int         pictureNumber;
+    
+    NSUserDefaults *userDefaults;
+    UIView      *cover;
+    AppDelegate *MyDelegate;
 }
 
 #pragma mark - Life Cycle
@@ -36,6 +49,18 @@
     [super viewDidLoad];
     [self UIInit];
     self.view.backgroundColor = [UIColor whiteColor];
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    if (MyDelegate.isUpload) {
+        resultLabel.text = @"信息审核中，结果将在2个工作日内通知您";
+        resultLabel.font = [UIFont systemFontOfSize:14];
+        [commitButton removeFromSuperview];
+        [self.view addSubview:resultLabel];
+        if (SCREEN_WIDTH == 320) {
+            resultLabel.font = [UIFont systemFontOfSize:12];
+        }
+    }
 }
 
 #pragma mark - Private Method
@@ -46,6 +71,12 @@
     selectButton2       = [[UIButton alloc] init];
     commitButton        = [[UIButton alloc]init];
     resultLabel         = [[UILabel alloc] init];
+    pictureNumber       = 0;
+    IDCard              = [[NSData alloc] init];
+    studentCard         = [[NSData alloc] init];
+    
+    userDefaults        = [NSUserDefaults standardUserDefaults];
+    MyDelegate          = [[UIApplication sharedApplication] delegate];
     
     [self NavigationInit];
     [self UILayout];
@@ -137,13 +168,137 @@
 
 - (void)commitImage {
     // 少一个 菊花图
-    resultLabel.text = @"信息审核中，结果将在2个工作日内通知您";
-    resultLabel.font = [UIFont systemFontOfSize:14];
-    [commitButton removeFromSuperview];
-    [self.view addSubview:resultLabel];
-    if (SCREEN_WIDTH == 320) {
-        resultLabel.font = [UIFont systemFontOfSize:12];
+    // 集成api  此处是膜
+    cover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    cover.alpha = 1;
+    // 半黑膜
+    UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+    containerView.backgroundColor = [UIColor blackColor];
+    containerView.alpha = 0.6;
+    containerView.layer.cornerRadius = CORNERRADIUS*2;
+    [cover addSubview:containerView];
+    // 两个控件
+    UIActivityIndicatorView *waitActivityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+    waitActivityView.frame = CGRectMake(0.33*containerView.frame.size.width, 0.1*containerView.frame.size.width, 0.33*containerView.frame.size.width, 0.4*containerView.frame.size.height);
+    [waitActivityView startAnimating];
+    [containerView addSubview:waitActivityView];
+    
+    UILabel *hintMes = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.7*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
+    hintMes.text = @"正在提交";
+    hintMes.textColor = [UIColor whiteColor];
+    hintMes.textAlignment = NSTextAlignmentCenter;
+    [containerView addSubview:hintMes];
+    [self.view addSubview:cover];
+    
+    if (pictureNumber == 2) {
+        NSLog(@"提交照片");
+        NSString *IDName = @"身份证";
+        NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/file/upload"];
+        NSURL *url = [NSURL URLWithString:urlStr];
+        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+        NSString *dataStr = [NSString stringWithFormat:@"file_name=%@&file=%@", IDName, IDCard];
+        NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
+        [request setHTTPBody:data];
+        [request setHTTPMethod:@"POST"];
+        MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"IDCard"];
+    }else {
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"请选择图片" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+        [alertView show];
     }
+}
+
+
+#pragma mark - 服务器请求
+- (void)MyConnection:(MyURLConnection *)connection didReceiveData:(NSData *)data {
+    NSDictionary *receiveJson = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableLeaves error:nil];
+    if ([connection.name isEqualToString:@"IDCard"]) {
+        NSString *status = receiveJson[@"status"];
+        NSString *url = receiveJson[@"url"];
+        if (status) {
+            IDCardUrl = url;
+            NSString *studentName = @"学生证";
+            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/file/upload"];
+            NSURL *url = [NSURL URLWithString:urlStr];
+            NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+            NSString *dataStr = [NSString stringWithFormat:@"file_name=%@&file=%@", studentName, IDCard];
+            NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
+            [request setHTTPBody:data];
+            [request setHTTPMethod:@"POST"];
+            MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"studentCard"];
+        }else {
+            // 图片上传失败
+        }
+    }else if ([connection.name isEqualToString:@"studentCard"]) {
+        NSString *status = receiveJson[@"status"];
+        NSString *url = receiveJson[@"url"];
+        if ([status isEqualToString:@"success"]) {
+            NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
+            NSString *accessToken = [userDefaults objectForKey:@"accessToken"];
+            studentCardUrl = url;
+            // 将url上传服务器
+            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/user/authentication"];
+            NSURL *url = [NSURL URLWithString:urlStr];
+            NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+            NSString *dataStr = [NSString stringWithFormat:@"phone=%@&idcard=%@&stucard=%@&access_token=%@", phoneNumber, IDCardUrl, studentCardUrl, accessToken];
+            NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
+            [request setHTTPBody:data];
+            [request setHTTPMethod:@"POST"];
+            MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"uploadUrl"];
+        }
+    }else if ([connection.name isEqualToString:@"uploadUrl"]) {
+        NSString *status = receiveJson[@"status"];
+        if ([status isEqualToString:@"success"]) {
+            [cover removeFromSuperview];
+            // 上传成功
+            resultLabel.text = @"信息审核中，结果将在2个工作日内通知您";
+            resultLabel.font = [UIFont systemFontOfSize:14];
+            [commitButton removeFromSuperview];
+            [self.view addSubview:resultLabel];
+            if (SCREEN_WIDTH == 320) {
+                resultLabel.font = [UIFont systemFontOfSize:12];
+            }
+            // 集成api  此处是膜
+            cover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+            cover.alpha = 1;
+            // 半黑膜
+            UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+            containerView.backgroundColor = [UIColor blackColor];
+            containerView.alpha = 0.8;
+            containerView.layer.cornerRadius = CORNERRADIUS*2;
+            [cover addSubview:containerView];
+            
+            UILabel *hintMes1 = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
+            hintMes1.text = @"提交成功";
+            hintMes1.textColor = [UIColor whiteColor];
+            hintMes1.textAlignment = NSTextAlignmentCenter;
+            [containerView addSubview:hintMes1];
+            
+            [self.view addSubview:cover];
+            // 显示时间
+            NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(removeView) userInfo:nil repeats:NO];
+            [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
+        }
+    }
+}
+
+- (void)MyConnection:(MyURLConnection *)connection didFailWithError:(NSError *)error {
+    [cover removeFromSuperview];
+    // 收到验证码  进行提示
+    cover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    cover.alpha = 1;
+    // 半黑膜
+    UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+    containerView.backgroundColor = [UIColor blackColor];
+    containerView.alpha = 0.6;
+    containerView.layer.cornerRadius = CORNERRADIUS*2;
+    [cover addSubview:containerView];
+    // 一个控件
+    UILabel *hintMes = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
+    hintMes.text = @"无法连接网络";
+    hintMes.textColor = [UIColor whiteColor];
+    hintMes.textAlignment = NSTextAlignmentCenter;
+    [containerView addSubview:hintMes];
+    [self.view addSubview:cover];
 }
 
 #pragma mark - actionSheet delegate
@@ -180,24 +335,61 @@
 #pragma mark - ImagePicker Delegate
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info {
     [picker dismissViewControllerAnimated:YES completion:^{}];
-    UIImage *savedImage = [info objectForKey:UIImagePickerControllerOriginalImage];
-//    [self saveImage:image withName:@"currentImage.png"];
-//    
-//    NSString *fullPath = [[NSHomeDirectory() stringByAppendingPathComponent:@"Documents"] stringByAppendingPathComponent:@"currentImage.png"];
-//    UIImage *savedImage = [[UIImage alloc] initWithContentsOfFile:fullPath];
-    if (isButton1) {
-        [identificationFront setImage:savedImage];
-        [selectButton1 removeFromSuperview];
-    }else {
-        [identificationBack setImage:savedImage];
-        [selectButton2 removeFromSuperview];
-    }
-    
+    UIImage *savedImage1 = [info objectForKey:UIImagePickerControllerOriginalImage];
+    UIImage *savedImage;
+    NSData *imageData = UIImageJPEGRepresentation(savedImage1, 1);
+//    if (([[self typeForImageData:imageData] isEqualToString:@"jpg"] || [[self typeForImageData:imageData] isEqualToString:@"png"] || [[self typeForImageData:imageData] isEqualToString:@"gif"])) {
+//        // 图片不符合格式
+//        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"请选择jpg/png/gif格式" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+//        [alertView show];
+//    }else {
+        // 图片压缩
+        for (int i = 9; i > 0; i--) {
+            CGFloat scale = i*0.1;
+            imageData = UIImageJPEGRepresentation(savedImage1, scale);
+            savedImage = [[UIImage alloc] initWithData:imageData];
+            if (imageData.length/1024 < 1000) {
+                break;
+            }
+        }
+        //    [self saveImage:image withName:@"currentImage.png"];
+        //
+        //    NSString *fullPath = [[NSHomeDirectory() stringByAppendingPathComponent:@"Documents"] stringByAppendingPathComponent:@"currentImage.png"];
+        //    UIImage *savedImage = [[UIImage alloc] initWithContentsOfFile:fullPath];
+        if (isButton1) {
+            [identificationFront setImage:savedImage];
+            IDCard = imageData;
+            pictureNumber++;
+            [selectButton1 removeFromSuperview];
+        }else {
+            [identificationBack setImage:savedImage];
+            studentCard = imageData;
+            pictureNumber++;
+            [selectButton2 removeFromSuperview];
+        }
+
+//    }
 }
 
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
     [self dismissViewControllerAnimated:YES completion:nil];
+    NSLog(@"哈哈哈");
 }
+
+- (NSString *)typeForImageData:(NSData *)data {
+    uint8_t c;
+    [data getBytes:&c length:1];
+    switch (c) {
+        case 0xFF:
+            return @"jpg";
+        case 0x89:
+            return @"png";
+        case 0x47:
+            return @"gif";
+    }
+    return nil;
+}
+
 
 #pragma mark - 保存图片到沙盒
 //- (void)saveImage:(UIImage *)currentImage withName:(NSString *)imageName {

@@ -10,6 +10,8 @@
 
 @interface LoadingView : UIView
 
+@property (nonatomic , strong) NSString *state;
+
 - (void)setRefreshStateNormal;
 
 - (void)setRefreshStateLoading;
@@ -17,5 +19,7 @@
 - (void)setRefreshStateLoose;
 
 - (void)setRefreshStateNone;
+
+- (void)setRefreshStateWhite;
 
 @end

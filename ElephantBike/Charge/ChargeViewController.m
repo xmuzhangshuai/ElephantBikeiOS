@@ -104,6 +104,7 @@
     NSString            *bikePosition;
     
     BOOL        isConnect;
+    BOOL        isFinish;
 }
 
 - (id)init {
@@ -178,6 +179,7 @@
     restoreBike     = [[UIButton alloc]init];
     
     isConnect       = NO;
+    isFinish        = NO;
     
     cover           = [[UIView alloc] initWithFrame:CGRectMake(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)];
         [self.navigationController.view addSubview:cover];
@@ -342,10 +344,10 @@
     passwordNumber.digitFont = [UIFont systemFontOfSize:30];
     [passwordNumber didConfigFinish];
     // 该密码就是第一次的解锁密码
-    if (myAppDelegate.isEndRiding) {
+    if (!myAppDelegate.isEndRiding) {
         [passwordNumber setNumber:[unlockPassword integerValue] withAnimationType:HJFScrollNumberAnimationTypeRand animationTime:2];
     }else {
-        [passwordNumber setNumber:[unlockPassword integerValue] withAnimationType:HJFScrollNumberAnimationTypeRand animationTime:2];// 改密码是willappear中获取到的解锁密码 也就是上一次获取到的解锁密码
+        [passwordNumber setNumber:[unlockPassword integerValue] withAnimationType:HJFScrollNumberAnimationTypeRand animationTime:2];// 该密码是willappear中获取到的解锁密码 也就是上一次获取到的解锁密码
     }
     
     hintMes.frame = CGRectMake(self.view.center.x-HINTMES_WIDTH/2, NAVIGATIONBAR_HEIGHT+STATUS_HEIGHT+CHARGEVIEW_HEIGHT+PASSWORDMES_HEIGHT+MARGIN*4+PASSWORDMES_HEIGHT, HINTMES_WIDTH, HINTMES_HEIGHT);
@@ -410,12 +412,14 @@
 }
 
 - (void)requestForMoney {
+    isFinish = NO;
+    NSString *isFinishStr = [NSString stringWithFormat:@"%d", isFinish];
     NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
     NSString *accessToken = [userDefaults objectForKey:@"accessToken"];
     NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/bikefee"];
     NSURL *url = [NSURL URLWithString:urlStr];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
-    NSString *dataStr = [NSString stringWithFormat:@"phone=%@&bikeid=%@&access_token=%@", phoneNumber,bikeNo,accessToken];
+    NSString *dataStr = [NSString stringWithFormat:@"phone=%@&bikeid=%@&access_token=%@&isfinish=%@", phoneNumber,bikeNo,accessToken, isFinishStr];
     NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
     [request setHTTPBody:data];
     [request setHTTPMethod:@"POST"];
@@ -576,19 +580,36 @@
         //服务器要返回时密码错误还是不在校园内 后面再添加
         // 密码验证成功
         if ([status isEqualToString:@"success"]) {
+//            isConnect = YES;
+//            bikePosition = @"";
+//            // 请求服务器 异步post
+//            // 密码正确 请求位置是否正确
+//            NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
+//            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/bike/bikelocation"];
+//            NSURL *url = [NSURL URLWithString:urlStr];
+//            NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
+//            NSString *dataStr = [NSString stringWithFormat:@"phone=%@&bikeid=%@&location=%@", phoneNumber, bikeNo, bikePosition];
+//            NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
+//            [request setHTTPBody:data];
+//            [request setHTTPMethod:@"POST"];
+//            MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"location"];
+//            NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
+//            [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
+            isFinish = YES;
+            NSString *isFinishStr = [NSString stringWithFormat:@"%d", isFinish];
+            myAppDelegate.isMissing = NO;
             isConnect = YES;
-            bikePosition = @"";
             // 请求服务器 异步post
-            // 密码正确 请求位置是否正确
+            NSString *accessToken = [userDefaults objectForKey:@"accessToken"];
             NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/bike/bikelocation"];
+            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/bikefee"];
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
-            NSString *dataStr = [NSString stringWithFormat:@"phone=%@&bikeid=%@&location=%@", phoneNumber, bikeNo, bikePosition];
+            NSString *dataStr = [NSString stringWithFormat:@"phone=%@&bikeid=%@&access_token=%@&isfinish=%@", phoneNumber, bikeNo, accessToken, isFinishStr];
             NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
             [request setHTTPBody:data];
             [request setHTTPMethod:@"POST"];
-            MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"location"];
+            MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"getMoney"];
             NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
             [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
         }else {
@@ -676,7 +697,7 @@
             [errorCover addSubview:containerView];
             
             UILabel *hintMes1 = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
-            hintMes1.text = @"网络不给力 获取不到数据";
+            hintMes1.text = @"获取不到数据";
             hintMes1.textColor = [UIColor whiteColor];
             hintMes1.textAlignment = NSTextAlignmentCenter;
             [containerView addSubview:hintMes1];
@@ -694,6 +715,8 @@
         NSString *status = receiveJson[@"status"];
         NSString *message = receiveJson[@"message"];
         if ([status isEqualToString:@"success"]) {
+            isFinish = YES;
+            NSString *isFinishStr = [NSString stringWithFormat:@"%d", isFinish];
             isConnect = YES;
             // 请求服务器 异步post
             NSString *accessToken = [userDefaults objectForKey:@"accessToken"];
@@ -701,7 +724,7 @@
             NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/bikefee"];
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
-            NSString *dataStr = [NSString stringWithFormat:@"phone=%@&bikeid=%@&access_token=%@", phoneNumber, bikeNo, accessToken];
+            NSString *dataStr = [NSString stringWithFormat:@"phone=%@&bikeid=%@&access_token=%@&isfinish=%@", phoneNumber, bikeNo, accessToken, isFinishStr];
             NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
             [request setHTTPBody:data];
             [request setHTTPMethod:@"POST"];
@@ -780,6 +803,7 @@
 - (void)getBikeNO:(NSString *)bikeNO andPassword:(NSString *)password {
     bikeNo = bikeNO;
     unlockPassword = password;
+    [passwordNumber setNumber:[unlockPassword integerValue] withAnimationType:HJFScrollNumberAnimationTypeRand animationTime:YES];
 }
 
 #pragma mark - 百度地图模块代理方法

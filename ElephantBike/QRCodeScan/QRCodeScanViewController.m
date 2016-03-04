@@ -13,7 +13,7 @@
 #import "ChargeViewController.h"
 #import "InfoViewController.h"
 #import "LoginViewController.h"
-
+#import "PayViewController.h"
 #import "AppDelegate.h"
 
 @interface QRCodeScanViewController ()<AVCaptureMetadataOutputObjectsDelegate, InfoViewControllerDelegate, NSURLConnectionDataDelegate, UIAlertViewDelegate>
@@ -40,6 +40,13 @@
     NSUserDefaults              *userDefaults;
     
     BOOL                        isConnect;
+}
+
+- (id)init {
+    if (self = [super init]) {
+        
+    }
+    return self;
 }
 
 
@@ -226,6 +233,7 @@
     UIBarButtonItem *infoButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"个人资料"] style:UIBarButtonItemStylePlain target:self action:@selector(information)];
     self.navigationItem.leftBarButtonItem = infoButton;
     // 若没有身份认证，显示，若已经身份认证，不显示
+    NSLog(@"是否身份认证：%d", myDelegate.isIdentify);
     if (!myDelegate.isIdentify) {
         UIBarButtonItem *rightButton = [[UIBarButtonItem alloc]initWithTitle:@"身份认证" style:UIBarButtonItemStylePlain target:self action:@selector(gotoIdentification)];
         self.navigationItem.rightBarButtonItem = rightButton;
@@ -538,13 +546,27 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    [self NavigationInit];
-    myDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    myDelegate = [[UIApplication sharedApplication] delegate];
     if (myDelegate.isFreeze) {
         [upView addSubview:freezeLabel];
         [session stopRunning];
     }else {
         [session startRunning];
+    }
+    [self NavigationInit];
+    }
+
+- (void)viewDidAppear:(BOOL)animated {
+    NSLog(@"骑行结束：%d 付款：%d", myDelegate.isEndRiding, myDelegate.isEndPay);
+    if (!myDelegate.isEndRiding) {
+        ChargeViewController *chargeViewController = [[ChargeViewController alloc] init];
+        [self.navigationController pushViewController:chargeViewController animated:YES];
+    }else if (!myDelegate.isEndPay) {
+        // 跳到支付页面
+        // 可能需要代理的方法来跳转到相应的页面--------------------------
+        PayViewController *payViewController = [[PayViewController alloc] init];
+        [self.navigationController pushViewController:payViewController animated:YES];
+        NSLog(@"跳转付款页面");
     }
 }
 

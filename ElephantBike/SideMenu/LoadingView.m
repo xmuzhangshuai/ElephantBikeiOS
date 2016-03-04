@@ -16,6 +16,8 @@
 - (id)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
+        self.state = @"normal";
+        
         hintLabel = [[UILabel alloc] initWithFrame:CGRectMake(frame.size.width*0.4, 0, frame.size.width*0.4, frame.size.height)];
         hintLabel.text = @"上拉查看更多";
         hintLabel.textColor = [UIColor lightGrayColor];
@@ -35,19 +37,41 @@
 - (void)setRefreshStateNormal {
     hintLabel.text = @"上拉查看更多";
     [activityView stopAnimating];
+    self.backgroundColor = [UIColor grayColor];
+    hintLabel.frame = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
+    hintLabel.textAlignment = NSTextAlignmentCenter;
 }
 
 - (void)setRefreshStateLoading {
-    hintLabel.text = @"加载中...";
+    NSLog(@"加载中");
+    hintLabel.text = @"加载中";
     [activityView  startAnimating];
+    hintLabel.frame = CGRectMake(self.frame.size.width*0.4, 0, self.frame.size.width*0.4, self.frame.size.height);
+    hintLabel.textAlignment = NSTextAlignmentLeft;
+    self.backgroundColor = [UIColor grayColor];
 }
 
 - (void)setRefreshStateLoose {
     hintLabel.text = @"松手让它加载吧";
+    self.backgroundColor = [UIColor grayColor];
+    hintLabel.frame = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
+    hintLabel.textAlignment = NSTextAlignmentCenter;
 }
 
 - (void)setRefreshStateNone {
     hintLabel.text = @"您只有这些记录";
+    [activityView stopAnimating];
+    self.backgroundColor = [UIColor grayColor];
+    self.state = @"none";
+    hintLabel.frame = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
+    hintLabel.textAlignment = NSTextAlignmentCenter;
+}
+
+- (void)setRefreshStateWhite {
+    [activityView stopAnimating];
+    hintLabel.text = @"";
+    self.backgroundColor = [UIColor whiteColor];
+    
 }
 
 /*

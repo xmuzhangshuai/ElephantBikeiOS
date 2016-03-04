@@ -63,7 +63,6 @@
 }
 
 - (void)UILayout {
-    NSLog(@"recharge:%f", STATUS_HEIGHT+NAVIGATIONBAR_HEIGHT+SAME_HEIGHT);
     payListTableView.frame = CGRectMake(0, STATUS_HEIGHT, PAYLISTTABLEVIEW_WIDTH, PAYLISTTABLEVIEW_HEIGHT*2);
     payListTableView.dataSource = self;
     payListTableView.delegate = self;
@@ -129,6 +128,8 @@
     [containerView1 addSubview:hintMes];
     [self.view addSubview:cover];
     
+    [moneyTF resignFirstResponder];
+    
     // 获取缓存数据
     NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
     NSString *accessToken = [userDefaults objectForKey:@"accessToken"];
@@ -138,11 +139,11 @@
     NSURL *url = [NSURL URLWithString:urlStr];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
     NSString *dataStr = [NSString stringWithFormat:@"phone=%@&value=%@&access_token=%@", phoneNumber, moneyTF.text, accessToken];
-    NSLog(@"%@", moneyTF.text);
     NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
-//    [request setHTTPBody:data];
+    [request setHTTPBody:data];
     [request setHTTPMethod:@"POST"];
     NSURLConnection *connection = [NSURLConnection connectionWithRequest:request delegate:self];
+    
     NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
     [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
 }
@@ -153,7 +154,7 @@
     NSDictionary *receiveJson = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableLeaves error:nil];
     NSString *status = receiveJson[@"status"];
     NSString *message = receiveJson[@"message"];
-    if (status) {
+    if ([status isEqualToString:@"success"]) {
         isConnect = YES;
         // 充值成功 跳转我的钱包页面 并且本地的金额加上来
         CGFloat balan = [MyAppDelegate.balance floatValue];
@@ -171,7 +172,12 @@
         NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(dismissImageView) userInfo:nil repeats:NO];
         [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
         
-        [self.navigationController popViewControllerAnimated:YES];
+
+    }else {
+        // 充值失败
+        isConnect = YES;
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"充值失败，请重试" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+        [alertView show];
     }
 }
 
@@ -228,11 +234,11 @@
     // 显示时间
     NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(removeView) userInfo:nil repeats:NO];
     [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
-    NSLog(@"网络超时");
 }
 
 - (void)dismissImageView {
     [cover removeFromSuperview];
+    [self.navigationController popViewControllerAnimated:YES];
 }
 
 #pragma mark - TableViewDelegate

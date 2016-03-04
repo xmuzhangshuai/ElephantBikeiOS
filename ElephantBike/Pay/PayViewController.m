@@ -76,7 +76,13 @@
 
 - (id)init {
     if(self == [super init]) {
-        NSLog(@"init");
+        myAppdelegate = [[UIApplication sharedApplication] delegate];
+        userDefaults = [NSUserDefaults standardUserDefaults];
+        totalPayLabel       = [[UILabel alloc]init];
+        moneyLabel          = [[UILabel alloc]init];
+        totalTimeLabel      = [[UILabel alloc]init];
+        timeLabel           = [[UILabel alloc]init];
+        NSLog(@"init restart:%d", myAppdelegate.isRestart);
         if (!myAppdelegate.isEndPay && myAppdelegate.isRestart) {
             NSLog(@"之前未付款，重启app的");
             // 请求服务器 异步post
@@ -85,14 +91,17 @@
             // 请求服务器 异步post
             // 获取bikeid
             NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/bike/bikeidandpass"];
+            BOOL isEndRiding = myAppdelegate.isEndRiding;
+            NSString *isEndRidingStr = [NSString stringWithFormat:@"%d", isEndRiding];
+            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/bike/costandtime"];
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
-            NSString *dataStr = [NSString stringWithFormat:@"phone=%@", phoneNumber];
+            NSString *dataStr = [NSString stringWithFormat:@"phone=%@&isfinish=%@", phoneNumber, isEndRidingStr];
+            NSLog(@"phoneNumber:%@", phoneNumber);
             NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
             [request setHTTPBody:data];
             [request setHTTPMethod:@"POST"];
-            MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"getBikeNoAndPass"];
+            MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"getCostAndTime"];
             NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
             [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
         }
@@ -105,13 +114,11 @@
     chargeView          = [[UIView alloc]init];
     statusLabel         = [[UILabel alloc]init];
     questionButton      = [[UIButton alloc]init];
-    totalPayLabel       = [[UILabel alloc]init];
-    moneyLabel          = [[UILabel alloc]init];
+    
     payListTableView    = [[UITableView alloc] init];
     confirmButton       = [[UIButton alloc] init];
     hintMes             = [[UILabel alloc] init];
-    totalTimeLabel      = [[UILabel alloc]init];
-    timeLabel           = [[UILabel alloc]init];
+
     
     isConnect           = NO;
     
@@ -283,11 +290,11 @@
             alert.tag = 1;
             [alert show];
         }
-    }else if ([connection.name isEqualToString:@"getMoney"]) {
-        // 可能会增加一个变量来控制是丢失 还是正常付款
+    }else if ([connection.name isEqualToString:@"getCostAndTime"]) {
         NSString *status = receiveJson[@"status"];
-        NSString *money = receiveJson[@"fee"];
-        NSString *time = receiveJson[@"time"];
+        NSString *money = receiveJson[@"cost"];
+        NSString *time = receiveJson[@"usedtime"];
+//        NSString *pass = receiveJson[@"pass"];  //在支付页面解锁密码没有用
         if ([status isEqualToString:@"success"]) {
             isConnect = YES;
             if ([time isEqualToString:@""]) {
@@ -303,34 +310,14 @@
                 NSString *temp = [@"￥" stringByAppendingString:_money];
                 moneyLabel.text = temp;
                 timeLabel.text = _time;
+                NSLog(@"未付款获得金额赋值");
             }
-        }
-    }else if ([connection.name isEqualToString:@"getBikeNoAndPass"]) {
-        NSString *status = receiveJson[@"status"];
-        NSString *bikeNo = receiveJson[@"bikeid"];
-//        NSString *pass = receiveJson[@"pass"];  //在支付页面解锁密码没有用
-        if ([status isEqualToString:@"success"]) {
-            isConnect = YES;
-            // 讲单车编号写入缓存
-            [userDefaults setObject:bikeNo forKey:@"bikeNo"];
-            // 获取到单车编号后再请求服务器获取使用时长还有金额数量
-            NSString *accessToken = [userDefaults objectForKey:@"accessToken"];
-            NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
-            NSString *bikeNo = [userDefaults objectForKey:@"bikeNo"];
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/bikefee"];
-            NSURL *url = [NSURL URLWithString:urlStr];
-            NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
-            NSString *dataStr = [NSString stringWithFormat:@"phone=%@&bikeid=%@&access_token=%@", phoneNumber, bikeNo, accessToken];    // 单车编号
-            NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
-            [request setHTTPBody:data];
-            [request setHTTPMethod:@"POST"];
-            MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"getMoney"];
-            NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
-            [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
         }
     }else if ([connection.name isEqualToString:@"balance"]) {
         NSString *status = receiveJson[@"status"];
         NSString *balance = receiveJson[@"balance"];
+        NSLog(@"balance:%@", balance);
+        NSLog(@"shouldPaymoney:%@", _money);
         if ([status isEqualToString:@"success"]) {
             isConnect = YES;
             CGFloat shouldPayMoney = [_money floatValue];
@@ -347,11 +334,13 @@
                 // 判断选择了哪一种支付方式
                 NSIndexPath *indexPath = [payListTableView indexPathForSelectedRow];
                 NSInteger selectPayWayNumber = indexPath.row;
+                NSString *isMissngStr = [NSString stringWithFormat:@"%d", myAppdelegate.isMissing];
+                NSLog(@"ismissing:%@", isMissngStr);
                 
                 NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/returnpay"];
                 NSURL *url = [NSURL URLWithString:urlStr];
                 NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
-                NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&phone=%@&paymode=%@&access_token=%@", bikeNo, phoneNumber, [payWay objectAtIndex:selectPayWayNumber],  accessToken];
+                NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&phone=%@&paymode=%@&access_token=%@&ismissing=%@", bikeNo, phoneNumber, [payWay objectAtIndex:selectPayWayNumber],  accessToken, isMissngStr];
                 NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
                 [request setHTTPBody:data];
                 [request setHTTPMethod:@"POST"];
@@ -359,7 +348,9 @@
                 NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
                 [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
             }else {
+                [waitCover removeFromSuperview];
                 UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"余额不足，请充值" delegate:self cancelButtonTitle:@"去充值" otherButtonTitles:@"取消", nil];
+                alertView.tag = 0;
                 [alertView show];
                 // 余额不足
             }
@@ -567,10 +558,13 @@
     return PAYLISTTABLEVIEW_HEIGHT/3;
 }
 
+#pragma mark - alertView Delegate
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
-    if (buttonIndex == 0) {
-        RechargeViewController *rechargeViewController = [[RechargeViewController alloc] init];
-        [self.navigationController pushViewController:rechargeViewController animated:YES];
+    if (alertView.tag == 0) {
+        if (buttonIndex == 0) {
+            RechargeViewController *rechargeViewController = [[RechargeViewController alloc] init];
+            [self.navigationController pushViewController:rechargeViewController animated:YES];
+        }
     }
 }
 

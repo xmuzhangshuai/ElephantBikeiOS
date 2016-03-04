@@ -18,6 +18,8 @@
 @property (nonatomic) BOOL  isEndRiding;   // 是否结束骑行
 @property (nonatomic) BOOL  isEndPay;   // 是否结束付费
 @property (nonatomic) BOOL  isRestart;   // 是否是重启app后骑行未结束或未付款
+@property (nonatomic) BOOL  isMissing;  // 是否丢失车辆
+@property (nonatomic) BOOL  isUpload;   // 是否上传了照片
 @property (nonatomic, strong) NSString *balance;    // 余额
 
 @end

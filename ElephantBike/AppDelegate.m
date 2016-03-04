@@ -37,6 +37,9 @@
     self.isFreeze = NO;
     self.isEndPay = YES;
     self.isEndRiding = YES;
+    self.isRestart = NO;
+    self.isMissing = NO;
+    self.isUpload = NO;
 
     
     self.balance = @"";
@@ -65,21 +68,60 @@
         [request setHTTPMethod:@"POST"];
 //        MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"balance"];
         NSData *receiveData = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
-        NSDictionary *receive = [NSJSONSerialization JSONObjectWithData:receiveData options:NSJSONReadingMutableLeaves error:nil];
-        NSString *status = receive[@"status"];
-        NSString *receiveBalance = receive[@"balance"];
-        if (status) {
-            self.balance = receiveBalance;
-            //拿取本地缓存数据 只需手机和isLogin，和短信验证用的是一个api，不需要验证码
-            NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/user/login"];
-            NSURL *url = [NSURL URLWithString:urlStr];
-            NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-            NSString *dataStr = [NSString stringWithFormat:@"phone=%@&islogin=%d", phoneNumber, self.isLogin];
-            NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
-            [request setHTTPBody:data];
-            [request setHTTPMethod:@"POST"];
-            MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"isLogined"];
+        if (receiveData == nil) {
+            NSLog(@"send request failed:");
+        }else {
+            NSDictionary *receive = [NSJSONSerialization JSONObjectWithData:receiveData options:NSJSONReadingMutableLeaves error:nil];
+            NSString *status = receive[@"status"];
+            NSString *receiveBalance = receive[@"balance"];
+            if (status) {
+                self.balance = receiveBalance;
+                //拿取本地缓存数据 只需手机和isLogin，和短信验证用的是一个api，不需要验证码
+                NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
+                NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/user/login"];
+                NSURL *url = [NSURL URLWithString:urlStr];
+                NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+                NSString *dataStr = [NSString stringWithFormat:@"phone=%@&islogin=%d", phoneNumber, self.isLogin];
+                NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
+                [request setHTTPBody:data];
+                [request setHTTPMethod:@"POST"];
+                NSData *receiveData = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
+                if (receiveData == nil) {
+                    NSLog(@"send request failed:");
+                }else {
+                    NSDictionary *receive = [NSJSONSerialization JSONObjectWithData:receiveData options:NSJSONReadingMutableLeaves error:nil];
+                    NSString *status = receive[@"status"];
+                    NSString *isFrozen = receive[@"isfrozen"];
+                    NSString *isFinish = receive[@"isfinish"];
+                    NSString *isPay = receive[@"ispay"];
+                    if ([status isEqualToString:@"success"]) {
+                        if ([isFrozen isEqualToString:@"-1"]) {
+                            self.isFreeze = true;
+                            self.isIdentify = true;
+                        }else if([isFrozen isEqualToString:@"0"]) {
+                            self.isFreeze = false;
+                            self.isIdentify = false;
+                        }else if([isFrozen isEqualToString:@"1"]) {
+                            self.isFreeze = false;
+                            self.isIdentify = YES;
+                            NSLog(@"已经身份认证%d", self.isIdentify);
+                        }else {
+                            self.isUpload = YES;
+                        }
+                        if ([isFinish isEqualToString:@"1"]) {
+                            self.isEndRiding = false;
+                            self.isRestart = YES;
+                        }
+                        if ([isPay isEqualToString:@"1"]) {
+                            self.isEndPay = false;
+                            self.isRestart = YES;
+                        }
+                        NSLog(@"骑行结束：%d 付款：%d 重启：%d", self.isEndRiding, self.isEndPay, self.isRestart);
+                    }
+                    // 设置相应页面的跳转，正常情况 跳转扫描页面，其他分三种情况
+                    // 该判断放到qrcontroller
+                }
+            }
         }
     }
     
@@ -108,49 +150,6 @@
     
     return YES;
 }
-
-- (void)MyConnection:(MyURLConnection *)connection didReceiveData:(NSData *)data {
-    NSDictionary *receiveJson = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableLeaves error:nil];
-    if ([connection.name isEqualToString:@"isLogined"]) {
-        NSString *status = receiveJson[@"status"];
-        NSString *isFrozen = receiveJson[@"isfrozen"];
-        NSString *isFinish = receiveJson[@"isfinish"];
-        NSString *isPay = receiveJson[@"ispay"];
-        if ([status isEqualToString:@"success"]) {
-            if ([isFrozen isEqualToString:@"-1"]) {
-                self.isFreeze = true;
-                self.isIdentify = true;
-            }else if([isFrozen isEqualToString:@"0"]) {
-                self.isFreeze = false;
-                self.isIdentify = false;
-            }else {
-                self.isFreeze = false;
-                self.isIdentify = YES;
-            }
-            if ([isFinish isEqualToString:@"1"]) {
-                self.isEndRiding = false;
-                self.isRestart = YES;
-            }
-            if ([isPay isEqualToString:@"1"]) {
-                self.isEndPay = false;
-                self.isRestart = YES;
-            }
-            
-        }
-        // 设置相应页面的跳转，正常情况 跳转扫描页面，其他分三种情况
-        if (!self.isEndRiding) {
-            ChargeViewController *chargeViewController = [[ChargeViewController alloc] init];
-            [_qRCodeScanViewController.navigationController pushViewController:chargeViewController animated:YES];
-        }else if (!self.isEndPay) {
-            // 跳到支付页面
-            PayViewController *payViewController = [[PayViewController alloc] init];
-            [_qRCodeScanViewController.navigationController pushViewController:payViewController animated:YES];
-        }else {
-            [_qRCodeScanViewController.navigationController popViewControllerAnimated:YES];
-        }
-    }
-}
-
 
 - (void)applicationWillResignActive:(UIApplication *)application {
     // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.

@@ -488,6 +488,7 @@
         // 单车丢失api 赔偿金额从服务器获取
         if (buttonIndex == 0) {
             isBack = NO;
+            myDelegate.isMissing = YES;
             userDefaults = [NSUserDefaults standardUserDefaults];
             NSString *bikeNo = [userDefaults objectForKey:@"bikeNo"];
             NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];

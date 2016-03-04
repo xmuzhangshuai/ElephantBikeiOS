@@ -315,9 +315,11 @@ int countDown = 5;
             }else if([isfrozen isEqualToString:@"0"]) {
                 MyAppDelegate.isFreeze = false;
                 MyAppDelegate.isIdentify = false;
-            }else {
+            }else if([isfrozen isEqualToString:@"1"]) {
                 MyAppDelegate.isFreeze = false;
                 MyAppDelegate.isIdentify = YES;
+            }else {
+                MyAppDelegate.isUpload = YES;
             }
             if ([isFinish isEqualToString:@"1"]) {
                 MyAppDelegate.isEndRiding = false;
