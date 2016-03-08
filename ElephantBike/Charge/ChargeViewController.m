@@ -45,7 +45,7 @@
 #define RESTOREBIKE_HEIGHT      RETURNBIKE_HEIGHT
 
 #define BIKENUMBER_HEIGHT       0.33*CHARGEVIEW_HEIGHT
-#define BIKENUMBER_WIDTH        0.33*SCREEN_WIDTH
+#define BIKENUMBER_WIDTH        0.5*SCREEN_WIDTH
 #define PASSWORDMES_HEIGHT      BIKENUMBER_HEIGHT
 #define PASSWORDMES_WIDTH       BIKENUMBER_WIDTH
 #define PASSWORDNUMBER_WIDTH    SAME_WIDTH
@@ -54,6 +54,8 @@
 #define HINTMES_WIDTH           0.5*SCREEN_WIDTH
 #define HAVEQUESTION_HEIGHT     HINTMES_HEIGHT*2
 #define HAVEQUESTION_WIDTH      PASSWORDMES_WIDTH
+
+#define WRONGPSWINTERVAL        10
 
 @interface ChargeViewController () <InfoViewControllerDelegate, QRCodeScanViewControllerDelegate, MyURLConnectionDelegate, BMKLocationServiceDelegate>
 
@@ -105,12 +107,24 @@
     
     BOOL        isConnect;
     BOOL        isFinish;
+    
+    // 输入密码错误模块
+    int         wrongPSWCount;  // 错误密码次数
+    int         thirdOrFive;    // 三分钟还是五分钟 0 不用， 1 三分钟， 2 五分钟
+    int         wrongPSWCount1; // 恢复单车
+    
+    // 计时模块
+    NSTimer     *countTimer;
 }
 
 - (id)init {
     if (self == [super init]) {
+        myAppDelegate = [[UIApplication sharedApplication] delegate];
+        userDefaults = [NSUserDefaults standardUserDefaults];
+        passwordNumberView  = [[UIView alloc] init];
         if (!myAppDelegate.isEndRiding && myAppDelegate.isRestart) {
             // 请求服务器 异步post
+            NSLog(@"bikeidandpass");
             NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
             NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/bike/bikeidandpass"];
             NSURL *url = [NSURL URLWithString:urlStr];
@@ -119,9 +133,20 @@
             NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
             [request setHTTPBody:data];
             [request setHTTPMethod:@"POST"];
-            MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"getBikeNoAndPass"];
-            NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
-            [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
+//            MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"getBikeNoAndPass"];
+            NSData *receiveData = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
+            NSDictionary *receiveJson = [NSJSONSerialization JSONObjectWithData:receiveData options:NSJSONReadingMutableLeaves error:nil];
+            NSString *status = receiveJson[@"status"];
+            NSString *bikeNO = receiveJson[@"bikeid"];
+            NSString *pass = receiveJson[@"pass"];
+            if ([status isEqualToString:@"success"]) {
+                isConnect = YES;
+                bikeNo = bikeNO;
+                // 讲单车编号写入缓存
+                [userDefaults setObject:bikeNO forKey:@"bikeNo"];
+                unlockPassword = pass;
+            }
+
         }
     }
     return self;
@@ -168,7 +193,6 @@
     
     bikeNumber      = [[UILabel alloc]init];
     passwordMes     = [[UILabel alloc]init];
-    passwordNumberView  = [[UIView alloc] init];
     passwordNumber  = [[HJFScrollNumberView alloc]init];
     hintMes         = [[UILabel alloc]init];
     haveQuestion    = [[UIButton alloc]init];
@@ -197,8 +221,7 @@
     leftSwipGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(showMenu)];
     [self.view addGestureRecognizer:leftSwipGestureRecognizer];
 
-    userDefaults = [NSUserDefaults standardUserDefaults];
-    myAppDelegate = [[UIApplication sharedApplication] delegate];
+
     
     [self NavigationInit];
     [self UILayout];
@@ -207,6 +230,10 @@
     _locSerview = [[BMKLocationService alloc] init];
     _locSerview.delegate = self;
     [_locSerview startUserLocationService];
+    
+    // 错误密码次数模块
+    wrongPSWCount = 0;
+    thirdOrFive = 0;
 }
 
 - (void)NavigationInit {
@@ -320,7 +347,7 @@
     timeLabel.textColor = [UIColor whiteColor];
     timeLabel.text = @"00:00:10:00";
     
-    bikeNumber.frame = CGRectMake(SCREEN_WIDTH/3, NAVIGATIONBAR_HEIGHT+STATUS_HEIGHT+CHARGEVIEW_HEIGHT+MARGIN, BIKENUMBER_WIDTH, BIKENUMBER_HEIGHT);
+    bikeNumber.frame = CGRectMake(SCREEN_WIDTH/4, NAVIGATIONBAR_HEIGHT+STATUS_HEIGHT+CHARGEVIEW_HEIGHT+MARGIN, BIKENUMBER_WIDTH, BIKENUMBER_HEIGHT);
     bikeNumber.text = [NSString stringWithFormat:@"单车编号：%@",bikeNo];
     bikeNumber.clipsToBounds = YES;
     bikeNumber.font = [UIFont systemFontOfSize:13];
@@ -404,6 +431,9 @@
     [buttomView addSubview:hintMesButtom];
     [buttomView addSubview:returnBike];
     [buttomView addSubview:restoreBike];
+    
+    returnBike.enabled = YES;
+    restoreBike.enabled = NO;
 }
 
 - (void)eventInit {
@@ -412,6 +442,9 @@
 }
 
 - (void)requestForMoney {
+    // 请求时间时先把上一次的timer删除
+    [countTimer invalidate];
+    countTimer = nil;
     isFinish = NO;
     NSString *isFinishStr = [NSString stringWithFormat:@"%d", isFinish];
     NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
@@ -424,9 +457,6 @@
     [request setHTTPBody:data];
     [request setHTTPMethod:@"POST"];
     MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"askForMoney"];
-    NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
-    [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
-    NSLog(@"requestformoney");
 }
 
 #pragma mark - Button Event
@@ -479,8 +509,6 @@
         [request setHTTPBody:data];
         [request setHTTPMethod:@"POST"];
         MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"returnBike"];
-        NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
-        [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
     }];
     
     __weak ModalPayView *weakView = view;
@@ -546,8 +574,6 @@
         [request setHTTPBody:data];
         [request setHTTPMethod:@"POST"];
         MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"restoreBike"];
-        NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
-        [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
     }];
     __weak ModalPayView *weakView = view;
     view.exitBtnClicked = ^{ // 点击了退出按钮
@@ -563,6 +589,60 @@
 
 }
 
+#pragma mark - 不能输入密码提示
+- (void)PSWWrongMessage3 {
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"密码错误次数过多，请三分钟后重试" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+    [alertView show];
+}
+
+- (void)PSWWrongMessage3Return {
+    [returnBike removeTarget:self action:@selector(PSWWrongMessage3) forControlEvents:UIControlEventTouchUpInside];
+    [returnBike addTarget:self action:@selector(inputReturnPassword) forControlEvents:UIControlEventTouchUpInside];
+}
+
+- (void)PSWWrongMessage3Return1 {
+    [restoreBike removeTarget:self action:@selector(PSWWrongMessage3) forControlEvents:UIControlEventTouchUpInside];
+    [restoreBike addTarget:self action:@selector(inputRestorePassword) forControlEvents:UIControlEventTouchUpInside];
+}
+
+- (void)PSWWrongMessage5 {
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"密码错误次数过多，请五分钟后重试" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+    [alertView show];
+}
+
+- (void)PSWWrongMessage5Return {
+    [returnBike removeTarget:self action:@selector(PSWWrongMessage5) forControlEvents:UIControlEventTouchUpInside];
+    [returnBike addTarget:self action:@selector(inputReturnPassword) forControlEvents:UIControlEventTouchUpInside];
+}
+
+- (void)PSWWrongMessage5Return1 {
+    [restoreBike removeTarget:self action:@selector(PSWWrongMessage5) forControlEvents:UIControlEventTouchUpInside];
+    [restoreBike addTarget:self action:@selector(inputRestorePassword) forControlEvents:UIControlEventTouchUpInside];
+}
+
+#pragma mark - 获取到金额和使用时长后的处理
+- (void)setTimeAndMoney {
+    NSArray *array = [timeLabel.text componentsSeparatedByString:@":"];
+    int second = [[array objectAtIndex:3] intValue];
+    int minute = [[array objectAtIndex:2] intValue];
+    int hour = [[array objectAtIndex:1] intValue];
+    int day = [[array objectAtIndex:0] intValue];
+    second++;
+    second %= 60;
+    if ((second %= 60) == 0) {
+        minute++;
+        minute %= 60;
+        if ((minute %= 60) == 0) {
+            hour++;
+            hour %= 24;
+            if ((hour %= 24) == 0) {
+                day++;
+            }
+        }
+    }
+    NSString *finallyTime = [NSString stringWithFormat:@"%d:%d:%d:%d", day, hour, minute, second];
+    timeLabel.text = finallyTime;
+}
 
 #pragma mark - 服务器返回
 - (void)MyConnection:(MyURLConnection *)connection didReceiveData:(NSData *)data {
@@ -574,65 +654,68 @@
         NSDictionary *receiveJson = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableLeaves error:nil];
         NSString *status = receiveJson[@"status"];
         NSString *message = receiveJson[@"message"];
-        NSLog(@"%@", status);
-        NSLog(@"%@", message);
         
         //服务器要返回时密码错误还是不在校园内 后面再添加
         // 密码验证成功
         if ([status isEqualToString:@"success"]) {
-//            isConnect = YES;
-//            bikePosition = @"";
-//            // 请求服务器 异步post
-//            // 密码正确 请求位置是否正确
-//            NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
-//            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/bike/bikelocation"];
-//            NSURL *url = [NSURL URLWithString:urlStr];
-//            NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
-//            NSString *dataStr = [NSString stringWithFormat:@"phone=%@&bikeid=%@&location=%@", phoneNumber, bikeNo, bikePosition];
-//            NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
-//            [request setHTTPBody:data];
-//            [request setHTTPMethod:@"POST"];
-//            MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"location"];
-//            NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
-//            [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
-            isFinish = YES;
-            NSString *isFinishStr = [NSString stringWithFormat:@"%d", isFinish];
-            myAppDelegate.isMissing = NO;
             isConnect = YES;
             // 请求服务器 异步post
-            NSString *accessToken = [userDefaults objectForKey:@"accessToken"];
+            // 密码正确 请求位置是否正确
             NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/bikefee"];
+            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/bike/bikelocation"];
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
-            NSString *dataStr = [NSString stringWithFormat:@"phone=%@&bikeid=%@&access_token=%@&isfinish=%@", phoneNumber, bikeNo, accessToken, isFinishStr];
+            NSString *dataStr = [NSString stringWithFormat:@"phone=%@&bikeid=%@&location=%@", phoneNumber, bikeNo, bikePosition];
             NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
             [request setHTTPBody:data];
             [request setHTTPMethod:@"POST"];
-            MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"getMoney"];
-            NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
-            [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
+            MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"location"];
+            
+//            isFinish = YES;
+//            NSString *isFinishStr = [NSString stringWithFormat:@"%d", isFinish];
+//            myAppDelegate.isMissing = NO;
+//            myAppDelegate.isEndRiding = YES;
+//            isConnect = YES;
+//            // 请求服务器 异步post
+//            NSString *accessToken = [userDefaults objectForKey:@"accessToken"];
+//            NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
+//            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/bikefee"];
+//            NSURL *url = [NSURL URLWithString:urlStr];
+//            NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
+//            NSString *dataStr = [NSString stringWithFormat:@"phone=%@&bikeid=%@&access_token=%@&isfinish=%@", phoneNumber, bikeNo, accessToken, isFinishStr];
+//            NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
+//            [request setHTTPBody:data];
+//            [request setHTTPMethod:@"POST"];
+//            MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"getMoney"];
         }else {
-            // 集成api  此处是膜
-            errorCover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
-            errorCover.alpha = 1;
-            // 半黑膜
-            UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
-            containerView.backgroundColor = [UIColor blackColor];
-            containerView.alpha = 0.8;
-            containerView.layer.cornerRadius = CORNERRADIUS*2;
-            [errorCover addSubview:containerView];
-            
-            UILabel *hintMes1 = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
-            hintMes1.text = @"密码错误！请重试";
-            hintMes1.textColor = [UIColor whiteColor];
-            hintMes1.textAlignment = NSTextAlignmentCenter;
-            [containerView addSubview:hintMes1];
-            
-            [self.view addSubview:errorCover];
-            // 显示时间
-            NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(removeView) userInfo:nil repeats:NO];
-            [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
+            wrongPSWCount++;
+            if (wrongPSWCount == 3) {
+                thirdOrFive = 1;
+            }else if (wrongPSWCount > 5) {
+                thirdOrFive = 2;
+            }
+            if (thirdOrFive == 0) {
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"密码错误，请重试" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+                [alertView show];
+            }else if (thirdOrFive == 1) {
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"密码错误，请三分钟后重试" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+                [alertView show];
+                NSTimer *timer3 = [NSTimer timerWithTimeInterval:WRONGPSWINTERVAL target:self selector:@selector(PSWWrongMessage3Return) userInfo:nil repeats:NO];
+                [[NSRunLoop mainRunLoop] addTimer:timer3 forMode:NSDefaultRunLoopMode];
+                // 限制三分钟不能输入密码
+                [returnBike removeTarget:self action:@selector(inputReturnPassword) forControlEvents:UIControlEventTouchUpInside];
+                [returnBike addTarget:self action:@selector(PSWWrongMessage3) forControlEvents:UIControlEventTouchUpInside];
+                thirdOrFive = 0;
+            }else if (thirdOrFive == 2) {
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"密码错误，请五分钟后重试" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+                [alertView show];
+                NSTimer *timer5 = [NSTimer timerWithTimeInterval:WRONGPSWINTERVAL target:self selector:@selector(PSWWrongMessage5Return) userInfo:nil repeats:NO];
+                [[NSRunLoop mainRunLoop] addTimer:timer5 forMode:NSDefaultRunLoopMode];
+                // 限制三分钟不能输入密码
+                [returnBike removeTarget:self action:@selector(inputReturnPassword) forControlEvents:UIControlEventTouchUpInside];
+                [returnBike addTarget:self action:@selector(PSWWrongMessage5) forControlEvents:UIControlEventTouchUpInside];
+                thirdOrFive = 0;
+            }
         }
     }else if ([connection.name isEqualToString:@"restoreBike"]) {
         // 解析json
@@ -644,29 +727,39 @@
         
         if ([status isEqualToString:@"success"]) {
             isConnect = YES;
+            returnBike.enabled = YES;
+            restoreBike.enabled = NO;
             
             // 显示返回的新的解锁密码
         }else {
-            // 集成api  此处是膜
-            errorCover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
-            errorCover.alpha = 1;
-            // 半黑膜
-            UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
-            containerView.backgroundColor = [UIColor blackColor];
-            containerView.alpha = 0.8;
-            containerView.layer.cornerRadius = CORNERRADIUS*2;
-            [errorCover addSubview:containerView];
-            
-            UILabel *hintMes1 = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
-            hintMes1.text = @"密码错误！请重试";
-            hintMes1.textColor = [UIColor whiteColor];
-            hintMes1.textAlignment = NSTextAlignmentCenter;
-            [containerView addSubview:hintMes1];
-            
-            [self.view addSubview:errorCover];
-            // 显示时间
-            NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(removeView) userInfo:nil repeats:NO];
-            [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
+            wrongPSWCount1++;
+            if (wrongPSWCount1 == 3) {
+                thirdOrFive = 1;
+            }else if (wrongPSWCount1 > 5) {
+                thirdOrFive = 2;
+            }
+            if (thirdOrFive == 0) {
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"密码错误，请重试" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+                [alertView show];
+            }else if (thirdOrFive == 1) {
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"密码错误，请三分钟后重试" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+                [alertView show];
+                NSTimer *timer3 = [NSTimer timerWithTimeInterval:WRONGPSWINTERVAL target:self selector:@selector(PSWWrongMessage3Return1) userInfo:nil repeats:NO];
+                [[NSRunLoop mainRunLoop] addTimer:timer3 forMode:NSDefaultRunLoopMode];
+                // 限制三分钟不能输入密码
+                [restoreBike removeTarget:self action:@selector(inputRestorePassword) forControlEvents:UIControlEventTouchUpInside];
+                [restoreBike addTarget:self action:@selector(PSWWrongMessage3) forControlEvents:UIControlEventTouchUpInside];
+                thirdOrFive = 0;
+            }else if (thirdOrFive == 2) {
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"密码错误，请五分钟后重试" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+                [alertView show];
+                NSTimer *timer5 = [NSTimer timerWithTimeInterval:WRONGPSWINTERVAL target:self selector:@selector(PSWWrongMessage5Return1) userInfo:nil repeats:NO];
+                [[NSRunLoop mainRunLoop] addTimer:timer5 forMode:NSDefaultRunLoopMode];
+                // 限制三分钟不能输入密码
+                [restoreBike removeTarget:self action:@selector(inputRestorePassword) forControlEvents:UIControlEventTouchUpInside];
+                [restoreBike addTarget:self action:@selector(PSWWrongMessage5) forControlEvents:UIControlEventTouchUpInside];
+                thirdOrFive = 0;
+            }
         }
     }else if ([connection.name isEqualToString:@"askForMoney"]) {
         // 解析json
@@ -682,6 +775,11 @@
         
         if ([status isEqualToString:@"success"]) {
             isConnect = YES;
+            moneyLabel.text = fee;
+            timeLabel.text = time;
+            
+            countTimer = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(setTimeAndMoney) userInfo:nil repeats:YES];
+            [[NSRunLoop mainRunLoop] addTimer:countTimer forMode:NSDefaultRunLoopMode];
             // 更新钱数和使用时间
             // 设置timer 对获取到的使用时长计数
             // 可以设置一个60秒的timer 就计时用
@@ -715,6 +813,7 @@
         NSString *status = receiveJson[@"status"];
         NSString *message = receiveJson[@"message"];
         if ([status isEqualToString:@"success"]) {
+            myAppDelegate.isEndRiding = YES;
             isFinish = YES;
             NSString *isFinishStr = [NSString stringWithFormat:@"%d", isFinish];
             isConnect = YES;
@@ -729,9 +828,9 @@
             [request setHTTPBody:data];
             [request setHTTPMethod:@"POST"];
             MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"getMoney"];
-            NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
-            [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
         }else {
+            returnBike.enabled = NO;
+            restoreBike.enabled = YES;
             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"您没有把车停在有效范围内" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
             [alertView show];
         }
@@ -741,6 +840,7 @@
         NSString *money = receiveJson[@"fee"];
         NSString *time = receiveJson[@"time"];
         if ([status isEqualToString:@"success"]) {
+            [errorCover removeFromSuperview];
             isConnect = YES;
             PayViewController *payViewController = [[PayViewController alloc] init];
             self.delegate = payViewController;
@@ -750,17 +850,7 @@
             // 还车失败 请重试
         }
     }else if ([connection.name isEqualToString:@"getBikeNoAndPass"]) {
-        NSDictionary *receiveJson = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableLeaves error:nil];
-        NSString *status = receiveJson[@"status"];
-        NSString *bikeNO = receiveJson[@"bikeid"];
-        NSString *pass = receiveJson[@"pass"];
-        if ([status isEqualToString:@"success"]) {
-            isConnect = YES;
-            bikeNo = bikeNO;
-            // 讲单车编号写入缓存
-            [userDefaults setObject:bikeNO forKey:@"bikeNo"];
-            [passwordNumber setNumber:[pass integerValue] withAnimationType:HJFScrollNumberAnimationTypeRand animationTime:2];
-        }
+        
     }
 }
 
@@ -812,6 +902,10 @@
     CGFloat latitude = userLocation.location.coordinate.latitude;
     CGFloat longitude = userLocation.location.coordinate.longitude;
         NSLog(@"didUpdateUserLocation lat %f,long %f",latitude,longitude);
+    // 封装地理位置的两个数据
+    NSDictionary *dictionary = [[NSDictionary alloc] initWithObjectsAndKeys:[NSString stringWithFormat:@"%f", userLocation.location.coordinate.longitude], @"lng", [NSString stringWithFormat:@"%f", userLocation.location.coordinate.latitude], @"lat", nil];
+    NSData *data = [NSJSONSerialization dataWithJSONObject:dictionary options:NSJSONWritingPrettyPrinted error:nil];
+    bikePosition = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
     [_locSerview stopUserLocationService];
 }
 

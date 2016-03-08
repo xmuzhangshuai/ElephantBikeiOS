@@ -21,6 +21,9 @@
 @property (nonatomic) BOOL  isMissing;  // 是否丢失车辆
 @property (nonatomic) BOOL  isUpload;   // 是否上传了照片
 @property (nonatomic, strong) NSString *balance;    // 余额
+@property (nonatomic) BOOL  isActivity; // 是否有活动
+@property (nonatomic, strong) NSString *imageUrl;   // 图片链接
+@property (nonatomic, strong) NSString *linkUrl;    // 内容链接
 
 @end
 

@@ -37,6 +37,16 @@
     UIImageView *imageView2;
     UIImageView *imageView3;
     
+    NSString    *imageView1Url;
+    NSString    *imageView2Url;
+    NSString    *imageView3Url;
+    
+    NSData      *imageView1Data;
+    NSData      *imageView2Data;
+    NSData      *imageView3Data;
+    
+    int         imageNumber;
+    
     int         imageViewNumber;
     BOOL        firstDelete;
     BOOL        secondDelete;
@@ -64,9 +74,12 @@
     
     // 服务器通信模块
     NSString    *bikePosition;
+    NSString    *imageUrl;
+    
     //凭证图片
     NSUserDefaults *userDefaults;
     UIView      *cover;
+    NSMutableArray *imageArray;
 }
 
 
@@ -88,6 +101,9 @@
     firstDelete         = YES;
     secondDelete        = YES;
     thirdDelete         = YES;
+    imageView1Data      = [NSData data];
+    imageView2Data      = [NSData data];
+    imageView3Data      = [NSData data];
     
     typeLabel           = [[UILabel alloc] init];
     describeLabel       = [[UILabel alloc] init];
@@ -95,6 +111,8 @@
     positionLabel       = [[UILabel alloc] init];
     
     commitButton        = [[UIButton alloc] init];
+    
+    imageNumber         = 0;
     
     questionType        = @[@"单车丢失", @"锁车后无法还车结账", @"车身损坏", @"车锁损坏", @"其他问题"];
     
@@ -114,6 +132,9 @@
     [_locSerview startUserLocationService];
     _search = [[BMKGeoCodeSearch alloc] init];
     _search.delegate = self;
+    
+    // 上传凭证模块
+    imageArray = [[NSMutableArray alloc] init];
 }
 
 #pragma mark - NavigationInit
@@ -278,33 +299,77 @@
             break;
         // 车锁损坏和其他问题不给予提示，所以不用跳出直接提交问题类型 然后回到计费页面
         default: {
-            // 提交问题api
-            // 获取缓存
-            isBack = YES;
-            
-            userDefaults = [NSUserDefaults standardUserDefaults];
-            NSString *bikeNo = [userDefaults objectForKey:@"bikeNo"];
-            NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
-            NSString *accessToken = [userDefaults objectForKey:@"accessToken"];
-            
-            // 选中问题类型
-            NSIndexPath *indexPath = [questionTableView indexPathForSelectedRow];
-            
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/question/ques"];
-            NSURL *url = [NSURL URLWithString:urlStr];
-            NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
-            NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&phone=%@&type=%@&description=%@&addr=%@&evidence=%@&access_token=%@", bikeNo, phoneNumber, [questionType objectAtIndex:indexPath.row], describeLabel.text, bikePosition, /*访问凭证*/@"", accessToken];
-             NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
-             [request setHTTPBody:data];
-             [request setHTTPMethod:@"POST"];
-             MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"commitQuestion"];
-            NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
-            [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
-             [self visible];
+            // 有图片才上传
+            if (imageViewNumber > 0) {
+                // 先上传图片 获取到url 再提交问题，然后回到计费页面
+                NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/file/upload"];
+                NSURL *url = [NSURL URLWithString:urlStr];
+                NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+                // 设置字典信息
+                NSMutableDictionary *param = [[NSMutableDictionary alloc] init];
+                [param setValue:imageView1Data forKey:@"imageData"];
+                [self setRequest:request andValue:param];
+                MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"imageView1"];
+            }else {
+                userDefaults = [NSUserDefaults standardUserDefaults];
+                NSString *bikeNo = [userDefaults objectForKey:@"bikeNo"];
+                NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
+                NSString *accessToken = [userDefaults objectForKey:@"accessToken"];
+                
+                // 选中问题类型
+                NSIndexPath *indexPath = [questionTableView indexPathForSelectedRow];
+                
+                NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/question/ques"];
+                NSURL *url = [NSURL URLWithString:urlStr];
+                NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
+                NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&phone=%@&type=%@&description=%@&addr=%@&evidence=%@&access_token=%@", bikeNo, phoneNumber, [questionType objectAtIndex:indexPath.row], describeLabel.text, bikePosition, /*访问凭证*/@"", accessToken];
+                NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
+                [request setHTTPBody:data];
+                [request setHTTPMethod:@"POST"];
+                MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"commitQuestion"];
+            }
         }
             break;
     }
 }
+
+#pragma mark - 上传图片部分
+- (void)setRequest:(NSMutableURLRequest *)request andValue:(NSDictionary *)valueDictionary {
+    // 分界线标识符
+    NSString *boundary = @"AaB03x";
+    NSString *MPboundary = [NSString stringWithFormat:@"--%@", boundary];
+    NSString *endMPboundary = [NSString stringWithFormat:@"%@--", MPboundary];
+    
+    NSMutableString *body = [[NSMutableString alloc] init];
+    
+    [body appendString:[NSString stringWithFormat:@"%@\r\n", MPboundary]];
+    [body appendFormat:@"Content-Disposition: form-data; name=\"ImageField\"; filename=\"x1234.png\"\r\n"];
+    //声明上传文件的格式
+    [body appendFormat:@"Content-Type: image/jpg\r\n\r\n"];
+    
+    //声明结束符：--AaB03x--
+    NSString *end=[[NSString alloc]initWithFormat:@"\r\n%@",endMPboundary];
+    //声明myRequestData，用来放入http body
+    NSMutableData *myRequestData=[NSMutableData data];
+    //将body字符串转化为UTF8格式的二进制
+    [myRequestData appendData:[body dataUsingEncoding:NSUTF8StringEncoding]];
+    //将image的data加入
+    [myRequestData appendData:[valueDictionary objectForKey:@"imageData"]];
+    //加入结束符--AaB03x--
+    [myRequestData appendData:[end dataUsingEncoding:NSUTF8StringEncoding]];
+    
+    //设置HTTPHeader中Content-Type的值
+    NSString *content=[[NSString alloc] initWithFormat:@"multipart/form-data; boundary=%@",boundary];
+    //设置HTTPHeader
+    [request setValue:content forHTTPHeaderField:@"Content-Type"];
+    //设置Content-Length
+    [request setValue:[NSString stringWithFormat:@"%d", [myRequestData length]] forHTTPHeaderField:@"Content-Length"];
+    //设置http body
+    [request setHTTPBody:myRequestData];
+    //http method
+    [request setHTTPMethod:@"POST"];
+}
+
 
 - (void)visible {
     describeLabel.hidden = NO;
@@ -372,21 +437,56 @@
 #pragma mark - ImagePicker Delegate
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info {
     [picker dismissViewControllerAnimated:YES completion:^{}];
-    UIImage *savedImage = [info objectForKey:UIImagePickerControllerOriginalImage];
-    if (firstDelete) {
-        [imageView1 setImage:savedImage];
-        imageViewNumber++;
-        firstDelete = NO;
-    }else if(secondDelete) {
-        [imageView2 setImage:savedImage];
-        imageViewNumber++;
-        secondDelete = NO;
-    }else if (thirdDelete) {
-        [imageView3 setImage:savedImage];
-        imageViewNumber++;
-        thirdDelete = NO;
+        [self setImageViewPosition];
+    UIImage *savedImage1 = [info objectForKey:UIImagePickerControllerOriginalImage];
+    UIImage *savedImage;
+    NSData *imageData = UIImageJPEGRepresentation(savedImage1, 1);
+    if (([[self typeForImageData:imageData] isEqualToString:@"jpg"] || [[self typeForImageData:imageData] isEqualToString:@"png"] || [[self typeForImageData:imageData] isEqualToString:@"gif"])) {
+        // 图片不符合格式
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"请选择jpg/png/gif格式" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+        [alertView show];
+    }else {
+        // 图片压缩
+        for (int i = 9; i > 0; i--) {
+            CGFloat scale = i*0.1;
+            imageData = UIImageJPEGRepresentation(savedImage1, scale);
+            savedImage = [[UIImage alloc] initWithData:imageData];
+            if (imageData.length/1024 < 300) {
+                break;
+            }
+        }
+        if (firstDelete) {
+            [imageView1 setImage:savedImage];
+            imageView1Data = imageData;
+            imageViewNumber++;
+            firstDelete = NO;
+        }else if(secondDelete) {
+            [imageView2 setImage:savedImage];
+            imageView2Data = imageData;
+            imageViewNumber++;
+            secondDelete = NO;
+        }else if (thirdDelete) {
+            [imageView3 setImage:savedImage];
+            imageView3Data = imageData;
+            imageViewNumber++;
+            thirdDelete = NO;
+        }
     }
     [self setImageViewPosition];
+}
+
+- (NSString *)typeForImageData:(NSData *)data {
+    uint8_t c;
+    [data getBytes:&c length:1];
+    switch (c) {
+        case 0xFF:
+            return @"image/jpg";
+        case 0x89:
+            return @"image/png";
+        case 0x47:
+            return @"image/gif";
+    }
+    return nil;
 }
 
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
@@ -505,8 +605,6 @@
             [request setHTTPBody:data];
             [request setHTTPMethod:@"POST"];
             MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"commitQuestion"];
-            NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
-            [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
         }
         //验证等待动画
         // 集成api  此处是膜
@@ -550,8 +648,6 @@
         [request setHTTPBody:data];
         [request setHTTPMethod:@"POST"];
         MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"frozen"];
-        NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
-        [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
         
         //验证等待动画
         // 集成api  此处是膜
@@ -583,25 +679,34 @@
     }else if (alertView.tag == 3) {
         isBack = YES;
         
-        userDefaults = [NSUserDefaults standardUserDefaults];
-        NSString *bikeNo = [userDefaults objectForKey:@"bikeNo"];
-        NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
-        NSString *accessToken = [userDefaults objectForKey:@"accessToken"];
+        if (imageViewNumber > 0) {
+            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/file/upload"];
+            NSURL *url = [NSURL URLWithString:urlStr];
+            NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+            // 设置字典信息
+            NSMutableDictionary *param = [[NSMutableDictionary alloc] init];
+            [param setValue:imageView1Data forKey:@"imageData"];
+            [self setRequest:request andValue:param];
+            MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"imageView1"];
+        }else {
+            userDefaults = [NSUserDefaults standardUserDefaults];
+            NSString *bikeNo = [userDefaults objectForKey:@"bikeNo"];
+            NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
+            NSString *accessToken = [userDefaults objectForKey:@"accessToken"];
+            
+            // 选中问题类型
+            NSIndexPath *indexPath = [questionTableView indexPathForSelectedRow];
+            
+            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/question/ques"];
+            NSURL *url = [NSURL URLWithString:urlStr];
+            NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
+            NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&phone=%@&type=%@&description=%@&addr=%@&evidence=%@&access_token=%@", bikeNo, phoneNumber, [questionType objectAtIndex:indexPath.row], describeLabel.text, bikePosition, /*访问凭证*/@"", accessToken];
+            NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
+            [request setHTTPBody:data];
+            [request setHTTPMethod:@"POST"];
+            MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"commitQuestion"];
+        }
         
-        // 选中问题类型
-        NSIndexPath *indexPath = [questionTableView indexPathForSelectedRow];
-        
-        NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/question/ques"];
-        NSURL *url = [NSURL URLWithString:urlStr];
-        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
-        NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&phone=%@&type=%@&description=%@&addr=%@&evidence=%@&access_token=%@", bikeNo, phoneNumber, [questionType objectAtIndex:indexPath.row], describeLabel.text, bikePosition, /*访问凭证*/@"", accessToken];
-        NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
-        [request setHTTPBody:data];
-        [request setHTTPMethod:@"POST"];
-        MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"commitQuestion"];
-        
-        NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
-        [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
         
         //验证等待动画
         // 集成api  此处是膜
@@ -681,8 +786,6 @@
             [request setHTTPMethod:@"POST"];
             MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"commitQuestion"];
             
-            NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
-            [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
             
         }
     }else if ([connection.name isEqualToString:@"getMoney"]) {
@@ -710,6 +813,7 @@
             isConnect = YES;
             if (isBack) {
                 // 下面三个问题类型
+                // 如果有照片，上传照片
                 [cover removeFromSuperview];
                 [self.navigationController popViewControllerAnimated:YES];
             }else {
@@ -727,11 +831,116 @@
                 [request setHTTPBody:data];
                 [request setHTTPMethod:@"POST"];
                 MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"getMoney"];
-                
-                NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
-                [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
-                
             }
+        }
+    }else if ([connection.name isEqualToString:@"imageView1"]) {
+        NSString *status = receiveJson[@"status"];
+        NSString *url = receiveJson[@"url"];
+        if ([status isEqualToString:@"success"]) {
+            NSLog(@"第一张上传成功");
+            imageView1Url = url;
+            NSIndexPath *indexPath = [questionTableView indexPathForSelectedRow];
+            NSString    *bikeNo = [userDefaults objectForKey:@"bikeNo"];
+            NSString    *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
+            NSString    *accessToken = [userDefaults objectForKey:@"accessToken"];
+            NSDictionary *dictionary = [[NSDictionary alloc] initWithObjectsAndKeys:imageView1Url, @"imageurl", nil];
+            [imageArray addObject:dictionary];
+            NSData      *urlData = [NSJSONSerialization dataWithJSONObject:imageArray options:NSJSONWritingPrettyPrinted error:nil];
+            NSString    *urlsStr = [[NSString alloc] initWithData:urlData encoding:NSUTF8StringEncoding];
+            NSLog(@"%@", urlsStr);
+            if (imageViewNumber == 1) {
+                // 提交问题
+                NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/question/ques"];
+                NSURL *url = [NSURL URLWithString:urlStr];
+                NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
+                NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&phone=%@&type=%@&description=%@&addr=%@&evidence=%@&access_token=%@", bikeNo, phoneNumber, [questionType objectAtIndex:indexPath.row], describeLabel.text, bikePosition, urlsStr, accessToken];
+                NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
+                [request setHTTPBody:data];
+                [request setHTTPMethod:@"POST"];
+                MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"commitQuestion"];
+            }else {
+                NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/file/upload"];
+                NSURL *url = [NSURL URLWithString:urlStr];
+                NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+                // 设置字典信息
+                NSMutableDictionary *param = [[NSMutableDictionary alloc] init];
+                [param setValue:imageView2Data forKey:@"imageData"];
+                [self setRequest:request andValue:param];
+                MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"imageView2"];
+            }
+        }else {
+            // 图片上传失败
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"图片上传失败" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+            [alertView show];
+        }
+    }else if ([connection.name isEqualToString:@"imageView2"]) {
+        NSString *status = receiveJson[@"status"];
+        NSString *url = receiveJson[@"url"];
+        if ([status isEqualToString:@"success"]) {
+            NSLog(@"第二张上传成功");
+            imageView2Url = url;
+            NSIndexPath *indexPath = [questionTableView indexPathForSelectedRow];
+            NSString    *bikeNo = [userDefaults objectForKey:@"bikeNo"];
+            NSString    *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
+            NSString    *accessToken = [userDefaults objectForKey:@"accessToken"];
+            NSDictionary *dictionary = [[NSDictionary alloc] initWithObjectsAndKeys:imageView2Url, @"imageurl", nil];
+            [imageArray addObject:dictionary];
+            NSData      *urlData = [NSJSONSerialization dataWithJSONObject:imageArray options:NSJSONWritingPrettyPrinted error:nil];
+            NSString    *urlsStr = [[NSString alloc] initWithData:urlData encoding:NSUTF8StringEncoding];
+            NSLog(@"%@", urlsStr);
+            if (imageViewNumber == 2) {
+                // 提交问题
+                NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/question/ques"];
+                NSURL *url = [NSURL URLWithString:urlStr];
+                NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
+                NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&phone=%@&type=%@&description=%@&addr=%@&evidence=%@&access_token=%@", bikeNo, phoneNumber, [questionType objectAtIndex:indexPath.row], describeLabel.text, bikePosition, urlsStr, accessToken];
+                NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
+                [request setHTTPBody:data];
+                [request setHTTPMethod:@"POST"];
+                MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"commitQuestion"];
+            }else {
+                NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/file/upload"];
+                NSURL *url = [NSURL URLWithString:urlStr];
+                NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+                // 设置字典信息
+                NSMutableDictionary *param = [[NSMutableDictionary alloc] init];
+                [param setValue:imageView3Data forKey:@"imageData"];
+                [self setRequest:request andValue:param];
+                MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"imageView3"];
+            }
+        }else {
+            // 图片上传失败
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"图片上传失败" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+            [alertView show];
+        }
+    }else if ([connection.name isEqualToString:@"imageView3"]) {
+        NSString *status = receiveJson[@"status"];
+        NSString *url = receiveJson[@"url"];
+        if ([status isEqualToString:@"success"]) {
+            NSLog(@"第三张上传成功");
+            imageView3Url = url;
+            NSIndexPath *indexPath = [questionTableView indexPathForSelectedRow];
+            NSString    *bikeNo = [userDefaults objectForKey:@"bikeNo"];
+            NSString    *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
+            NSString    *accessToken = [userDefaults objectForKey:@"accessToken"];
+            NSDictionary *dictionary = [[NSDictionary alloc] initWithObjectsAndKeys:imageView3Url, @"imageurl", nil];
+            [imageArray addObject:dictionary];
+            NSData      *urlData = [NSJSONSerialization dataWithJSONObject:imageArray options:NSJSONWritingPrettyPrinted error:nil];
+            NSString    *urlsStr = [[NSString alloc] initWithData:urlData encoding:NSUTF8StringEncoding];
+            NSLog(@"%@", urlsStr);
+            // 提交问题
+            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/question/ques"];
+            NSURL *url = [NSURL URLWithString:urlStr];
+            NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
+            NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&phone=%@&type=%@&description=%@&addr=%@&evidence=%@&access_token=%@", bikeNo, phoneNumber, [questionType objectAtIndex:indexPath.row], describeLabel.text, bikePosition, urlsStr, accessToken];
+            NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
+            [request setHTTPBody:data];
+            [request setHTTPMethod:@"POST"];
+            MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"commitQuestion"];
+        }else {
+            // 图片上传失败
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"图片上传失败" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+            [alertView show];
         }
     }
 }
@@ -760,32 +969,6 @@
     NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(removeView) userInfo:nil repeats:NO];
     [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
     NSLog(@"网络超时");
-}
-
-- (void)stopRequest {
-    if (!isConnect) {
-        [cover removeFromSuperview];
-        // 收到验证码  进行提示
-        cover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
-        cover.alpha = 1;
-        // 半黑膜
-        UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
-        containerView.backgroundColor = [UIColor blackColor];
-        containerView.alpha = 0.6;
-        containerView.layer.cornerRadius = CORNERRADIUS*2;
-        [cover addSubview:containerView];
-        // 一个控件
-        UILabel *hintMes1 = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
-        hintMes1.text = @"无法连接服务器";
-        hintMes1.textColor = [UIColor whiteColor];
-        hintMes1.textAlignment = NSTextAlignmentCenter;
-        [containerView addSubview:hintMes1];
-        [self.view addSubview:cover];
-        // 显示时间
-        NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(removeView) userInfo:nil repeats:NO];
-        [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
-    }
-    isConnect = NO;
 }
 
 - (void)removeView {
@@ -843,6 +1026,10 @@
     
     BMKReverseGeoCodeOption *reverseGeocodeSearchOption = [[BMKReverseGeoCodeOption alloc]init];//初始化反编码请求
     reverseGeocodeSearchOption.reverseGeoPoint = pt;//设置反编码的店为pt
+    // 封装地理位置的两个数据
+    NSDictionary *dictionary = [[NSDictionary alloc] initWithObjectsAndKeys:[NSString stringWithFormat:@"%f", userLocation.location.coordinate.longitude], @"lng", [NSString stringWithFormat:@"%f", userLocation.location.coordinate.latitude], @"lat", nil];
+    NSData *data = [NSJSONSerialization dataWithJSONObject:dictionary options:NSJSONWritingPrettyPrinted error:nil];
+    bikePosition = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
     BOOL flag = [_search reverseGeoCode:reverseGeocodeSearchOption];//发送反编码请求.并返回是否成功
     if(flag)
     {
@@ -865,7 +1052,6 @@
         showmeg = [NSString stringWithFormat:@"%@",item.title];
         NSLog(@"地址是：%@", showmeg);
         positionTF.text = showmeg;
-        bikePosition = showmeg;
     }
 }
 

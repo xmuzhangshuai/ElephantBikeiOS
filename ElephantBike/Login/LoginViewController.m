@@ -363,7 +363,7 @@ int countDown = 5;
     }else if ([connection.name isEqualToString:@"getNumber"]) {
         NSString *status = receiveJson[@"status"];
         NSString *message = receiveJson[@"message"];
-        if (status) {
+        if ([status isEqualToString:@"success"]) {
             isConnect = YES;
             [cover removeFromSuperview];
             // 收到验证码  进行提示

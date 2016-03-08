@@ -157,16 +157,16 @@
     NSDictionary *temp = [dataArray objectAtIndex:indexPath.row];
     NSNumber *feeNumber = temp[@"fee"];
     NSString *feeTime = temp[@"fee_time"];
-    if (feeNumber < 0) {
-        // 支出
-        NSString *moneyMode = @"消费\n";
+    if ([feeNumber compare:[NSNumber numberWithInt:0]] == 1) {
+        // 充值或奖励
+        NSString *moneyMode = @"充值\n";
         NSString *payTime = [moneyMode stringByAppendingString:feeTime];
         cell.textLabel.text = payTime;
         NSString *feeTemp = [NSString stringWithFormat:@"%@", feeNumber];
         cell.detailTextLabel.text = [@"\n" stringByAppendingString:feeTemp];
     }else {
-        // 充值或奖励
-        NSString *moneyMode = @"充值\n";
+        // 支出
+        NSString *moneyMode = @"消费\n";
         NSString *payTime = [moneyMode stringByAppendingString:feeTime];
         cell.textLabel.text = payTime;
         NSString *feeTemp = [NSString stringWithFormat:@"%@", feeNumber];

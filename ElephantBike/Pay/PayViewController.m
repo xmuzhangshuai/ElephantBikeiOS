@@ -278,6 +278,25 @@
         NSString *status = receiveJson[@"status"];
         NSString *message = receiveJson[@"message"];
         if ([status isEqualToString:@"success"]) {
+            myAppdelegate.isEndPay = YES;
+//            // 付款成功
+//            waitCover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+//            waitCover.alpha = 1;
+//            // 半黑膜
+//            UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+//            containerView.backgroundColor = [UIColor blackColor];
+//            containerView.alpha = 0.6;
+//            containerView.layer.cornerRadius = CORNERRADIUS*2;
+//            [cover addSubview:containerView];
+//            // 一个控件
+//            UILabel *hintMes1 = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
+//            hintMes1.text = @"付款成功";
+//            hintMes1.textColor = [UIColor whiteColor];
+//            hintMes1.textAlignment = NSTextAlignmentCenter;
+//            [containerView addSubview:hintMes1];
+//            [self.view addSubview:waitCover];
+            // 显示时间
+            
             isConnect = YES;
             // 付费成功 跳转扫描页面 并且对本地的balance扣除相应的金额
             CGFloat balan = [myAppdelegate.balance floatValue];
@@ -298,6 +317,7 @@
         if ([status isEqualToString:@"success"]) {
             isConnect = YES;
             if ([time isEqualToString:@""]) {
+                myAppdelegate.isMissing = YES;
                 totalPayLabel.text = @"费用总计:";
                 NSString *temp = [@"￥" stringByAppendingString:money];
                 moneyLabel.text = temp;
@@ -305,6 +325,7 @@
                 NSString *temp1 = [@"￥" stringByAppendingString:money];
                 timeLabel.text = temp1;
             }else {
+                myAppdelegate.isMissing = NO;
                 _money = money;
                 _time = time;
                 NSString *temp = [@"￥" stringByAppendingString:_money];

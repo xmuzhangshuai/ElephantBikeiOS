@@ -40,6 +40,7 @@
     self.isRestart = NO;
     self.isMissing = NO;
     self.isUpload = NO;
+    self.isActivity = NO;
 
     
     self.balance = @"";
@@ -126,8 +127,25 @@
     }
     
     // 请求服务器
-    
-
+    // 判断是否有活动
+    NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/act/topic"];
+    NSURL *url = [NSURL URLWithString:urlStr];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    [request setHTTPMethod:@"POST"];
+    NSData *receiveData = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
+    if (receiveData == nil) {
+        NSLog(@"send request failed:");
+    }else {
+        NSDictionary *receive = [NSJSONSerialization JSONObjectWithData:receiveData options:NSJSONReadingMutableLeaves error:nil];
+        NSString *status = receive[@"status"];
+        NSString *imageurl = receive[@"imageurl"];
+        NSString *linkurl = receive[@"linkurl"];
+        if ([status isEqualToString:@"success"]) {
+            self.isActivity = YES;
+            self.imageUrl = imageurl;
+            self.linkUrl = linkurl;
+        }
+    }
 
     
     // 百度模块
@@ -145,8 +163,6 @@
     [_window setRootViewController:_navigationgController];
     _window.backgroundColor = [UIColor whiteColor];
     [_window makeKeyAndVisible];
-    
-    [NSThread sleepForTimeInterval:2];
     
     return YES;
 }

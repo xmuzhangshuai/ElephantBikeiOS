@@ -40,6 +40,8 @@
     NSUserDefaults              *userDefaults;
     
     BOOL                        isConnect;
+    
+    UIImageView                 *activityImageView;
 }
 
 - (id)init {
@@ -558,6 +560,26 @@
 
 - (void)viewDidAppear:(BOOL)animated {
     NSLog(@"骑行结束：%d 付款：%d", myDelegate.isEndRiding, myDelegate.isEndPay);
+    if (myDelegate.isActivity) {
+        // 显示活动页面
+        NSData *data = [NSData dataWithContentsOfURL:[NSURL URLWithString:myDelegate.imageUrl]];
+        UIImage *image = [UIImage imageWithData:data];
+//        activityImageView = [[UIImageView alloc] initWithImage:image];
+        activityImageView = [[UIImageView alloc] init];
+        [activityImageView setImage:[UIImage imageNamed:@"余额"]];
+        waitCover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+        waitCover.alpha = 0.6;
+        waitCover.backgroundColor = [UIColor blackColor];
+//        activityImageView.frame = CGRectMake(0.2*SCREEN_WIDTH, 0.3*SCREEN_HEIGHT, 0.6*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT);
+        activityImageView.frame = [UIScreen mainScreen].bounds;
+        activityImageView.contentMode = UIViewContentModeScaleAspectFit;
+        activityImageView.backgroundColor = [UIColor redColor];
+        
+        
+        [self.view addSubview:activityImageView];
+        [waitCover addSubview:activityImageView];
+    }
+    
     if (!myDelegate.isEndRiding) {
         ChargeViewController *chargeViewController = [[ChargeViewController alloc] init];
         [self.navigationController pushViewController:chargeViewController animated:YES];
