@@ -43,8 +43,33 @@
 }
 
 - (instancetype)initWithFrame:(CGRect)frame {
-    if (self == [super init]) {
+    if (self = [super init]) {
         self.view.frame = frame;
+        nameLabel               = [[UILabel alloc] init];
+        myAppDelegate           = [[UIApplication sharedApplication] delegate];
+        NSLog(@"isupload:%d",myAppDelegate.isUpload);
+        if (myAppDelegate.isIdentify) {
+            nameLabel.text = @"姓名";
+        }else if (myAppDelegate.isUpload) {
+            nameLabel.text = @"未认证";
+        }else {
+            nameLabel.text = @"请登录";
+        }
+    }
+    return self;
+}
+
+- (id)init {
+    if (self = [super init]) {
+        nameLabel               = [[UILabel alloc] init];
+        myAppDelegate           = [[UIApplication sharedApplication] delegate];
+        if (myAppDelegate.isIdentify) {
+            nameLabel.text = @"姓名";
+        }else if (myAppDelegate.isUpload) {
+            nameLabel.text = @"未认证";
+        }else {
+            nameLabel.text = @"请登录";
+        }
     }
     return self;
 }
@@ -52,12 +77,12 @@
 #pragma mark - UIInit
 - (void)UIInit {
 //    avatarImage             = [[UIImageView alloc] init];
-    nameLabel               = [[UILabel alloc] init];
+
     identificationLabel     = [[UILabel alloc] init];
     infoTableView           = [[UITableView alloc] init];
     logoImageView           = [[UIImageView alloc] init];
     
-    myAppDelegate           = [[UIApplication sharedApplication] delegate];
+
     
     listArray               = @[@"我的钱包", @"身份认证", @"推荐有奖", @"帮助"];
     
@@ -78,12 +103,11 @@
     */
     
     nameLabel.frame = CGRectMake(0.05*SCREEN_WIDTH, STATUS_HEIGHT*2, NAMELABEL_WIDTH, NAMELABEL_HEIGHT);
-    nameLabel.text = @"姓名";
     nameLabel.textAlignment = NSTextAlignmentLeft;
     
     identificationLabel.frame = CGRectMake(0.05*SCREEN_WIDTH, STATUS_HEIGHT*2+NAMELABEL_HEIGHT, IDENTIFICATIONLABEL_WIDTH, IDENTIFICATIONLABEL_HEIGHT);
     identificationLabel.clipsToBounds = YES;
-    identificationLabel.layer.cornerRadius = CORNERRADIUS*2.5;
+    identificationLabel.layer.cornerRadius = CORNERRADIUS*2;
     identificationLabel.backgroundColor = UICOLOR;
     identificationLabel.text = @"  ☑已认证:xxxxxx";
     identificationLabel.font = [UIFont systemFontOfSize:12];

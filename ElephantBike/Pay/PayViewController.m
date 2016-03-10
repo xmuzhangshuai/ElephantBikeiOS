@@ -17,6 +17,11 @@
 #import "QuestionViewController.h"
 #import "RechargeViewController.h"
 
+#pragma mark - 微信支付
+#import "WXApi.h"
+#import <CommonCrypto/CommonDigest.h>
+#import "WXApiObject.h"
+
 #define CHARGEVIEW_HEIGHT       0.16*SCREEN_HEIGHT
 #define STATUSLABEL_WIDTH       0.33*SCREEN_WIDTH
 #define STATUSLABEL_HEIGHT      0.4*CHARGEVIEW_HEIGHT
@@ -35,7 +40,7 @@
 #define CONFIRMBUTTON_WIDTH     0.9*SCREEN_WIDTH
 #define CONFIRMBUTTON_HEIGHT    SAME_HEIGHT
 
-@interface PayViewController ()<UITableViewDataSource, UITableViewDelegate, InfoViewControllerDelegate, MyURLConnectionDelegate, ChargeViewControllerDelegate, QuestionViewControllerDelegate, UIAlertViewDelegate>
+@interface PayViewController ()<UITableViewDataSource, UITableViewDelegate, InfoViewControllerDelegate, MyURLConnectionDelegate, ChargeViewControllerDelegate, QuestionViewControllerDelegate, UIAlertViewDelegate, WXApiDelegate>
 
 @end
 
@@ -217,7 +222,9 @@
 
     [chargeView addSubview:totalTimeLabel];
     [chargeView addSubview:timeLabel];
-
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(showSuccess) name:@"paySuccess" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(showFail) name:@"payFail" object:nil];
 }
 
 - (void)NavigationInit {
@@ -255,19 +262,33 @@
     [containerView addSubview:hintMes1];
     [self.view addSubview:waitCover];
     
-    // 点击付款，应该先从服务器获取余额 然后付款
-    NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
-    // 在登录了的情况下 去服务器获取余额
-    NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/balance"];
-    NSURL *url = [NSURL URLWithString:urlStr];
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
-    NSString *dataStr = [NSString stringWithFormat:@"phone=%@", phoneNumber];
-    NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
-    [request setHTTPBody:data];
-    [request setHTTPMethod:@"POST"];
-    MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"balance"];
-    NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
-    [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
+    NSIndexPath *indexPath = [payListTableView indexPathForSelectedRow];
+    if (indexPath.row == 0) {
+        // 点击付款，应该先从服务器获取余额 然后付款
+        NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
+        // 在登录了的情况下 去服务器获取余额
+        NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/balance"];
+        NSURL *url = [NSURL URLWithString:urlStr];
+        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
+        NSString *dataStr = [NSString stringWithFormat:@"phone=%@", phoneNumber];
+        NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
+        [request setHTTPBody:data];
+        [request setHTTPMethod:@"POST"];
+        MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"balance"];
+    }else if (indexPath.row == 1) {
+        // 微信支付
+        // 请求api 获取预付单
+        NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/pay/wxpayorder"];
+        NSURL *url = [NSURL URLWithString:urlStr];
+        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
+//        NSString *dataStr = [NSString stringWithFormat:@"phone=%@", phoneNumber];
+//        NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
+//        [request setHTTPBody:data];
+        [request setHTTPMethod:@"POST"];
+        MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"getPrepay"];
+    }else {
+        // 支付宝
+    }
 }
 
 #pragma mark - 服务器返回
@@ -279,22 +300,22 @@
         NSString *message = receiveJson[@"message"];
         if ([status isEqualToString:@"success"]) {
             myAppdelegate.isEndPay = YES;
-//            // 付款成功
-//            waitCover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
-//            waitCover.alpha = 1;
-//            // 半黑膜
-//            UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
-//            containerView.backgroundColor = [UIColor blackColor];
-//            containerView.alpha = 0.6;
-//            containerView.layer.cornerRadius = CORNERRADIUS*2;
-//            [cover addSubview:containerView];
-//            // 一个控件
-//            UILabel *hintMes1 = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
-//            hintMes1.text = @"付款成功";
-//            hintMes1.textColor = [UIColor whiteColor];
-//            hintMes1.textAlignment = NSTextAlignmentCenter;
-//            [containerView addSubview:hintMes1];
-//            [self.view addSubview:waitCover];
+            // 付款成功
+            waitCover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+            waitCover.alpha = 1;
+            // 半黑膜
+            UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+            containerView.backgroundColor = [UIColor blackColor];
+            containerView.alpha = 0.6;
+            containerView.layer.cornerRadius = CORNERRADIUS*2;
+            [cover addSubview:containerView];
+            // 一个控件
+            UILabel *hintMes1 = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
+            hintMes1.text = @"付款成功";
+            hintMes1.textColor = [UIColor whiteColor];
+            hintMes1.textAlignment = NSTextAlignmentCenter;
+            [containerView addSubview:hintMes1];
+            [self.view addSubview:waitCover];
             // 显示时间
             
             isConnect = YES;
@@ -303,7 +324,8 @@
             CGFloat money = [_money floatValue];
             balan -= money;
             myAppdelegate.balance = [NSString stringWithFormat:@"%f", balan];
-            [self.navigationController popToViewController:[self.navigationController.viewControllers objectAtIndex:0] animated:YES];
+            NSTimer *gotoQRScanTimer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(gotoQRScan) userInfo:nil repeats:NO];
+            [[NSRunLoop mainRunLoop] addTimer:gotoQRScanTimer forMode:NSDefaultRunLoopMode];
         }else {
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"付款失败" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
             alert.tag = 1;
@@ -377,6 +399,20 @@
             }
         }
         
+    }else if ([connection.name isEqualToString:@"getPrepay"]) {
+        NSString *status = receiveJson[@"status"];
+        if ([status isEqualToString:@"success"]) {
+            PayReq *request = [[PayReq alloc] init];
+            request.openID = receiveJson[@"appid"];
+            request.partnerId = receiveJson[@"partnerid"];
+            request.prepayId= receiveJson[@"prepayid"];
+            request.package = receiveJson[@"package"];
+            request.nonceStr= receiveJson[@"noncestr"];
+            request.timeStamp= [receiveJson[@"timestamp"] intValue];
+            request.sign = receiveJson[@"sign"];
+            NSLog(@"appid:%@\npartnerid:%@\nprepayid:%@\npackage:%@\nonceStr:%@\ntimestamp:%d\nsign:%@", request.openID, request.partnerId, request.prepayId, request.package, request.nonceStr, (unsigned int)request.timeStamp, request.sign);
+            [WXApi sendReq:request];
+        }
     }
 }
 // 链接超时 需要提醒用户
@@ -404,6 +440,8 @@
     [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
     NSLog(@"网络超时");
 }
+
+#pragma mark - 私有方法
 
 - (void)stopRequest {
     if (!isConnect) {
@@ -490,6 +528,61 @@
     
 }
 
+- (void)gotoQRScan {
+    [cover removeFromSuperview];
+    [self.navigationController popToViewController:[self.navigationController.viewControllers objectAtIndex:0] animated:YES];
+}
+
+- (void)showSuccess {
+    [waitCover removeFromSuperview];
+    myAppdelegate.isEndPay = YES;
+    // 付款成功
+    waitCover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    waitCover.alpha = 1;
+    // 半黑膜
+    UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+    containerView.backgroundColor = [UIColor blackColor];
+    containerView.alpha = 0.6;
+    containerView.layer.cornerRadius = CORNERRADIUS*2;
+    [cover addSubview:containerView];
+    // 一个控件
+    UILabel *hintMes1 = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
+    hintMes1.text = @"付款成功";
+    hintMes1.textColor = [UIColor whiteColor];
+    hintMes1.textAlignment = NSTextAlignmentCenter;
+    [containerView addSubview:hintMes1];
+    [self.view addSubview:waitCover];
+    // 显示时间
+    
+    NSTimer *gotoQRScanTimer = [NSTimer timerWithTimeInterval:2 target:self selector:@selector(gotoQRScan) userInfo:nil repeats:NO];
+    [[NSRunLoop mainRunLoop] addTimer:gotoQRScanTimer forMode:NSDefaultRunLoopMode];
+}
+
+- (void)showFail {
+    [waitCover removeFromSuperview];
+    myAppdelegate.isEndPay = YES;
+    // 付款失败
+    waitCover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    waitCover.alpha = 1;
+    // 半黑膜
+    UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+    containerView.backgroundColor = [UIColor blackColor];
+    containerView.alpha = 0.6;
+    containerView.layer.cornerRadius = CORNERRADIUS*2;
+    [cover addSubview:containerView];
+    // 一个控件
+    UILabel *hintMes1 = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
+    hintMes1.text = @"付款失败";
+    hintMes1.textColor = [UIColor whiteColor];
+    hintMes1.textAlignment = NSTextAlignmentCenter;
+    [containerView addSubview:hintMes1];
+    [self.view addSubview:waitCover];
+    // 显示时间
+    
+    NSTimer *gotoQRScanTimer = [NSTimer timerWithTimeInterval:2 target:self selector:@selector(removeView) userInfo:nil repeats:NO];
+    [[NSRunLoop mainRunLoop] addTimer:gotoQRScanTimer forMode:NSDefaultRunLoopMode];
+
+}
 
 #pragma mark - InfoViewControllerDelegate
 - (void)getNextViewController:(id)nextViewController {
@@ -588,6 +681,9 @@
         }
     }
 }
+
+
+
 
 #pragma mark - lifeCycle
 - (void)viewWillAppear:(BOOL)animated {

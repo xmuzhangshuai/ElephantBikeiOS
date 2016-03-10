@@ -12,7 +12,4 @@
 
 @interface PayViewController : UIViewController
 
-- (instancetype)initWithTime:(NSString *)time;
-- (instancetype)initWithMoney:(float)money;
-
 @end

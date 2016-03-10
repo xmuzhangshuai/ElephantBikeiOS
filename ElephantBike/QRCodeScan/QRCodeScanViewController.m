@@ -16,6 +16,9 @@
 #import "PayViewController.h"
 #import "AppDelegate.h"
 
+#import "UIImageView+WebCache.h"
+#import "ActivityDetailsViewController.h"
+
 @interface QRCodeScanViewController ()<AVCaptureMetadataOutputObjectsDelegate, InfoViewControllerDelegate, NSURLConnectionDataDelegate, UIAlertViewDelegate>
 @end
 
@@ -40,8 +43,6 @@
     NSUserDefaults              *userDefaults;
     
     BOOL                        isConnect;
-    
-    UIImageView                 *activityImageView;
 }
 
 - (id)init {
@@ -224,7 +225,10 @@
     leftSwipGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(showMenu)];
     [self.view addGestureRecognizer:leftSwipGestureRecognizer];
     
-    discountImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0.2*SCREEN_WIDTH, 0.3*SCREEN_HEIGHT, 0.6*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT)];
+    discountImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0.2*SCREEN_WIDTH, 0.2*SCREEN_HEIGHT, 0.6*SCREEN_WIDTH, 0.6*SCREEN_HEIGHT)];
+    discountImageView.userInteractionEnabled = YES;
+    UITapGestureRecognizer *activityDetails = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(gotoDetails)];
+    [discountImageView addGestureRecognizer:activityDetails];
 }
 
 - (void)NavigationInit {
@@ -350,6 +354,16 @@
 
 }
 
+- (void)gotoDetails {
+    ActivityDetailsViewController *activityDetailsViewController = [[ActivityDetailsViewController alloc] init];
+    [self.navigationController pushViewController:activityDetailsViewController animated:YES];
+}
+
+- (void)none {
+    [waitCover removeFromSuperview];
+    [session startRunning];
+}
+
 #pragma mark - AVCaptureMetadataOutputObjectsDelegate
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputMetadataObjects:(NSArray *)metadataObjects fromConnection:(AVCaptureConnection *)connection{
     if (metadataObjects.count>0) {
@@ -415,23 +429,23 @@
 
 - (void)stopRequest {
     if (!isConnect) {
-        [cover removeFromSuperview];
+        [waitCover removeFromSuperview];
         // 收到验证码  进行提示
-        cover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
-        cover.alpha = 1;
+        waitCover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+        waitCover.alpha = 1;
         // 半黑膜
         UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
         containerView.backgroundColor = [UIColor blackColor];
         containerView.alpha = 0.6;
         containerView.layer.cornerRadius = CORNERRADIUS*2;
-        [cover addSubview:containerView];
+        [waitCover addSubview:containerView];
         // 一个控件
         UILabel *hintMes = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
         hintMes.text = @"无法连接服务器";
         hintMes.textColor = [UIColor whiteColor];
         hintMes.textAlignment = NSTextAlignmentCenter;
         [containerView addSubview:hintMes];
-        [self.view addSubview:cover];
+        [self.view addSubview:waitCover];
         // 显示时间
         NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(removeView) userInfo:nil repeats:NO];
         [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
@@ -440,7 +454,7 @@
 }
 
 - (void)removeView {
-    [cover removeFromSuperview];
+    [waitCover removeFromSuperview];
 }
 
 #pragma mark - 服务器返回
@@ -544,41 +558,50 @@
     // Do any additional setup after loading the view.
     self.view.backgroundColor = [UIColor whiteColor];
     [self instanceDevice];
+    myDelegate = [[UIApplication sharedApplication] delegate];
+    if (myDelegate.isActivity) {
+        // 有活动则无法扫描
+        [session stopRunning];
+        NSLog(@"显示活动页面");
+        // 显示活动页面
+        NSString *imageurl = [IP stringByAppendingString:myDelegate.imageUrl];
+        waitCover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+        UITapGestureRecognizer *noneTap = [[UITapGestureRecognizer alloc] init];
+        [noneTap addTarget:self action:@selector(none)];
+        [waitCover addGestureRecognizer:noneTap];
+        waitCover.alpha = 0.8;
+        waitCover.backgroundColor = [UIColor blackColor];
+        discountImageView.contentMode = UIViewContentModeScaleAspectFit;
+        __block UIActivityIndicatorView *activityIndicator;
+        [discountImageView sd_setImageWithURL:[NSURL URLWithString:imageurl] placeholderImage:nil options:SDWebImageProgressiveDownload progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+            if (!activityIndicator)
+            {
+                [discountImageView addSubview:activityIndicator = [UIActivityIndicatorView.alloc initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite]];
+                activityIndicator.center = discountImageView.center;
+                [activityIndicator startAnimating];
+            }
+        } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+            [activityIndicator removeFromSuperview];
+            activityIndicator = nil;
+        }];
+        [waitCover addSubview:discountImageView];
+        [self.view addSubview:waitCover];
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    myDelegate = [[UIApplication sharedApplication] delegate];
     if (myDelegate.isFreeze) {
         [upView addSubview:freezeLabel];
         [session stopRunning];
-    }else {
-        [session startRunning];
     }
     [self NavigationInit];
-    }
+    
+}
 
 - (void)viewDidAppear:(BOOL)animated {
     NSLog(@"骑行结束：%d 付款：%d", myDelegate.isEndRiding, myDelegate.isEndPay);
-    if (myDelegate.isActivity) {
-        // 显示活动页面
-        NSData *data = [NSData dataWithContentsOfURL:[NSURL URLWithString:myDelegate.imageUrl]];
-        UIImage *image = [UIImage imageWithData:data];
-//        activityImageView = [[UIImageView alloc] initWithImage:image];
-        activityImageView = [[UIImageView alloc] init];
-        [activityImageView setImage:[UIImage imageNamed:@"余额"]];
-        waitCover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
-        waitCover.alpha = 0.6;
-        waitCover.backgroundColor = [UIColor blackColor];
-//        activityImageView.frame = CGRectMake(0.2*SCREEN_WIDTH, 0.3*SCREEN_HEIGHT, 0.6*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT);
-        activityImageView.frame = [UIScreen mainScreen].bounds;
-        activityImageView.contentMode = UIViewContentModeScaleAspectFit;
-        activityImageView.backgroundColor = [UIColor redColor];
-        
-        
-        [self.view addSubview:activityImageView];
-        [waitCover addSubview:activityImageView];
-    }
+    
     
     if (!myDelegate.isEndRiding) {
         ChargeViewController *chargeViewController = [[ChargeViewController alloc] init];

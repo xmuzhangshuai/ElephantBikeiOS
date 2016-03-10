@@ -56,6 +56,7 @@
     self.backgroundColor = [UIColor grayColor];
     hintLabel.frame = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
     hintLabel.textAlignment = NSTextAlignmentCenter;
+    self.state = @"loose";
 }
 
 - (void)setRefreshStateNone {

@@ -179,11 +179,18 @@
     return cell;
 }
 
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    return 64;
+}
+
 #pragma mark - UIScrollDelegate
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
 //    if (scrollView.contentOffset.y >= dataArray.count*cellHeight-DETAILSTABLEVIEW_HEIGHT+50){
         // 需要更多的数据
 //        if (dataArray.count >= 10 && isNone == NO) {
+    NSLog(@"y:%f", scrollView.contentOffset.y);
+    NSLog(@"dataarray.count:%d", dataArray.count);
+    NSLog(@"cellheight:%f", cellHeight);
         if (scrollView.contentOffset.y > dataArray.count*cellHeight-DETAILSTABLEVIEW_HEIGHT+30 && scrollView.contentOffset.y < dataArray.count*cellHeight-DETAILSTABLEVIEW_HEIGHT+50) {
             [footView setRefreshStateLoose];
         }
@@ -194,13 +201,13 @@
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerat {
     if ( scrollView.contentOffset.y >= dataArray.count*cellHeight-DETAILSTABLEVIEW_HEIGHT+60) {
 //        if (dataArray.count >= 10 && isNone == NO) {
-            [footView setRefreshStateLoading];
-//            if (![footView.state isEqualToString:@"none"]) {
+        NSLog(@"当前的state:%@", footView.state);
+            if ([footView.state isEqualToString:@"loose"] || [footView.state isEqualToString:@"none"]) {
+                [footView setRefreshStateLoading];
                 [self requestForData];
         NSLog(@"动画");
-//            }
+            }
 //        }
-        
     }
 }
 
@@ -217,7 +224,6 @@
     [request setHTTPBody:data];
     [request setHTTPMethod:@"POST"];
     NSURLConnection *connection = [NSURLConnection connectionWithRequest:request delegate:self];
-
 }
 #pragma mark - 服务器返回数据
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {

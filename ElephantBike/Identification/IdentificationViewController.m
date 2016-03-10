@@ -11,11 +11,8 @@
 #import "MyURLConnection.h"
 #import "AppDelegate.h"
 
-// 获取本地相册照片名称
-#import <AssetsLibrary/ALAsset.h>
-#import <AssetsLibrary/ALAssetsLibrary.h>
-#import <AssetsLibrary/ALAssetsGroup.h>
-#import <AssetsLibrary/ALAssetRepresentation.h>
+// 保存本地图片
+#import "UIImageView+WebCache.h"
 
 
 #define SELECTBUTTON1_WIDTH  0.8*SAME_WIDTH
@@ -59,7 +56,10 @@
 }
 
 - (void)viewDidAppear:(BOOL)animated {
+    NSLog(@"%d", MyDelegate.isUpload);
     if (MyDelegate.isUpload) {
+        selectButton1.hidden = YES;
+        selectButton2.hidden = YES;
         resultLabel.text = @"信息审核中，结果将在2个工作日内通知您";
         resultLabel.font = [UIFont systemFontOfSize:14];
         [commitButton removeFromSuperview];
@@ -67,6 +67,11 @@
         if (SCREEN_WIDTH == 320) {
             resultLabel.font = [UIFont systemFontOfSize:12];
         }
+        UIImage *IDCardImage = [[SDImageCache sharedImageCache] imageFromDiskCacheForKey:@"身份证"];
+        UIImage *studentCardImage = [[SDImageCache sharedImageCache] imageFromDiskCacheForKey:@"学生证"];
+        
+        [identificationFront setImage:IDCardImage];
+        [identificationBack setImage:studentCardImage];
     }
 }
 
@@ -248,7 +253,7 @@
     [request setHTTPMethod:@"POST"];
 }
 
-#pragma mark - 服务器请求
+#pragma mark - 服务器返回
 - (void)MyConnection:(MyURLConnection *)connection didReceiveData:(NSData *)data {
     NSDictionary *receiveJson = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableLeaves error:nil];
     if ([connection.name isEqualToString:@"IDCard"]) {
@@ -294,6 +299,11 @@
     }else if ([connection.name isEqualToString:@"uploadUrl"]) {
         NSString *status = receiveJson[@"status"];
         if ([status isEqualToString:@"success"]) {
+            // 将这两张图片缓存在本地
+            [[SDImageCache sharedImageCache] storeImage:[UIImage imageWithData:IDCard] forKey:@"身份证" toDisk:YES];
+            [[SDImageCache sharedImageCache] storeImage:[UIImage imageWithData:studentCard] forKey:@"学生证" toDisk:YES];
+            MyDelegate.isUpload = YES;
+            
             NSLog(@"图片上传成功");
             [cover removeFromSuperview];
             // 上传成功

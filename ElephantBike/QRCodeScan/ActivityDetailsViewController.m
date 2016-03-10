@@ -1,49 +1,31 @@
 //
-//  CalcWayViewController.m
+//  ActivityDetailsViewController.m
 //  ElephantBike
 //
-//  Created by 黄杰锋 on 16/2/2.
+//  Created by 黄杰锋 on 16/3/9.
 //  Copyright © 2016年 黄杰锋. All rights reserved.
 //
 
-#import "CalcWayViewController.h"
+#import "ActivityDetailsViewController.h"
 #import "UISize.h"
+#import "AppDelegate.h"
 
-@interface CalcWayViewController ()
+@interface ActivityDetailsViewController () <UIWebViewDelegate>
 
 @end
 
-@implementation CalcWayViewController {
+@implementation ActivityDetailsViewController {
     UIWebView *webView;
-    UIView    *waitCover;
+    AppDelegate *myAppDelegate;
+    UIView      *waitCover;
 }
 
-- (void)UIInit {
-    webView = [[UIWebView alloc] init];
-    
-    [self UILayout];
-}
-
-- (void)UILayout {
-    webView.frame = CGRectMake(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    webView.dataDetectorTypes = UIDataDetectorTypeAll;
-    webView.delegate = self;
-    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http://www.baidu.com"]];
-    NSURLRequest *request = [NSURLRequest requestWithURL:url];
-    [webView loadRequest:request];
-    
-    [self.view addSubview:webView];
-}
-
-- (void)NavigationInit {
-    self.navigationItem.title = @"计费方式";
-    UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"返回"] style:UIBarButtonItemStylePlain target:self action:@selector(back)];
-    self.navigationItem.leftBarButtonItem = backButton;
-}
-
-#pragma mark - Button Event
-- (void)back {
-    [self.navigationController popViewControllerAnimated:YES];
+- (id)init {
+    if (self = [super init]) {
+        webView = [[UIWebView alloc] initWithFrame:CGRectMake(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)];
+        myAppDelegate = [[UIApplication sharedApplication] delegate];
+    }
+    return self;
 }
 
 #pragma mark - uiwebviewdelegate
@@ -70,19 +52,31 @@
     hintMes.textAlignment = NSTextAlignmentCenter;
     [containerView addSubview:hintMes];
     [self.view addSubview:waitCover];
+//    [self.view addSubview:containerView];
 }
 
 - (void)webViewDidFinishLoad:(UIWebView *)webView {
     [waitCover removeFromSuperview];
 }
 
+- (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error {
+    [waitCover removeFromSuperview];
+    NSLog(@"网络请求失败");
+}
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    // Do any additional setup after loading the view.
     self.view.backgroundColor = [UIColor whiteColor];
-    [self UIInit];
+    webView.dataDetectorTypes = UIDataDetectorTypeAll;
+    webView.delegate = self ;
+    NSURL *url = [NSURL URLWithString:myAppDelegate.linkUrl];
+//    NSURL *url = [NSURL URLWithString:@"http://www.163.com"];
+    NSURLRequest *request = [NSURLRequest requestWithURL:url];
+    [webView loadRequest:request];
+    [self.view addSubview:webView];
+    // Do any additional setup after loading the view.
 }
+
 
 
 - (void)didReceiveMemoryWarning {

@@ -18,10 +18,14 @@
 #pragma mark - 百度模块
 #import <BaiduMapAPI_Base/BMKBaseComponent.h>
 
-@interface AppDelegate () <MyURLConnectionDelegate>
+#pragma mark - 微信支付
+#import "WXApi.h"
+
+@interface AppDelegate () <WXApiDelegate>
 
 @property (nonatomic, strong) UINavigationController    *navigationgController;
 @property (nonatomic, strong) QRCodeScanViewController  *qRCodeScanViewController;
+@property (nonatomic, strong) PayViewController         *payViewController;
 @end
 
 @implementation AppDelegate {
@@ -32,6 +36,9 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
     
+    // 微信支付 初始化
+    [WXApi registerApp:@"wx4a480f3f5a6c4c6c" withDescription:@"ElephantBike1.0"];
+
 //    初始状态
     self.isIdentify = NO;
     self.isFreeze = NO;
@@ -75,8 +82,9 @@
             NSDictionary *receive = [NSJSONSerialization JSONObjectWithData:receiveData options:NSJSONReadingMutableLeaves error:nil];
             NSString *status = receive[@"status"];
             NSString *receiveBalance = receive[@"balance"];
-            if (status) {
-                self.balance = receiveBalance;
+            if ([status isEqualToString:@"success"]) {
+                CGFloat tempBalance = [receiveBalance floatValue];
+                self.balance = [NSString stringWithFormat:@"%.2f", tempBalance];
                 //拿取本地缓存数据 只需手机和isLogin，和短信验证用的是一个api，不需要验证码
                 NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
                 NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/user/login"];
@@ -108,6 +116,7 @@
                             NSLog(@"已经身份认证%d", self.isIdentify);
                         }else {
                             self.isUpload = YES;
+                            NSLog(@"isupload:yes");
                         }
                         if ([isFinish isEqualToString:@"1"]) {
                             self.isEndRiding = false;
@@ -154,7 +163,7 @@
     if (!ret) {
         NSLog(@"无法定位");
     }
-    
+    _payViewController = [[PayViewController alloc] init];
     _qRCodeScanViewController = [[QRCodeScanViewController alloc] init];
     
     _navigationgController = [[UINavigationController alloc] initWithRootViewController:_qRCodeScanViewController];
@@ -165,6 +174,34 @@
     [_window makeKeyAndVisible];
     
     return YES;
+}
+
+#pragma mark - 微信支付代理设置
+- (BOOL)application:(UIApplication *)application handleOpenURL:(NSURL *)url {
+    return  [WXApi handleOpenURL:url delegate:self];
+}
+
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
+    return  [WXApi handleOpenURL:url delegate:self];
+}
+
+- (void)onResp:(BaseResp *)resp {
+    if ([resp isKindOfClass:[PayResp class]]) {
+        PayResp *response = (PayResp *)resp;
+        switch (response.errCode) {
+            case WXSuccess:{
+                NSLog(@"支付成功");
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"paySuccess" object:nil];
+            }
+                break;
+            default: {
+                NSLog(@"failed %d", response.errCode);
+                NSLog(@"付款失败");
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"payFail" object:nil];
+            }
+                break;
+        }
+    }
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
