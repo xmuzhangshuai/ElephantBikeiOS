@@ -40,6 +40,10 @@
 - (void)NavigationInit {
     self.navigationItem.title = @"用户须知";
     UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"返回"] style:UIBarButtonItemStylePlain target:self action:@selector(back)];
+    backButton.tintColor = [UIColor grayColor];
+    [self.navigationController.navigationBar setTitleTextAttributes:
+     @{NSFontAttributeName:[UIFont fontWithName:@"QingYuanMono" size:18],
+       NSForegroundColorAttributeName:[UIColor blackColor]}];
     self.navigationItem.leftBarButtonItem = backButton;
 }
 

@@ -54,12 +54,14 @@
 - (void)commitChange {
     CGRect rect = self.numberLabel.frame;
     rect.origin.y = _oneDigitHeight - rect.size.height;
+//    rect.origin.y = rect.size.height - _oneDigitHeight;
     self.numberLabel.frame = rect;
 }
 
 - (void)didConfigFinish{
     CGSize size = [@"4" sizeWithAttributes:@{NSFontAttributeName:self.digitFont}];
     _oneDigitHeight = size.height;
+//    _oneDigitHeight = 4;
     
     CGRect rect = {{(self.frame.size.width - size.width) / 2, 0}, size};
     
@@ -96,7 +98,7 @@
 }
 
 - (void)initScrollNumView {
-    self.numberSize = 4;
+    self.numberSize = 5;
     self.numberValue = 0;
     self.splitSpaceWidth = 2.0;
     self.digitFont = [UIFont systemFontOfSize:15];

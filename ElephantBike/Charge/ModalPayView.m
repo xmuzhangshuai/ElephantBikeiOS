@@ -35,7 +35,10 @@
     
     _completion = completion;
     _titleName.text = titleName;
+    _titleName.textAlignment = NSTextAlignmentCenter;
+    _titleName.font = [UIFont fontWithName:@"QingYuanMono" size:16];
     _hintMes.text = hintMes;
+    _hintMes.font = [UIFont fontWithName:@"QingYuanMono" size:12];
     
     [self setupContents];
 
@@ -46,12 +49,11 @@
     self.layer.cornerRadius = 10;
 
    // 默认6位
-    self.inputView.places = 6;
+    self.inputView.places = 5;
 }
 
 - (void)setupContents{
     self.hintMes.numberOfLines = 0;
-    self.hintMes.font = [UIFont systemFontOfSize:12];
     
     self.lineView.layer.borderWidth = 2;
     

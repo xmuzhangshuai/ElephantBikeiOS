@@ -38,6 +38,7 @@
 - (void)NavigationInit {
     self.navigationItem.title = @"帮助";
     UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"返回"] style:UIBarButtonItemStylePlain target:self action:@selector(back)];
+    backButton.tintColor = [UIColor grayColor];
     self.navigationItem.leftBarButtonItem = backButton;
 }
 
@@ -82,6 +83,7 @@
     // Do any additional setup after loading the view.
     self.view.backgroundColor = [UIColor whiteColor];
     [self UIInit];
+    [self NavigationInit];
 }
 
 - (void)didReceiveMemoryWarning {

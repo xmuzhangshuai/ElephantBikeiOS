@@ -18,7 +18,9 @@
 #define VERIFY_BUTTON_WIDTH     0.15*SCREEN_WIDTH
 #define SAME_HEIGHT             0.05*SCREEN_HEIGHT
 #define CORNERRADIUS            6
-#define UICOLOR                 [UIColor colorWithRed:0.050 green:0.700 blue:0.050 alpha:1.000];
+#define UICOLOR                 [UIColor colorWithRed:112/255.0 green:177/255.0 blue:52/255.0 alpha:1.000]
+
+#define BACKGROUNDCOLOR         [UIColor colorWithRed:240/255.0 green:240/255.0 blue:240/255.0 alpha:1.000]
 
 #define IDENTIFICATION_HEIGHT   (SCREEN_HEIGHT-NAVIGATIONBAR_HEIGHT-STATUS_HEIGHT)/3
 #define COMMIT_HEIGHT           IDENTIFICATION_HEIGHT/5
@@ -26,7 +28,11 @@
 
 #define MARGIN                   0.075*SCREEN_HEIGHT
 
-#define IP                      @"http://192.168.0.103:8080"
+#define CENTER_X                0.5*SCREEN_WIDTH
+
+//#define IP                      @"http://192.168.0.123:8080"
+#define IP                      @"http://120.25.197.43"
+//#define IP                      @"http://210.121.164.111"
 
 
 #endif /* UISize_h */

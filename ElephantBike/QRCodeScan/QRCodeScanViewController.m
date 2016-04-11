@@ -15,6 +15,8 @@
 #import "LoginViewController.h"
 #import "PayViewController.h"
 #import "AppDelegate.h"
+#import "IdentityViewController.h"
+
 
 #import "UIImageView+WebCache.h"
 #import "ActivityDetailsViewController.h"
@@ -43,6 +45,8 @@
     NSUserDefaults              *userDefaults;
     
     BOOL                        isConnect;
+    
+    AVCaptureVideoPreviewLayer * layer;
 }
 
 - (id)init {
@@ -79,7 +83,7 @@
         [session addOutput:output];
         [output setMetadataObjectsDelegate:self queue:dispatch_get_main_queue()];
     }
-    AVCaptureVideoPreviewLayer * layer = [AVCaptureVideoPreviewLayer layerWithSession:session];
+    layer = [AVCaptureVideoPreviewLayer layerWithSession:session];
     
     
     AVAuthorizationStatus status = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
@@ -127,34 +131,34 @@
 - (void)setOverlayPickerView
 {
     //左侧的view
-    UIImageView *leftView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 30, SCREEN_HEIGHT)];
+    UIImageView *leftView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 0.1867*SCREEN_WIDTH, SCREEN_HEIGHT)];
     leftView.alpha = 0.5;
     leftView.backgroundColor = [UIColor blackColor];
     [self.view addSubview:leftView];
     //右侧的view
-    UIImageView *rightView = [[UIImageView alloc] initWithFrame:CGRectMake(SCREEN_WIDTH-30, 0, 30, SCREEN_HEIGHT)];
+    UIImageView *rightView = [[UIImageView alloc] initWithFrame:CGRectMake(SCREEN_WIDTH-0.1867*SCREEN_WIDTH, 0, 0.1867*SCREEN_WIDTH, SCREEN_HEIGHT)];
     rightView.alpha = 0.5;
     rightView.backgroundColor = [UIColor blackColor];
     [self.view addSubview:rightView];
     
     //最上部view
-    upView = [[UIImageView alloc] initWithFrame:CGRectMake(30, 0, SCREEN_WIDTH-60, (self.view.center.y-(SCREEN_WIDTH-60)/2))];
+    upView = [[UIImageView alloc] initWithFrame:CGRectMake(0.1867*SCREEN_WIDTH, 0, SCREEN_WIDTH-0.1867*SCREEN_WIDTH*2, 0.24*SCREEN_HEIGHT)];
     upView.alpha = 0.5;
     upView.backgroundColor = [UIColor blackColor];
     [self.view addSubview:upView];
     
     //底部view
-    downView = [[UIImageView alloc] initWithFrame:CGRectMake(30, (self.view.center.y+(SCREEN_WIDTH-60)/2), (SCREEN_WIDTH-60), (SCREEN_HEIGHT-(self.view.center.y-(SCREEN_WIDTH-60)/2)))];
+    downView = [[UIImageView alloc] initWithFrame:CGRectMake(0.1867*SCREEN_WIDTH, SCREEN_HEIGHT-0.408*SCREEN_HEIGHT, SCREEN_WIDTH-0.1867*SCREEN_WIDTH*2, 0.408*SCREEN_HEIGHT)];
     downView.alpha = 0.5;
     downView.backgroundColor = [UIColor blackColor];
     [self.view addSubview:downView];
     
     // 限定二维码扫描范围  cgrectmake(Y,X,H,W) 右下角为起点
-    [output setRectOfInterest:CGRectMake((upView.frame.size.height)/SCREEN_HEIGHT, 30/SCREEN_WIDTH, (SCREEN_WIDTH-60)/SCREEN_HEIGHT, (SCREEN_WIDTH-60)/SCREEN_WIDTH)];
+    [output setRectOfInterest:CGRectMake((upView.frame.size.height)/SCREEN_HEIGHT, 0.1867*SCREEN_WIDTH/SCREEN_WIDTH, 0.627*SCREEN_WIDTH/SCREEN_WIDTH, 0.627*SCREEN_WIDTH/SCREEN_WIDTH)];
 
     
-    UIImageView *centerView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, SCREEN_WIDTH-60, SCREEN_WIDTH-60)];
-    centerView.center = self.view.center;
+    UIImageView *centerView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 0.627*SCREEN_WIDTH, 0.627*SCREEN_WIDTH)];
+    centerView.center = CGPointMake(0.5*SCREEN_WIDTH, 0.416*SCREEN_HEIGHT);
     centerView.image = [UIImage imageNamed:@"扫描框.png"];
     centerView.contentMode = UIViewContentModeScaleAspectFit;
     centerView.backgroundColor = [UIColor clearColor];
@@ -168,34 +172,38 @@
     line.backgroundColor = [UIColor clearColor];
     [centerView addSubview:line];
     
-    UILabel *msg = [[UILabel alloc] initWithFrame:CGRectMake(30, CGRectGetMinY(downView.frame), SCREEN_WIDTH-60, 60)];
+    UILabel *msg = [[UILabel alloc] initWithFrame:CGRectMake(0.1867*SCREEN_WIDTH, CGRectGetMinY(downView.frame), SCREEN_WIDTH-0.1867*SCREEN_WIDTH*2, 60)];
     msg.backgroundColor = [UIColor clearColor];
     msg.textColor = [UIColor whiteColor];
     msg.textAlignment = NSTextAlignmentCenter;
-    msg.font = [UIFont systemFontOfSize:16];
     msg.numberOfLines = 2;
     msg.text = @"将大象单车上得二维码放入框内获取开锁密码";
+    msg.font = [UIFont fontWithName:@"QingYuanMono" size:14];
     [self.view addSubview:msg];
     
-    UIButton *buttonTemp = [[UIButton alloc] initWithFrame:CGRectMake(0, SCREEN_HEIGHT-100, SCREEN_WIDTH/2, 50)];
-    buttonTemp.backgroundColor = [UIColor clearColor];
-    buttonTemp.tintColor = [UIColor whiteColor];
-    [buttonTemp setTitle:@"计费页面" forState:UIControlStateNormal];
-    [buttonTemp addTarget:self action:@selector(gotoChargeView) forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:buttonTemp];
+//    UIButton *buttonTemp = [[UIButton alloc] initWithFrame:CGRectMake(0, SCREEN_HEIGHT-100, SCREEN_WIDTH/2, 50)];
+//    buttonTemp.backgroundColor = [UIColor clearColor];
+//    buttonTemp.tintColor = [UIColor whiteColor];
+//    [buttonTemp setTitle:@"计费页面" forState:UIControlStateNormal];
+//    [buttonTemp addTarget:self action:@selector(gotoChargeView) forControlEvents:UIControlEventTouchUpInside];
+////    [self.view addSubview:buttonTemp];
+//    
+//    UIButton *identifyButton = [[UIButton alloc] initWithFrame:CGRectMake(0, SCREEN_HEIGHT-50, SCREEN_WIDTH/2, 50)];
+//    identifyButton.backgroundColor = [UIColor clearColor];
+//    identifyButton.tintColor = [UIColor whiteColor];
+//    [identifyButton setTitle:@"验证页面" forState:UIControlStateNormal];
+//    [identifyButton addTarget:self action:@selector(gotoIdentifyView) forControlEvents:UIControlEventTouchUpInside];
+////    [self.view addSubview:identifyButton];
     
-    UIButton *identifyButton = [[UIButton alloc] initWithFrame:CGRectMake(0, SCREEN_HEIGHT-50, SCREEN_WIDTH/2, 50)];
-    identifyButton.backgroundColor = [UIColor clearColor];
-    identifyButton.tintColor = [UIColor whiteColor];
-    [identifyButton setTitle:@"验证页面" forState:UIControlStateNormal];
-    [identifyButton addTarget:self action:@selector(gotoIdentifyView) forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:identifyButton];
-    
-    UIButton *torchButton = [[UIButton alloc] initWithFrame:CGRectMake(SCREEN_WIDTH/2, SCREEN_HEIGHT-100, SCREEN_WIDTH/2, 100)];
-    UIWindow *window = [[UIApplication sharedApplication].windows lastObject];
-    if (window.frame.size.width == 320) {
-        torchButton.frame = CGRectMake(SCREEN_WIDTH/2, SCREEN_HEIGHT-100/2, SCREEN_WIDTH/6, 100/2);
-    }
+    UIButton *torchButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 0.208*SCREEN_WIDTH, 0.208*SCREEN_WIDTH)];
+    torchButton.center = CGPointMake(0.5*SCREEN_WIDTH, 0.809*SCREEN_HEIGHT);
+//    UIWindow *window = [[UIApplication sharedApplication].windows lastObject];
+//    if (window.frame.size.width == 320) {
+//        torchButton.frame = CGRectMake((SCREEN_WIDTH-SCREEN_WIDTH/6)/2, SCREEN_HEIGHT-150/2, SCREEN_WIDTH/6, 100/2);
+//        if (window.frame.size.width == 960) {
+//            torchButton.frame = CGRectMake((SCREEN_WIDTH-SCREEN_WIDTH/6)/2, SCREEN_HEIGHT-100/2, SCREEN_WIDTH/6, 100/2);
+//        }
+//    }
     [torchButton setImage:[UIImage imageNamed:@"闪光灯"] forState:UIControlStateNormal];
     torchButton.contentMode = UIViewContentModeScaleAspectFit;
     [torchButton addTarget:self action:@selector(torchSwitch) forControlEvents:UIControlEventTouchUpInside];
@@ -211,6 +219,7 @@
     cover.alpha = 0.0;
     cover.hidden = YES;
     [self.navigationController.view addSubview:cover];
+    [self.navigationController.view bringSubviewToFront:cover];
     
     UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(hiddenCover)];
     UISwipeGestureRecognizer *rightSwipeGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(hiddenCover)];
@@ -218,7 +227,7 @@
     [cover addGestureRecognizer:tap];
     [cover addGestureRecognizer:rightSwipeGestureRecognizer];
     
-    infoViewController = [[InfoViewController alloc] initWithFrame:CGRectMake((-1)*SCREEN_WIDTH, 0, SCREEN_WIDTH*0.8, SCREEN_HEIGHT)];
+    infoViewController = [[InfoViewController alloc] initWithFrame:CGRectMake((-1)*SCREEN_WIDTH, 0, SCREEN_WIDTH*0.8666, SCREEN_HEIGHT)];
     infoViewController.delegate = self;
     [self.navigationController.view addSubview:infoViewController.view];
     
@@ -232,30 +241,34 @@
 }
 
 - (void)NavigationInit {
-    UIImageView *titleImageView = [[UIImageView alloc] initWithFrame:CGRectMake(SCREEN_WIDTH/2-30, STATUS_HEIGHT, 60, NAVIGATIONBAR_HEIGHT)];
-    titleImageView.image = [UIImage imageNamed:@"大象图标"];
+    UIImageView *titleImageView = [[UIImageView alloc] initWithFrame:CGRectMake(SCREEN_WIDTH/2-30, STATUS_HEIGHT, 0.15*SCREEN_WIDTH, 0.05*SCREEN_HEIGHT)];
+    titleImageView.center = CGPointMake(0.50*SCREEN_WIDTH, 0.06*SCREEN_HEIGHT);
+    titleImageView.image = [UIImage imageNamed:@"LOGO"];
     titleImageView.contentMode = UIViewContentModeScaleAspectFit;
     self.navigationItem.titleView = titleImageView;
-    UIBarButtonItem *infoButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"个人资料"] style:UIBarButtonItemStylePlain target:self action:@selector(information)];
+    UIBarButtonItem *infoButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"个人中心"] style:UIBarButtonItemStylePlain target:self action:@selector(information)];
+    infoButton.tintColor = [UIColor grayColor];
     self.navigationItem.leftBarButtonItem = infoButton;
     // 若没有身份认证，显示，若已经身份认证，不显示
     NSLog(@"是否身份认证：%d", myDelegate.isIdentify);
-    if (!myDelegate.isIdentify) {
-        UIBarButtonItem *rightButton = [[UIBarButtonItem alloc]initWithTitle:@"身份认证" style:UIBarButtonItemStylePlain target:self action:@selector(gotoIdentification)];
-        self.navigationItem.rightBarButtonItem = rightButton;
-    }
 }
 
 #pragma mark - buttonEvent
 // 身份认证
 - (void)gotoIdentification {
     // 关闭闪光灯
-    [device lockForConfiguration:nil];
-    [device setTorchMode:AVCaptureTorchModeOff];
-    [device unlockForConfiguration];
-    if (myDelegate.isLogin) {
-        IdentificationViewController *idViewController = [[IdentificationViewController alloc]init];
-        [self.navigationController pushViewController:idViewController animated:YES];
+    if (myDelegate.isLinked) {
+        [device lockForConfiguration:nil];
+        [device setTorchMode:AVCaptureTorchModeOff];
+        [device unlockForConfiguration];
+        if (myDelegate.isLogin) {
+            //身份认证界面改正
+            IdentityViewController *idViewController = [[IdentityViewController alloc] init];
+            [self.navigationController pushViewController:idViewController animated:YES];
+        }else {
+            LoginViewController *loginViewController = [[LoginViewController alloc] init];
+            [self.navigationController pushViewController:loginViewController animated:YES];
+        }
     }else {
         LoginViewController *loginViewController = [[LoginViewController alloc] init];
         [self.navigationController pushViewController:loginViewController animated:YES];
@@ -298,15 +311,15 @@
 
 - (void)hiddenCover {
     [self hiddenMenu];
-    [UIView animateWithDuration:0.25 animations:^{
-        cover.alpha = 0.0;
-    }];
-    cover.hidden = YES;
 }
 
 - (void)information {
-    if (myDelegate.isLogin) {
-        [self showMenu];
+    if (myDelegate.isLinked) {
+        if (myDelegate.isLogin) {
+            [self showMenu];
+        }else {
+            [self gotoIdentifyView];
+        }
     }else {
         [self gotoIdentifyView];
     }
@@ -316,7 +329,7 @@
     CGRect infoView = infoViewController.view.frame;
     infoView.origin.x += SCREEN_WIDTH;
     // 动画
-    float containerAlpha = 1.0f;
+    cover.hidden = NO;
     [UIView animateWithDuration:0.4f
                           delay:0.0f
          usingSpringWithDamping:1.0
@@ -324,37 +337,35 @@
                         options: UIViewAnimationOptionCurveEaseInOut
                      animations:^{
                          infoViewController.view.frame = infoView;
-                         [self.navigationController.view setAlpha: containerAlpha];
                          cover.alpha = 0.6;
                      }
                      completion:^(BOOL finished){
                      }];
     [UIView commitAnimations];
-    cover.hidden = NO;
 }
 
 - (void)hiddenMenu {
-    cover.hidden = YES;
     CGRect infoView = infoViewController.view.frame;
     infoView.origin.x -= SCREEN_WIDTH;
     // 动画
-    float containerAlpha = 1.0f;
-    [UIView animateWithDuration:0.6f
+    cover.hidden = YES;
+    [UIView animateWithDuration:0.4f
                           delay:0.05f
          usingSpringWithDamping:1.0
           initialSpringVelocity:4.0
                         options: UIViewAnimationOptionCurveEaseInOut
                      animations:^{
                          infoViewController.view.frame = infoView;
-                         [self.navigationController.view setAlpha: containerAlpha];
+                         cover.alpha = 0;
                      }
                      completion:^(BOOL finished){
+                         
                      }];
     [UIView commitAnimations];
-
 }
 
 - (void)gotoDetails {
+    [cover removeFromSuperview];
     ActivityDetailsViewController *activityDetailsViewController = [[ActivityDetailsViewController alloc] init];
     [self.navigationController pushViewController:activityDetailsViewController animated:YES];
 }
@@ -362,6 +373,10 @@
 - (void)none {
     [waitCover removeFromSuperview];
     [session startRunning];
+    if (myDelegate.isFreeze) {
+        [upView addSubview:freezeLabel];
+        [session stopRunning];
+    }
 }
 
 #pragma mark - AVCaptureMetadataOutputObjectsDelegate
@@ -383,7 +398,7 @@
             AVMetadataMachineReadableCodeObject * metadataObject = [metadataObjects objectAtIndex :0];
             bikeNO = metadataObject.stringValue;
             [userDefaults setObject:bikeNO forKey:@"bikeNo"];
-            
+            NSLog(@"bikeid:%@    缓存的bikeNO是：%@", bikeNO, [userDefaults objectForKey:@"bikeNo"]);
             // 菊花等待动画
             // 集成api  此处是膜
             waitCover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
@@ -420,9 +435,6 @@
             [request setHTTPBody:data];
             [request setHTTPMethod:@"POST"];
             [NSURLConnection connectionWithRequest:request delegate:self];
-            
-            NSTimer *ChaoshiTime = [NSTimer timerWithTimeInterval:15 target:self selector:@selector(stopRequest) userInfo:nil repeats:NO];
-            [[NSRunLoop mainRunLoop] addTimer:ChaoshiTime forMode:NSDefaultRunLoopMode];
         }
     }
 }
@@ -436,7 +448,7 @@
         // 半黑膜
         UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
         containerView.backgroundColor = [UIColor blackColor];
-        containerView.alpha = 0.6;
+        containerView.alpha = 0.8;
         containerView.layer.cornerRadius = CORNERRADIUS*2;
         [waitCover addSubview:containerView];
         // 一个控件
@@ -465,6 +477,8 @@
     NSDictionary *receiveJson = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableLeaves error:nil];
     NSString *status = receiveJson[@"status"];
     NSString *password = receiveJson[@"pass"];
+    NSString *message = receiveJson[@"message"];
+    NSLog(@"status:%@", status);
     if ([status isEqualToString:@"success"]) {
         isConnect = YES;
         ChargeViewController *chargeViewController = [[ChargeViewController alloc] init];
@@ -472,7 +486,7 @@
         [self.delegate getBikeNO:bikeNO andPassword:password];
         [self.navigationController pushViewController:chargeViewController animated:YES];
     }else {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"不存在此单车" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:message delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         alert.tag = 1;
         [alert show];
     }
@@ -488,7 +502,7 @@
     // 半黑膜
     UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
     containerView.backgroundColor = [UIColor blackColor];
-    containerView.alpha = 0.6;
+    containerView.alpha = 0.8;
     containerView.layer.cornerRadius = CORNERRADIUS*2;
     [cover addSubview:containerView];
     // 一个控件
@@ -512,7 +526,7 @@
         LoginViewController *loginViewController = [[LoginViewController alloc] init];
         [self.navigationController pushViewController:loginViewController animated:YES];
     }else if (alertView.tag == 3){
-        IdentificationViewController *identificationViewController = [[IdentificationViewController alloc] init];
+        IdentityViewController *identificationViewController = [[IdentityViewController alloc] init];
         [self.navigationController pushViewController:identificationViewController animated:YES];
     }
 }
@@ -550,7 +564,42 @@
     [self.navigationController pushViewController:nextViewController animated:YES];
 }
 
+- (void)removeFromSuperView {
+    [self hiddenCover];
+    // 收到验证码  进行提示
+    waitCover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    waitCover.alpha = 1;
+    // 半黑膜
+    UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+    containerView.backgroundColor = [UIColor blackColor];
+    containerView.alpha = 0.8;
+    containerView.layer.cornerRadius = CORNERRADIUS*2;
+    [waitCover addSubview:containerView];
+    // 一个控件
+    UILabel *hintMes = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
+    hintMes.text = @"退出成功";
+    hintMes.textColor = [UIColor whiteColor];
+    hintMes.textAlignment = NSTextAlignmentCenter;
+    [containerView addSubview:hintMes];
+    [self.view addSubview:waitCover];
+    // 显示时间
+    NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(removeViewThenToLogin) userInfo:nil repeats:NO];
+    [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
+    
+}
 
+- (void)removeViewThenToLogin {
+    [waitCover removeFromSuperview];
+    if (!myDelegate.isIdentify) {
+        UIBarButtonItem *rightButton = [[UIBarButtonItem alloc]initWithTitle:@"身份认证" style:UIBarButtonItemStylePlain target:self action:@selector(gotoIdentification)];
+        self.navigationItem.rightBarButtonItem = rightButton;
+    }
+    if (myDelegate.isLogout) {
+        LoginViewController *loginViewController = [[LoginViewController alloc] init];
+        [self.navigationController pushViewController:loginViewController animated:YES];
+    }
+    myDelegate.isLogout = NO;
+}
 
 #pragma mark - Life Cycle
 - (void)viewDidLoad {
@@ -559,34 +608,6 @@
     self.view.backgroundColor = [UIColor whiteColor];
     [self instanceDevice];
     myDelegate = [[UIApplication sharedApplication] delegate];
-    if (myDelegate.isActivity) {
-        // 有活动则无法扫描
-        [session stopRunning];
-        NSLog(@"显示活动页面");
-        // 显示活动页面
-        NSString *imageurl = [IP stringByAppendingString:myDelegate.imageUrl];
-        waitCover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
-        UITapGestureRecognizer *noneTap = [[UITapGestureRecognizer alloc] init];
-        [noneTap addTarget:self action:@selector(none)];
-        [waitCover addGestureRecognizer:noneTap];
-        waitCover.alpha = 0.8;
-        waitCover.backgroundColor = [UIColor blackColor];
-        discountImageView.contentMode = UIViewContentModeScaleAspectFit;
-        __block UIActivityIndicatorView *activityIndicator;
-        [discountImageView sd_setImageWithURL:[NSURL URLWithString:imageurl] placeholderImage:nil options:SDWebImageProgressiveDownload progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-            if (!activityIndicator)
-            {
-                [discountImageView addSubview:activityIndicator = [UIActivityIndicatorView.alloc initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite]];
-                activityIndicator.center = discountImageView.center;
-                [activityIndicator startAnimating];
-            }
-        } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-            [activityIndicator removeFromSuperview];
-            activityIndicator = nil;
-        }];
-        [waitCover addSubview:discountImageView];
-        [self.view addSubview:waitCover];
-    }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -594,25 +615,110 @@
     if (myDelegate.isFreeze) {
         [upView addSubview:freezeLabel];
         [session stopRunning];
+    }else {
+        [freezeLabel removeFromSuperview];
+        [session startRunning];
     }
     [self NavigationInit];
-    
+    if (myDelegate.isRestart) {
+        // 菊花等待动画
+        // 集成api  此处是膜
+        waitCover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+        waitCover.alpha = 1;
+        // 半黑膜
+        UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+        containerView.backgroundColor = [UIColor blackColor];
+        containerView.alpha = 0.8;
+        containerView.layer.cornerRadius = CORNERRADIUS*2;
+        [waitCover addSubview:containerView];
+        // 两个控件
+        UIActivityIndicatorView *waitActivityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+        waitActivityView.frame = CGRectMake(0.33*containerView.frame.size.width, 0.1*containerView.frame.size.width, 0.33*containerView.frame.size.width, 0.4*containerView.frame.size.height);
+        [waitActivityView startAnimating];
+        [containerView addSubview:waitActivityView];
+        
+        UILabel *hintMes = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.7*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
+        hintMes.text = @"请稍后...";
+        hintMes.textColor = [UIColor whiteColor];
+        hintMes.textAlignment = NSTextAlignmentCenter;
+        [containerView addSubview:hintMes];
+        [self.view addSubview:waitCover];
+    }
 }
 
 - (void)viewDidAppear:(BOOL)animated {
     NSLog(@"骑行结束：%d 付款：%d", myDelegate.isEndRiding, myDelegate.isEndPay);
-    
-    
-    if (!myDelegate.isEndRiding) {
-        ChargeViewController *chargeViewController = [[ChargeViewController alloc] init];
-        [self.navigationController pushViewController:chargeViewController animated:YES];
-    }else if (!myDelegate.isEndPay) {
-        // 跳到支付页面
-        // 可能需要代理的方法来跳转到相应的页面--------------------------
-        PayViewController *payViewController = [[PayViewController alloc] init];
-        [self.navigationController pushViewController:payViewController animated:YES];
-        NSLog(@"跳转付款页面");
+    if (!myDelegate.isLinked) {
+        [session stopRunning];
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"您的网络忙，未能获取用户状态,建议您重新重新登录" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+        [alertView show];
+    }else {
+        [waitCover removeFromSuperview];
+        if (!myDelegate.isEndRiding) {
+            NSLog(@"将waitcover删除");
+            ChargeViewController *chargeViewController = [[ChargeViewController alloc] init];
+            [self.navigationController pushViewController:chargeViewController animated:YES];
+        }else if (!myDelegate.isEndPay) {
+            // 跳到支付页面
+            PayViewController *payViewController = [[PayViewController alloc] init];
+            [self.navigationController pushViewController:payViewController animated:YES];
+            NSLog(@"跳转付款页面");
+        }else if (myDelegate.isActivity) {
+            // 有活动则无法扫描
+            [session stopRunning];
+            myDelegate.isActivity = NO;
+            NSLog(@"显示活动页面");
+            // 显示活动页面
+            NSString *temp = [IP stringByAppendingString:@"/"];
+            NSString *imageurl;
+            if (![myDelegate.imageUrlShouYe isEqualToString:@""]) {
+                imageurl = [temp stringByAppendingString:myDelegate.imageUrlShouYe];
+            }
+            waitCover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+            UITapGestureRecognizer *noneTap = [[UITapGestureRecognizer alloc] init];
+            [noneTap addTarget:self action:@selector(none)];
+            [waitCover addGestureRecognizer:noneTap];
+            waitCover.alpha = 0.8;
+            waitCover.backgroundColor = [UIColor blackColor];
+//            UIImage *activityImage = [[SDImageCache sharedImageCache] imageFromDiskCacheForKey:@"活动页面"];
+            discountImageView.contentMode = UIViewContentModeScaleAspectFit;
+//            if (!activityImage) {
+                __block UIActivityIndicatorView *activityIndicator;
+                [discountImageView sd_setImageWithURL:[NSURL URLWithString:imageurl] placeholderImage:nil options:SDWebImageProgressiveDownload progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+                    if (!activityIndicator)
+                    {
+                        [discountImageView addSubview:activityIndicator = [UIActivityIndicatorView.alloc initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite]];
+                        activityIndicator.center = discountImageView.center;
+                        [activityIndicator startAnimating];
+                    }
+                } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+                    [activityIndicator removeFromSuperview];
+                    activityIndicator = nil;
+//                    [[SDImageCache sharedImageCache] storeImage:image forKey:@"活动页面" toDisk:YES];
+                }];
+//            }else {
+//                [discountImageView setImage:activityImage];
+//            }
+            [waitCover addSubview:discountImageView];
+            [self.view addSubview:waitCover];
+        }
+        if (!myDelegate.isIdentify) {
+            UIBarButtonItem *rightButton = [[UIBarButtonItem alloc]initWithTitle:@"身份认证" style:UIBarButtonItemStylePlain target:self action:@selector(gotoIdentification)];
+            self.navigationItem.rightBarButtonItem = rightButton;
+        }else {
+            self.navigationItem.rightBarButtonItem = nil;
+        }
+        if (myDelegate.isLogout) {
+            myDelegate.isLogout = NO;
+            LoginViewController *loginViewController = [[LoginViewController alloc] init];
+            [self.navigationController pushViewController:loginViewController animated:YES];
+        }
     }
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    [session stopRunning];
 }
 
 - (void)didReceiveMemoryWarning {

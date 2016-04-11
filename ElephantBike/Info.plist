@@ -32,6 +32,16 @@
 				<string>wx4a480f3f5a6c4c6c</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>Alipay</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>alisdkdemo</string>
+			</array>
+		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>1</string>
@@ -44,6 +54,11 @@
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>当您使用时才会定位</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>晴圆等宽.ttc</string>
+		<string>msyh.ttf</string>
+	</array>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
 	<key>UIRequiredDeviceCapabilities</key>

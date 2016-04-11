@@ -69,9 +69,45 @@
         }
         UIImage *IDCardImage = [[SDImageCache sharedImageCache] imageFromDiskCacheForKey:@"身份证"];
         UIImage *studentCardImage = [[SDImageCache sharedImageCache] imageFromDiskCacheForKey:@"学生证"];
-        
-        [identificationFront setImage:IDCardImage];
-        [identificationBack setImage:studentCardImage];
+        if (!IDCardImage || !studentCardImage) {
+            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/user/cardurl"];
+            NSURL *url = [NSURL URLWithString:urlStr];
+            NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+            NSString *dataStr = [NSString stringWithFormat:@"phone=%@", [userDefaults objectForKey:@"phoneNumber"]];
+            NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
+            [request setHTTPBody:data];
+            [request setHTTPMethod:@"POST"];
+            MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"getImageUrl"];
+        }else {
+            [identificationFront setImage:IDCardImage];
+            [identificationBack setImage:studentCardImage];
+        }
+    }else if (MyDelegate.isIdentify) {
+        selectButton1.hidden = YES;
+        selectButton2.hidden = YES;
+        resultLabel.text = @"您已通过审核，开始使用大象单车吧";
+        resultLabel.font = [UIFont systemFontOfSize:14];
+        [commitButton removeFromSuperview];
+        [self.view addSubview:resultLabel];
+        if (SCREEN_WIDTH == 320) {
+            resultLabel.font = [UIFont systemFontOfSize:12];
+        }
+        UIImage *IDCardImage = [[SDImageCache sharedImageCache] imageFromDiskCacheForKey:@"身份证"];
+        UIImage *studentCardImage = [[SDImageCache sharedImageCache] imageFromDiskCacheForKey:@"学生证"];
+        if (!IDCardImage || !studentCardImage) {
+            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/user/cardurl"];
+            NSLog(@"请求图片ip:%@", urlStr);
+            NSURL *url = [NSURL URLWithString:urlStr];
+            NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+            NSString *dataStr = [NSString stringWithFormat:@"phone=%@", [userDefaults objectForKey:@"phoneNumber"]];
+            NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
+            [request setHTTPBody:data];
+            [request setHTTPMethod:@"POST"];
+            MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"getImageUrl"];
+        }else {
+            [identificationFront setImage:IDCardImage];
+            [identificationBack setImage:studentCardImage];
+        }
     }
 }
 
@@ -106,13 +142,14 @@
     identificationBack.contentMode = UIViewContentModeScaleToFill;
     identificationBack.userInteractionEnabled = YES;
     
-    UITapGestureRecognizer *tap1 = [[UITapGestureRecognizer alloc] init];
-    [tap1 addTarget:self action:@selector(chooseImage1)];
-    [identificationFront addGestureRecognizer:tap1];
-    
-    UITapGestureRecognizer *tap2 = [[UITapGestureRecognizer alloc] init];
-    [tap2 addTarget:self action:@selector(chooseImage2)];
-    [identificationBack addGestureRecognizer:tap2];
+    if (!(MyDelegate.isUpload || MyDelegate.isIdentify)) {
+        UITapGestureRecognizer *tap1 = [[UITapGestureRecognizer alloc] init];
+        [tap1 addTarget:self action:@selector(chooseImage1)];
+        [identificationFront addGestureRecognizer:tap1];
+        UITapGestureRecognizer *tap2 = [[UITapGestureRecognizer alloc] init];
+        [tap2 addTarget:self action:@selector(chooseImage2)];
+        [identificationBack addGestureRecognizer:tap2];
+    }
     
     selectButton1.frame = CGRectMake(0.1*SAME_WIDTH, (IDENTIFICATION_HEIGHT-SELECTBUTTON1_HEIGHT)/2, SELECTBUTTON1_WIDTH, SELECTBUTTON1_HEIGHT);
     NSMutableAttributedString *title1 = [[NSMutableAttributedString alloc] initWithString:@"点击上传身份证正面照片"];
@@ -153,7 +190,7 @@
 
 #pragma mark - Button Event
 - (void)back {
-    [self.navigationController popViewControllerAnimated:YES];
+    [self.navigationController popToRootViewControllerAnimated:YES];
 }
 
 - (void)chooseImage1 {
@@ -186,7 +223,7 @@
         // 半黑膜
         UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
         containerView.backgroundColor = [UIColor blackColor];
-        containerView.alpha = 0.6;
+        containerView.alpha = 0.8;
         containerView.layer.cornerRadius = CORNERRADIUS*2;
         [cover addSubview:containerView];
         // 两个控件
@@ -272,6 +309,7 @@
             MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"studentCard"];
         }else {
             // 图片上传失败
+            [cover removeFromSuperview];
             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"图片上传失败" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
             [alertView show];
         }
@@ -293,6 +331,7 @@
             MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"uploadUrl"];
         }else {
             // 图片上传失败
+            [cover removeFromSuperview];
             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"图片上传失败" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
             [alertView show];
         }
@@ -336,8 +375,46 @@
             [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
         }else {
             // 图片上传失败
+            [cover removeFromSuperview];
             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"图片上传失败" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
             [alertView show];
+        }
+    }else if ([connection.name isEqualToString:@"getImageUrl"]) {
+        NSString *status = receiveJson[@"status"];
+        NSString *IDCardImageurl = receiveJson[@"idcard"];
+        NSString *studentImageurl = receiveJson[@"stucard"];
+        NSString *IDCardimageurl = [IP stringByAppendingString:@"/"];
+        NSString *studentimageurl = [IP stringByAppendingString:@"/"];
+        if ([status isEqualToString:@"success"]) {
+            NSString *IDCardImageUrl = [IDCardimageurl stringByAppendingString:IDCardImageurl];
+            NSString *studentImageUrl = [studentimageurl stringByAppendingString:studentImageurl];
+            __block UIActivityIndicatorView *activityIndicator;
+            [identificationFront sd_setImageWithURL:[NSURL URLWithString:IDCardImageUrl] placeholderImage:nil options:SDWebImageProgressiveDownload progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+                if (!activityIndicator)
+                {
+                    [identificationFront addSubview:activityIndicator = [UIActivityIndicatorView.alloc initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite]];
+                    activityIndicator.center = identificationFront.center;
+                    [activityIndicator startAnimating];
+                }
+            } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+                [activityIndicator removeFromSuperview];
+                activityIndicator = nil;
+                // 将这两张图片缓存在本地
+                [[SDImageCache sharedImageCache] storeImage:image forKey:@"身份证" toDisk:YES];
+                
+            }];
+            [identificationBack sd_setImageWithURL:[NSURL URLWithString:studentImageUrl] placeholderImage:nil options:SDWebImageProgressiveDownload progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+                if (!activityIndicator)
+                {
+                    [identificationBack addSubview:activityIndicator = [UIActivityIndicatorView.alloc initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite]];
+                    activityIndicator.center = identificationBack.center;
+                    [activityIndicator startAnimating];
+                }
+            } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+                [activityIndicator removeFromSuperview];
+                activityIndicator = nil;
+                [[SDImageCache sharedImageCache] storeImage:image forKey:@"学生证" toDisk:YES];
+            }];
         }
     }
 }
@@ -354,7 +431,7 @@
     // 半黑膜
     UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
     containerView.backgroundColor = [UIColor blackColor];
-    containerView.alpha = 0.6;
+    containerView.alpha = 0.8;
     containerView.layer.cornerRadius = CORNERRADIUS*2;
     [cover addSubview:containerView];
     // 一个控件
@@ -395,12 +472,14 @@
     imagePickerController.allowsEditing = YES;
     imagePickerController.sourceType = sourceType;
     [self presentViewController:imagePickerController animated:YES completion:nil];
+//    [self.navigationController pushViewController:imagePickerController animated:YES];
 }
 
 #pragma mark - ImagePicker Delegate
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info {
     
     [picker dismissViewControllerAnimated:YES completion:^{}];
+//    [self.navigationController popViewControllerAnimated:YES];
     UIImage *savedImage1 = [info objectForKey:UIImagePickerControllerOriginalImage];
     UIImage *savedImage;
     NSData *imageData = UIImageJPEGRepresentation(savedImage1, 1);
@@ -433,7 +512,10 @@
 }
 
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
-    [self dismissViewControllerAnimated:YES completion:nil];
+    [picker dismissViewControllerAnimated:YES completion:^{
+        NSLog(@"picker 撤销");
+    }];
+//    [self.navigationController popViewControllerAnimated:YES];
     NSLog(@"哈哈哈");
 }
 

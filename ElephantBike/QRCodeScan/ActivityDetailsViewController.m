@@ -69,7 +69,7 @@
     self.view.backgroundColor = [UIColor whiteColor];
     webView.dataDetectorTypes = UIDataDetectorTypeAll;
     webView.delegate = self ;
-    NSURL *url = [NSURL URLWithString:myAppDelegate.linkUrl];
+    NSURL *url = [NSURL URLWithString:myAppDelegate.linkUrlShouYe];
 //    NSURL *url = [NSURL URLWithString:@"http://www.163.com"];
     NSURLRequest *request = [NSURLRequest requestWithURL:url];
     [webView loadRequest:request];

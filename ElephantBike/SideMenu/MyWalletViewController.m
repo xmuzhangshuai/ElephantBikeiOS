@@ -23,7 +23,7 @@
 #define BALANCEDETAILSLABEL_WIDTH   0.9*SCREEN_WIDTH
 #define BALANCEDETAILSLABEL_HEIGHT  SAME_HEIGHT
 #define DETAILSTABLEVIEW_WIDTH  0.9*SCREEN_WIDTH
-#define DETAILSTABLEVIEW_HEIGHT 0.5*SCREEN_HEIGHT
+#define DETAILSTABLEVIEW_HEIGHT 44*5
 
 @interface MyWalletViewController () <UITableViewDataSource, UITableViewDelegate, UIScrollViewDelegate, NSURLConnectionDataDelegate>
 
@@ -42,7 +42,6 @@
     NSUserDefaults *userDefaults;
     CGFloat     cellHeight;
     int         page;
-    LoadingView     *footView;
     BOOL        isNone;    // 判断是否还有余额明细的数据
     UIView      *cover;
 }
@@ -85,13 +84,13 @@
     balanceLabel.frame = CGRectMake((BALANCEIMAGEVIEW_WIDTH-BALANCELABEL_WIDTH)/2, 0.5*BALANCEIMAGEVIEW_HEIGHT, BALANCELABEL_WIDTH, BALANCELABEL_HEIGHT);
     balanceLabel.text = myAppDelegate.balance;
     balanceLabel.textAlignment = NSTextAlignmentCenter;
-    balanceLabel.font = [UIFont systemFontOfSize:25];
-    balanceLabel.textColor = [UIColor blackColor];
+    balanceLabel.font = [UIFont fontWithName:@"QingYuanMono" size:25];
+    balanceLabel.textColor = [UIColor whiteColor];
     
     hintMes.frame = CGRectMake((SCREEN_WIDTH-HINTMES_WIDTH-RECHARGEBUTTON_WIDTH)/2, STATUS_HEIGHT*2+NAVIGATIONBAR_HEIGHT+BALANCEIMAGEVIEW_HEIGHT, HINTMES_WIDTH, HINTMES_HEIGHT);
     hintMes.text = @"使用大象钱包免密码快捷支付，";
     hintMes.textAlignment = NSTextAlignmentRight;
-    hintMes.font = [UIFont systemFontOfSize:12];
+    hintMes.font = [UIFont fontWithName:@"QingYuanMono" size:12];
     
     rechargeButton.frame = CGRectMake((SCREEN_WIDTH-HINTMES_WIDTH-RECHARGEBUTTON_WIDTH)/2+HINTMES_WIDTH, STATUS_HEIGHT*2+NAVIGATIONBAR_HEIGHT+BALANCEIMAGEVIEW_HEIGHT, RECHARGEBUTTON_WIDTH, RECHARGEBUTTON_HEIGHT);
     rechargeButton.titleLabel.textColor = UICOLOR;
@@ -100,13 +99,13 @@
     NSRange titleRnage = {0, [title length]};
     [title addAttribute:NSUnderlineStyleAttributeName value:[NSNumber numberWithInteger:NSUnderlineStyleSingle] range:titleRnage];
     [rechargeButton setAttributedTitle:title forState:UIControlStateNormal];
-    rechargeButton.titleLabel.font = [UIFont systemFontOfSize:12];
+    rechargeButton.titleLabel.font = [UIFont fontWithName:@"QingYuanMono" size:12];
     [rechargeButton addTarget:self action:@selector(RechargeView) forControlEvents:UIControlEventTouchUpInside];
     
     balanceDetailsLabel.frame = CGRectMake(0.05*SCREEN_WIDTH, STATUS_HEIGHT*3+NAVIGATIONBAR_HEIGHT+BALANCEIMAGEVIEW_HEIGHT+RECHARGEBUTTON_HEIGHT, BALANCEDETAILSLABEL_WIDTH, BALANCEDETAILSLABEL_HEIGHT);
     balanceDetailsLabel.text = @"—————————— 余额明细 ——————————";
     balanceDetailsLabel.textAlignment = NSTextAlignmentCenter;
-    balanceDetailsLabel.font = [UIFont systemFontOfSize:12];
+    balanceDetailsLabel.font = [UIFont fontWithName:@"QingYuanMono" size:10];
     if (SCREEN_WIDTH == 320) {
         balanceDetailsLabel.text = @"————————— 余额明细 —————————";
     }
@@ -115,10 +114,11 @@
     detailsTableView.frame = CGRectMake(0.05*SCREEN_WIDTH, STATUS_HEIGHT*3+NAVIGATIONBAR_HEIGHT+BALANCEIMAGEVIEW_HEIGHT+RECHARGEBUTTON_HEIGHT+BALANCEDETAILSLABEL_HEIGHT, DETAILSTABLEVIEW_WIDTH, DETAILSTABLEVIEW_HEIGHT);
     detailsTableView.dataSource = self;
     detailsTableView.delegate = self;
+    detailsTableView.scrollEnabled = NO;
     
-    footView = [[LoadingView alloc] initWithFrame:CGRectMake(0, 0, DETAILSTABLEVIEW_WIDTH, 50)];
-    [footView setRefreshStateWhite];
-    detailsTableView.tableFooterView = footView;
+//    footView = [[LoadingView alloc] initWithFrame:CGRectMake(0, 0, DETAILSTABLEVIEW_WIDTH, 50)];
+//    [footView setRefreshStateWhite];
+//    detailsTableView.tableFooterView = footView;
     
     // 列表的位置添加一个等待菊花动画 把列表的加载放到服务器返回里面
     
@@ -136,7 +136,11 @@
 - (void)NavigationInit {
     self.navigationItem.title = @"我的钱包";
     UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"返回"] style:UIBarButtonItemStylePlain target:self action:@selector(back)];
+    backButton.tintColor = [UIColor grayColor];
     self.navigationItem.leftBarButtonItem = backButton;
+    [self.navigationController.navigationBar setTitleTextAttributes:
+     @{NSFontAttributeName:[UIFont fontWithName:@"QingYuanMono" size:18],
+       NSForegroundColorAttributeName:[UIColor blackColor]}];
 }
 
 #pragma mark - TableViewDelegate
@@ -174,42 +178,44 @@
     }
     cell.textLabel.numberOfLines = 0;
     cell.detailTextLabel.numberOfLines = 0;
+    cell.textLabel.font = [UIFont fontWithName:@"QingYuanMono" size:12];
+    cell.detailTextLabel.font = [UIFont fontWithName:@"QingYuanMono" size:14];
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
     cellHeight = cell.frame.size.height;
     return cell;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return 64;
+    return 44;
 }
 
 #pragma mark - UIScrollDelegate
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-//    if (scrollView.contentOffset.y >= dataArray.count*cellHeight-DETAILSTABLEVIEW_HEIGHT+50){
-        // 需要更多的数据
-//        if (dataArray.count >= 10 && isNone == NO) {
-    NSLog(@"y:%f", scrollView.contentOffset.y);
-    NSLog(@"dataarray.count:%d", dataArray.count);
-    NSLog(@"cellheight:%f", cellHeight);
-        if (scrollView.contentOffset.y > dataArray.count*cellHeight-DETAILSTABLEVIEW_HEIGHT+30 && scrollView.contentOffset.y < dataArray.count*cellHeight-DETAILSTABLEVIEW_HEIGHT+50) {
-            [footView setRefreshStateLoose];
-        }
+//- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+////    if (scrollView.contentOffset.y >= dataArray.count*cellHeight-DETAILSTABLEVIEW_HEIGHT+50){
+//        // 需要更多的数据
+////        if (dataArray.count >= 10 && isNone == NO) {
+//    NSLog(@"y:%f", scrollView.contentOffset.y);
+//    NSLog(@"dataarray.count:%d", dataArray.count);
+//    NSLog(@"cellheight:%f", cellHeight);
+//        if (scrollView.contentOffset.y > dataArray.count*cellHeight-DETAILSTABLEVIEW_HEIGHT+30 && scrollView.contentOffset.y < dataArray.count*cellHeight-DETAILSTABLEVIEW_HEIGHT+50) {
+//            [footView setRefreshStateLoose];
 //        }
-//    }
-}
+////        }
+////    }
+//}
 
-- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerat {
-    if ( scrollView.contentOffset.y >= dataArray.count*cellHeight-DETAILSTABLEVIEW_HEIGHT+60) {
-//        if (dataArray.count >= 10 && isNone == NO) {
-        NSLog(@"当前的state:%@", footView.state);
-            if ([footView.state isEqualToString:@"loose"] || [footView.state isEqualToString:@"none"]) {
-                [footView setRefreshStateLoading];
-                [self requestForData];
-        NSLog(@"动画");
-            }
-//        }
-    }
-}
+//- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerat {
+//    if ( scrollView.contentOffset.y >= dataArray.count*cellHeight-DETAILSTABLEVIEW_HEIGHT+60) {
+////        if (dataArray.count >= 10 && isNone == NO) {
+//        NSLog(@"当前的state:%@", footView.state);
+//            if ([footView.state isEqualToString:@"loose"] || [footView.state isEqualToString:@"none"]) {
+//                [footView setRefreshStateLoading];
+//                [self requestForData];
+//        NSLog(@"动画");
+//            }
+////        }
+//    }
+//}
 
 #pragma mark - 服务器请求
 - (void)requestForData {
@@ -218,7 +224,7 @@
     NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/balancelist"];
     NSURL *url = [NSURL URLWithString:urlStr];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-    NSString *dataStr = [NSString stringWithFormat:@"phone=%@&count=%d", phoneNumber, page];
+    NSString *dataStr = [NSString stringWithFormat:@"phone=%@&count=%d", phoneNumber, 0];
     NSLog(@"phonenumber:%@", phoneNumber);
     NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
     [request setHTTPBody:data];
@@ -237,21 +243,15 @@
         isNone = NO;
         if (page == 0) {
             dataArray = [NSMutableArray arrayWithArray:receiveArray];
-            NSLog(@"page = 0 dataarray.count:%d", dataArray.count);
-            page++;
+            NSLog(@"page = 0 dataarray.count:%lu", (unsigned long)dataArray.count);
         }else {
             [dataArray addObjectsFromArray:receiveArray];
-            page++;
         }
         [detailsTableView reloadData];
         if (receiveArray.count == 10) {
-            [footView setRefreshStateNormal];
-        }else {
-            [footView setRefreshStateNone];
         }
     }else {
         isNone = YES;
-        [footView setRefreshStateNone];
     }
 }
 
@@ -263,7 +263,7 @@
     // 半黑膜
     UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
     containerView.backgroundColor = [UIColor blackColor];
-    containerView.alpha = 0.6;
+    containerView.alpha = 0.8;
     containerView.layer.cornerRadius = CORNERRADIUS*2;
     [cover addSubview:containerView];
     // 一个控件
@@ -279,6 +279,10 @@
     NSLog(@"网络超时");
 }
 
+- (void)removeView {
+    [cover removeFromSuperview];
+}
+
 #pragma mark - Button Event
 - (void)RechargeView {
     RechargeViewController *rechargeViewController = [[RechargeViewController alloc] init];
@@ -292,7 +296,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    self.view.backgroundColor = [UIColor whiteColor];
+    self.view.backgroundColor = BACKGROUNDCOLOR;
     [self UIInit];
     
 }
@@ -308,7 +312,7 @@
     // 半黑膜
     UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
     containerView.backgroundColor = [UIColor blackColor];
-    containerView.alpha = 0.6;
+    containerView.alpha = 0.8;
     containerView.layer.cornerRadius = CORNERRADIUS*2;
     [cover addSubview:containerView];
     // 两个控件

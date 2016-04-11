@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "4223846D1C453FD300A9C793"
-               BuildableName = "&#x5927;&#x8c61;&#x5355;&#x8f66;.app"
+               BuildableName = "dxdc.app"
                BlueprintName = "ElephantBike"
                ReferencedContainer = "container:ElephantBike.xcodeproj">
             </BuildableReference>
@@ -53,7 +53,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "4223846D1C453FD300A9C793"
-            BuildableName = "&#x5927;&#x8c61;&#x5355;&#x8f66;.app"
+            BuildableName = "dxdc.app"
             BlueprintName = "ElephantBike"
             ReferencedContainer = "container:ElephantBike.xcodeproj">
          </BuildableReference>
@@ -76,7 +76,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "4223846D1C453FD300A9C793"
-            BuildableName = "&#x5927;&#x8c61;&#x5355;&#x8f66;.app"
+            BuildableName = "dxdc.app"
             BlueprintName = "ElephantBike"
             ReferencedContainer = "container:ElephantBike.xcodeproj">
          </BuildableReference>
@@ -95,7 +95,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "4223846D1C453FD300A9C793"
-            BuildableName = "&#x5927;&#x8c61;&#x5355;&#x8f66;.app"
+            BuildableName = "dxdc.app"
             BlueprintName = "ElephantBike"
             ReferencedContainer = "container:ElephantBike.xcodeproj">
          </BuildableReference>

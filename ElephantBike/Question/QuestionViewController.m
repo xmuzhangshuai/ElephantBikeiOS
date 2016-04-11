@@ -613,7 +613,7 @@
         // 半黑膜
         UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
         containerView.backgroundColor = [UIColor blackColor];
-        containerView.alpha = 0.6;
+        containerView.alpha = 0.8;
         containerView.layer.cornerRadius = CORNERRADIUS*2;
         [cover addSubview:containerView];
         // 两个控件
@@ -656,7 +656,7 @@
         // 半黑膜
         UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
         containerView.backgroundColor = [UIColor blackColor];
-        containerView.alpha = 0.6;
+        containerView.alpha = 0.8;
         containerView.layer.cornerRadius = CORNERRADIUS*2;
         [cover addSubview:containerView];
         // 两个控件
@@ -715,7 +715,7 @@
         // 半黑膜
         UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
         containerView.backgroundColor = [UIColor blackColor];
-        containerView.alpha = 0.6;
+        containerView.alpha = 0.8;
         containerView.layer.cornerRadius = CORNERRADIUS*2;
         [cover addSubview:containerView];
         // 两个控件
@@ -955,7 +955,7 @@
     // 半黑膜
     UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
     containerView.backgroundColor = [UIColor blackColor];
-    containerView.alpha = 0.6;
+    containerView.alpha = 0.8;
     containerView.layer.cornerRadius = CORNERRADIUS*2;
     [cover addSubview:containerView];
     // 一个控件

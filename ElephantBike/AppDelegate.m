@@ -21,6 +21,9 @@
 #pragma mark - 微信支付
 #import "WXApi.h"
 
+#pragma mark - 支付宝
+#import <AlipaySDK/AlipaySDK.h>
+
 @interface AppDelegate () <WXApiDelegate>
 
 @property (nonatomic, strong) UINavigationController    *navigationgController;
@@ -48,6 +51,9 @@
     self.isMissing = NO;
     self.isUpload = NO;
     self.isActivity = NO;
+    self.isLogout = NO;
+    self.isLinked = YES;
+    self.isMoneyView = NO;
 
     
     self.balance = @"";
@@ -55,11 +61,30 @@
     if (![userDefaults boolForKey:@"everLaunched"]) {
         [userDefaults setBool:NO forKey:@"isLogin"];
         [userDefaults setBool:YES forKey:@"everLaunched"];
+        [userDefaults setBool:NO forKey:@"isVip"];
+        [userDefaults setObject:@"" forKey:@"name"];
+        [userDefaults setObject:@"" forKey:@"college"];
     }
     self.isLogin = [userDefaults boolForKey:@"isLogin"];
-    self.isRestart = NO;
     NSLog(@"%d", self.isLogin);
     if (self.isLogin) {
+        
+//        self.balance = [userDefaults objectForKey:@"balance"];
+//        self.isFreeze = [userDefaults boolForKey:@"isFreeze"];
+//        self.isIdentify = [userDefaults boolForKey:@"isIdentify"];
+//        self.isUpload = [userDefaults boolForKey:@"isUpload"];
+//        self.isEndRiding = [userDefaults boolForKey:@"isEndRiding"];
+//        self.isEndPay = [userDefaults boolForKey:@"isEndPay"];
+//        if (self.isEndRiding == 0) {
+//            self.isRestart = YES;
+//        }
+//        if (self.isEndPay == 0) {
+//            self.isRestart = YES;
+//        }
+        
+        // balance 部分
+//        self.balance = [userDefaults objectForKey:@"balance"];
+        
         // 已经登录
         
         // 可以设置一个变量，没有获取到该账户的数据就在qrcodeview页面提示，并且无法使用软件扫描。
@@ -75,9 +100,11 @@
         [request setHTTPBody:data];
         [request setHTTPMethod:@"POST"];
 //        MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"balance"];
-        NSData *receiveData = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
+        NSError *error = nil;
+        NSData *receiveData = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:&error];
         if (receiveData == nil) {
-            NSLog(@"send request failed:");
+            NSLog(@"send request failed:%@", error);
+            self.isLinked = NO;
         }else {
             NSDictionary *receive = [NSJSONSerialization JSONObjectWithData:receiveData options:NSJSONReadingMutableLeaves error:nil];
             NSString *status = receive[@"status"];
@@ -97,12 +124,16 @@
                 NSData *receiveData = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
                 if (receiveData == nil) {
                     NSLog(@"send request failed:");
+                    self.isLinked = NO;
                 }else {
                     NSDictionary *receive = [NSJSONSerialization JSONObjectWithData:receiveData options:NSJSONReadingMutableLeaves error:nil];
                     NSString *status = receive[@"status"];
                     NSString *isFrozen = receive[@"isfrozen"];
                     NSString *isFinish = receive[@"isfinish"];
                     NSString *isPay = receive[@"ispay"];
+                    NSString *name = receive[@"name"];
+                    NSString *college = receive[@"college"];
+                    NSLog(@"isfrozen:%@", isFrozen);
                     if ([status isEqualToString:@"success"]) {
                         if ([isFrozen isEqualToString:@"-1"]) {
                             self.isFreeze = true;
@@ -112,7 +143,7 @@
                             self.isIdentify = false;
                         }else if([isFrozen isEqualToString:@"1"]) {
                             self.isFreeze = false;
-                            self.isIdentify = YES;
+                            self.isIdentify = true;
                             NSLog(@"已经身份认证%d", self.isIdentify);
                         }else {
                             self.isUpload = YES;
@@ -126,6 +157,8 @@
                             self.isEndPay = false;
                             self.isRestart = YES;
                         }
+                        [userDefaults setObject:name forKey:@"name"];
+                        [userDefaults setObject:college forKey:@"college"];
                         NSLog(@"骑行结束：%d 付款：%d 重启：%d", self.isEndRiding, self.isEndPay, self.isRestart);
                     }
                     // 设置相应页面的跳转，正常情况 跳转扫描页面，其他分三种情况
@@ -134,29 +167,34 @@
             }
         }
     }
-    
+        NSLog(@"请求活动");
     // 请求服务器
     // 判断是否有活动
     NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/act/topic"];
     NSURL *url = [NSURL URLWithString:urlStr];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    NSString *dataStr = [NSString stringWithFormat:@"type=%d", 1];
+    NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
+    [request setHTTPBody:data];
     [request setHTTPMethod:@"POST"];
     NSData *receiveData = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
     if (receiveData == nil) {
         NSLog(@"send request failed:");
+//        self.isLinked = NO;
     }else {
         NSDictionary *receive = [NSJSONSerialization JSONObjectWithData:receiveData options:NSJSONReadingMutableLeaves error:nil];
         NSString *status = receive[@"status"];
         NSString *imageurl = receive[@"imageurl"];
         NSString *linkurl = receive[@"linkurl"];
+        NSLog(@"status:%@", status);
         if ([status isEqualToString:@"success"]) {
+            self.imageUrlShouYe = imageurl;
+            self.linkUrlShouYe = linkurl;
             self.isActivity = YES;
-            self.imageUrl = imageurl;
-            self.linkUrl = linkurl;
         }
+        NSLog(@"url:%@%@ activity:%d", self.imageUrlShouYe, self.linkUrlShouYe, self.isActivity);
     }
 
-    
     // 百度模块
     _mapManager = [[BMKMapManager alloc] init];
     BOOL ret = [_mapManager start:@"jR2M4PEO3DL9TRFHIGQgi81p" generalDelegate:nil];
@@ -182,9 +220,22 @@
 }
 
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
+    if (!self.isWXPay) {
+        if ([url.host isEqualToString:@"safepay"]) {
+            //跳转支付宝钱包进行支付，处理支付结果
+            [[AlipaySDK defaultService] processOrderWithPaymentResult:url standbyCallback:^(NSDictionary *resultDic) {
+                NSLog(@"result = %@",resultDic);
+            }];
+        }
+        return YES;
+    }
     return  [WXApi handleOpenURL:url delegate:self];
 }
-
+// iOS9最新能用的 上面两个iOS9已经废弃
+- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary*)options {
+    return  [WXApi handleOpenURL:url delegate:self];
+}
+/*
 - (void)onResp:(BaseResp *)resp {
     if ([resp isKindOfClass:[PayResp class]]) {
         PayResp *response = (PayResp *)resp;
@@ -192,17 +243,28 @@
             case WXSuccess:{
                 NSLog(@"支付成功");
                 [[NSNotificationCenter defaultCenter] postNotificationName:@"paySuccess" object:nil];
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"rechargeSuccess" object:nil];
             }
                 break;
             default: {
                 NSLog(@"failed %d", response.errCode);
                 NSLog(@"付款失败");
                 [[NSNotificationCenter defaultCenter] postNotificationName:@"payFail" object:nil];
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"rechargeFail" object:nil];
             }
                 break;
         }
     }
-}
+}*/
+
+#pragma mark - 支付宝代理
+//- (BOOL)application:(UIApplication *)application
+//            openURL:(NSURL *)url
+//  sourceApplication:(NSString *)sourceApplication
+//         annotation:(id)annotation {
+//    
+//    
+//}
 
 - (void)applicationWillResignActive:(UIApplication *)application {
     // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
@@ -216,6 +278,16 @@
 
 - (void)applicationWillEnterForeground:(UIApplication *)application {
     // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
+    
+    // 调用一个代理方法，让支付页面去请求服务器看有没有支付成功
+    if (self.isMoneyView) {
+        NSLog(@"进入前台");
+        if (self.isWXPay) {
+            [self.myDelegate isWXPay];
+        }else {
+            [self.myDelegate isAliPay];
+        }
+    }
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application {

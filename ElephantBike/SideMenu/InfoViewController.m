@@ -10,10 +10,13 @@
 #import "UISize.h"
 #import "MyWalletViewController.h"
 #import "IdentificationViewController.h"
-#import "RecommendViewController.h"
 #import "HelpViewController.h"
 #import "AppDelegate.h"
+#import "IdentityViewController.h"
+#import "ElephantMemberViewController.h"
+#import "RecommendController.h"
 
+#import "UIImageView+WebCache.h"
 
 #define AVATARIMAGE_WIDTH               0.16*SCREEN_WIDTH
 #define AVATARIMAGE_HEIGHT              AVATARIMAGE_WIDTH
@@ -26,7 +29,10 @@
 #define LOGOTABLEVIEW_WIDTH             0.3*SCREEN_WIDTH*0.8
 #define LOGOTABLEVIEW_HEIGHT            LOGOTABLEVIEW_WIDTH
 
-@interface InfoViewController () <UITableViewDataSource, UITableViewDelegate>
+#define ELEPHANTMEMBER_WIDTH 0.2*SCREEN_WIDTH
+#define ELEPAHNTMEMBER_HEIGHT 0.3*AVATARIMAGE_HEIGHT
+
+@interface InfoViewController () <UITableViewDataSource, UITableViewDelegate, NSURLConnectionDataDelegate>
 
 @end
 
@@ -36,58 +42,74 @@
     UILabel     *identificationLabel;
     UITableView *infoTableView;
     UIImageView *logoImageView;
-    
+    UIImageView *avatarImage;
     NSArray     *listArray;
     
+    /** 是否已开通大象会员*/
+    UIButton *ElephantMemberButton;
+    UIImageView *AdImageView;
+    
     AppDelegate *myAppDelegate;
+    NSUserDefaults *userDefaults;
+    
+    UILabel     *phoneNumberLabel;  // 电话label
 }
 
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self = [super init]) {
         self.view.frame = frame;
-        nameLabel               = [[UILabel alloc] init];
-        myAppDelegate           = [[UIApplication sharedApplication] delegate];
-        NSLog(@"isupload:%d",myAppDelegate.isUpload);
-        if (myAppDelegate.isIdentify) {
-            nameLabel.text = @"姓名";
-        }else if (myAppDelegate.isUpload) {
-            nameLabel.text = @"未认证";
-        }else {
-            nameLabel.text = @"请登录";
-        }
+        NSLog(@"是否认证：%d", myAppDelegate.isIdentify);
+        // 请求广告
+        NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/act/topic"];
+        NSURL *url = [NSURL URLWithString:urlStr];
+        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+        NSString *dataStr = [NSString stringWithFormat:@"type=%d", 3];
+        NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
+        [request setHTTPBody:data];
+        [request setHTTPMethod:@"POST"];
+        NSURLConnection *connection = [NSURLConnection connectionWithRequest:request delegate:self];
     }
     return self;
 }
 
 - (id)init {
     if (self = [super init]) {
-        nameLabel               = [[UILabel alloc] init];
         myAppDelegate           = [[UIApplication sharedApplication] delegate];
-        if (myAppDelegate.isIdentify) {
-            nameLabel.text = @"姓名";
-        }else if (myAppDelegate.isUpload) {
-            nameLabel.text = @"未认证";
-        }else {
-            nameLabel.text = @"请登录";
-        }
+        // 请求广告
+        NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/act/topic"];
+        NSURL *url = [NSURL URLWithString:urlStr];
+        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+        NSString *dataStr = [NSString stringWithFormat:@"type=%d", 3];
+        NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
+        [request setHTTPBody:data];
+        [request setHTTPMethod:@"POST"];
+        NSURLConnection *connection = [NSURLConnection connectionWithRequest:request delegate:self];
     }
     return self;
 }
 
 #pragma mark - UIInit
 - (void)UIInit {
-//    avatarImage             = [[UIImageView alloc] init];
-
+    myAppDelegate           = [[UIApplication sharedApplication] delegate];
+    avatarImage             = [[UIImageView alloc] init];
+    nameLabel               = [[UILabel alloc] init];
     identificationLabel     = [[UILabel alloc] init];
     infoTableView           = [[UITableView alloc] init];
     logoImageView           = [[UIImageView alloc] init];
     
-
+    userDefaults            = [NSUserDefaults standardUserDefaults];
+    phoneNumberLabel        = [[UILabel alloc] init];
     
-    listArray               = @[@"我的钱包", @"身份认证", @"推荐有奖", @"帮助"];
+    /** 会员按钮*/
+    ElephantMemberButton    = [UIButton buttonWithType:UIButtonTypeCustom];
+    AdImageView             = [[UIImageView alloc] init];
+    
+    listArray               = @[@"我的钱包", @"身份认证", @"活动中心", @"帮助", @"退出"];
     
     [self NavigationInit];
     [self UILayout];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(balanceUpdate) name:@"balanceUpdate" object:nil];
 }
 
 - (void)NavigationInit {
@@ -95,38 +117,137 @@
 }
 
 - (void)UILayout {
-//    avatarImage.frame = CGRectMake(0.05*SCREEN_WIDTH, STATUS_HEIGHT*2, AVATARIMAGE_WIDTH, AVATARIMAGE_HEIGHT);
-//    avatarImage.image = [UIImage imageNamed:@"头像"];
-    /* 将方形图片剪裁成圆的
+    avatarImage.frame = CGRectMake(0, 0, AVATARIMAGE_WIDTH, AVATARIMAGE_HEIGHT);
+    avatarImage.center = CGPointMake(0.13*SCREEN_WIDTH, 0.11*SCREEN_HEIGHT);
+    avatarImage.image = [UIImage imageNamed:@"头像"];
+    // 将方形图片剪裁成圆的
     avatarImage.layer.masksToBounds = YES;
-    avatarImage.layer.cornerRadius = 50;
-    */
+    avatarImage.layer.cornerRadius = AVATARIMAGE_WIDTH/2;
     
-    nameLabel.frame = CGRectMake(0.05*SCREEN_WIDTH, STATUS_HEIGHT*2, NAMELABEL_WIDTH, NAMELABEL_HEIGHT);
+    
+//    nameLabel.frame = CGRectMake(0.05*SCREEN_WIDTH+AVATARIMAGE_WIDTH, STATUS_HEIGHT*2, NAMELABEL_WIDTH, NAMELABEL_HEIGHT);
+//    nameLabel.textAlignment = NSTextAlignmentLeft;
+//    if (myAppDelegate.isIdentify) {
+//        nameLabel.text = @"姓名";
+//    }else if (myAppDelegate.isUpload) {
+//        nameLabel.text = @"未认证";
+//    }else {
+//        nameLabel.text = @"请认证";
+//    }
+
+    nameLabel.frame = CGRectMake(0.23*SCREEN_WIDTH, 0.05*SCREEN_HEIGHT, NAMELABEL_WIDTH, NAMELABEL_HEIGHT);
+    NSLog(@"identity:%d", myAppDelegate.isIdentify);
+    if (myAppDelegate.isIdentify) {
+        nameLabel.text = [userDefaults objectForKey:@"name"];
+    }else {
+        nameLabel.text = @"";
+    }
+    nameLabel.font = [UIFont fontWithName:@"QingYuanMono" size:14];
     nameLabel.textAlignment = NSTextAlignmentLeft;
     
-    identificationLabel.frame = CGRectMake(0.05*SCREEN_WIDTH, STATUS_HEIGHT*2+NAMELABEL_HEIGHT, IDENTIFICATIONLABEL_WIDTH, IDENTIFICATIONLABEL_HEIGHT);
-    identificationLabel.clipsToBounds = YES;
-    identificationLabel.layer.cornerRadius = CORNERRADIUS*2;
-    identificationLabel.backgroundColor = UICOLOR;
-    identificationLabel.text = @"  ☑已认证:xxxxxx";
-    identificationLabel.font = [UIFont systemFontOfSize:12];
+    identificationLabel.frame = CGRectMake(0.23*SCREEN_WIDTH, 0.09*SCREEN_HEIGHT, IDENTIFICATIONLABEL_WIDTH, IDENTIFICATIONLABEL_HEIGHT);
+    if (myAppDelegate.isIdentify) {
+        identificationLabel.text = [NSString stringWithFormat:@"已认证：%@", [userDefaults objectForKey:@"college"]];
+    }else {
+        identificationLabel.text = @"未认证";
+    }
+    identificationLabel.font = [UIFont fontWithName:@"QingYuanMono" size:10];
     identificationLabel.textAlignment = NSTextAlignmentLeft;
     
-    infoTableView.frame = CGRectMake(0, 0.33*SCREEN_HEIGHT, INFOTABLEVIEW_WIDTH, INFOTABLEVIEW_HEIGHT);
+    /** 会员的按钮*/
+    ElephantMemberButton.frame = CGRectMake(0.23*SCREEN_WIDTH, 0.13*SCREEN_HEIGHT, ELEPHANTMEMBER_WIDTH, ELEPAHNTMEMBER_HEIGHT);
+    ElephantMemberButton.backgroundColor = [UIColor whiteColor];
+    
+    //设置条件，是否是会员
+    if ([userDefaults boolForKey:@"isVip"]) {
+        [ElephantMemberButton setBackgroundImage:[UIImage imageNamed:@"会员标识"] forState:UIControlStateNormal];
+    }else {
+        [ElephantMemberButton setBackgroundImage:[UIImage imageNamed:@"开通大象会员"] forState:UIControlStateNormal];
+    }
+    [ElephantMemberButton addTarget:self action:@selector(openElephantMember) forControlEvents:UIControlEventTouchUpInside];
+    
+    
+//    NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
+//    phoneNumberLabel.frame = CGRectMake(0.05*SCREEN_WIDTH+AVATARIMAGE_WIDTH, STATUS_HEIGHT*2+NAMELABEL_HEIGHT+IDENTIFICATIONLABEL_HEIGHT, IDENTIFICATIONLABEL_WIDTH, IDENTIFICATIONLABEL_HEIGHT);
+//    phoneNumberLabel.text = phoneNumber;
+//    [self.view addSubview:phoneNumberLabel];
+    
+    infoTableView.frame = CGRectMake(0, 0.28*SCREEN_HEIGHT, INFOTABLEVIEW_WIDTH, INFOTABLEVIEW_HEIGHT);
     infoTableView.dataSource = self;
     infoTableView.delegate = self;
     infoTableView.scrollEnabled = NO;
+
     
-    logoImageView.frame = CGRectMake((SCREEN_WIDTH*0.8-LOGOTABLEVIEW_WIDTH)/2, SCREEN_HEIGHT-LOGOTABLEVIEW_HEIGHT, LOGOTABLEVIEW_WIDTH, LOGOTABLEVIEW_HEIGHT);
-    logoImageView.image = [UIImage imageNamed:@"Logo"];
+    logoImageView.frame = CGRectMake(0, 0, 0.12*SCREEN_WIDTH, 0.042*SCREEN_HEIGHT);
+    logoImageView.center = CGPointMake(0.5*0.8666*SCREEN_WIDTH, 0.822*SCREEN_HEIGHT);
+    logoImageView.image = [UIImage imageNamed:@"绿色LOGO"];
     logoImageView.contentMode = UIViewContentModeScaleAspectFit;
     
-//    [self.view addSubview:avatarImage];
+    //预留的广告位
+    AdImageView.frame = CGRectMake(0.05*SCREEN_WIDTH, 0.87*SCREEN_HEIGHT, 0.75*SCREEN_WIDTH, 0.12*SCREEN_HEIGHT);
+    AdImageView.layer.masksToBounds = YES;
+    AdImageView.layer.cornerRadius = 5;
+    
+    [self.view addSubview:avatarImage];
     [self.view addSubview:nameLabel];
     [self.view addSubview:identificationLabel];
+    [self.view addSubview:ElephantMemberButton];
     [self.view addSubview:infoTableView];
     [self.view addSubview:logoImageView];
+    [self.view addSubview:AdImageView];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(changeMemberStatus) name:@"isVip" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateInfo) name:@"updateInfo" object:nil];
+}
+
+#pragma mark - 私有方法
+/** 点击方法*/
+-(void)openElephantMember{
+    ElephantMemberViewController *ElephantMemberController = [[ElephantMemberViewController alloc] init];
+    [self.delegate getNextViewController:ElephantMemberController];
+}
+
+- (void)balanceUpdate {
+    UITableViewCell *cell = [infoTableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
+    NSString *str = [@"余额:" stringByAppendingString:myAppDelegate.balance];
+    NSString *str1 = [str stringByAppendingString:@"元"];
+    cell.detailTextLabel.text = str1;
+}
+
+- (void)changeMemberStatus {
+    [ElephantMemberButton setBackgroundImage:[UIImage imageNamed:@"会员标识"] forState:UIControlStateNormal];
+    if (![userDefaults boolForKey:@"isVip"]) {
+        [ElephantMemberButton setTitle:@"" forState:UIControlStateNormal];
+        [ElephantMemberButton setImage:[UIImage imageNamed:@"会员标识"] forState:UIControlStateNormal];
+    }
+}
+
+- (void)updateInfo {
+    if (myAppDelegate.isIdentify) {
+        nameLabel.text = [userDefaults objectForKey:@"name"];
+    }else {
+        nameLabel.text = @"";
+    }
+    if (myAppDelegate.isIdentify) {
+        identificationLabel.text = [NSString stringWithFormat:@"已认证：%@", [userDefaults objectForKey:@"college"]];
+    }else {
+        identificationLabel.text = @"未认证";
+    }
+}
+
+#pragma mark - 服务器返回
+- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
+    NSDictionary *receive = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableLeaves error:nil];
+    NSString *status = receive[@"status"];
+    NSString *imageurl = receive[@"imageurl"];
+    NSString *linkurl = receive[@"linkurl"];
+    if ([status isEqualToString:@"success"]) {
+        NSString *temp = [IP stringByAppendingString:@"/"];
+        NSString *temp1 = [IP stringByAppendingString:@"/"];
+        myAppDelegate.imageUrlInfo = [temp stringByAppendingString:imageurl];
+        myAppDelegate.linkUrlInfo = [temp1 stringByAppendingString:linkurl];
+        [AdImageView sd_setImageWithURL:[NSURL URLWithString:myAppDelegate.imageUrlInfo]];
+    }
 }
 
 #pragma mark - TableViewDataSource
@@ -135,7 +256,7 @@
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return 4;
+    return 5;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -145,20 +266,38 @@
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:cellIdentifier];
     }
     cell.textLabel.text = [listArray objectAtIndex:indexPath.row];
+    NSLog(@"indexpath.row:%ld", (long)indexPath.row);
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    cell.textLabel.font = [UIFont fontWithName:@"QingYuanMono" size:14];
+    cell.detailTextLabel.font = [UIFont fontWithName:@"QingYuanMono" size:10];
     if (indexPath.row == 0) {
         NSString *str = [@"余额:" stringByAppendingString:myAppDelegate.balance];
         NSString *str1 = [str stringByAppendingString:@"元"];
         cell.detailTextLabel.text = str1;
     }
-    if (indexPath.row == 2) {
-        cell.detailTextLabel.text = @"享用车优惠";
-    }
     return cell;
 }
 
+// 字体
+//-(UIFont*)customFont{
+//    // 你的字体路径
+//    NSString *fontPath = [[NSBundle mainBundle] pathForResource:@"晴圆等宽" ofType:@"ttc"];
+//    NSURL *url = [NSURL fileURLWithPath:fontPath];
+//    CGDataProviderRef fontDataProvider = CGDataProviderCreateWithURL((__bridge CFURLRef)url);
+//    if (fontDataProvider == NULL)
+//        return nil;
+//    CGFontRef newFont = CGFontCreateWithDataProvider(fontDataProvider);
+//    CGDataProviderRelease(fontDataProvider);
+//    if (newFont == NULL) return nil;
+//    NSString *fontName = (__bridge NSString *)CGFontCopyFullName(newFont);
+//    NSLog(@"晴圆等宽：%@", fontName);
+//    UIFont *font = [UIFont fontWithName:fontName size:12];
+//    CGFontRelease(newFont);
+//    return font;
+//}
+
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return  INFOTABLEVIEW_HEIGHT/4;
+    return  INFOTABLEVIEW_HEIGHT/5;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -169,23 +308,50 @@
         }
             break;
         case 1:{
-            IdentificationViewController *identificationViewController = [[IdentificationViewController alloc] init];
-            [self.delegate getNextViewController:identificationViewController];
+            //            IdentificationViewController *identificationViewController = [[IdentificationViewController alloc] init];
+            IdentityViewController *identityViewController = [[IdentityViewController alloc] init];
+            //            [self.delegate getNextViewController:identificationViewController];
+                        [self.delegate getNextViewController:identityViewController];
         }
             break;
         case 2:{
-            RecommendViewController *recommendViewController = [[RecommendViewController alloc] init];
-            [self.delegate getNextViewController:recommendViewController];
-        }
+//            RecommendViewController *recommendViewController = [[RecommendViewController alloc] init];
+            //            [self.delegate getNextViewController:recommendViewController];
+            RecommendController *recommendController = [[RecommendController alloc] init];
+            [self.delegate getNextViewController:recommendController];        }
             break;
         case 3:{
             HelpViewController *helpViewController = [[HelpViewController alloc] init];
             [self.delegate getNextViewController:helpViewController];
         }
             break;
+        case 4:{
+            // 退出登录
+            myAppDelegate.isIdentify = NO;
+            myAppDelegate.isFreeze = NO;
+            myAppDelegate.isEndPay = YES;
+            myAppDelegate.isEndRiding = YES;
+            myAppDelegate.isRestart = NO;
+            myAppDelegate.isMissing = NO;
+            myAppDelegate.isUpload = NO;
+            myAppDelegate.isLogin = NO;
+            myAppDelegate.isLogout = YES;
+            myAppDelegate.isLinked = YES;
+            [userDefaults setBool:NO forKey:@"isLogin"];
+            [userDefaults setObject:@"" forKey:@"name"];
+            [userDefaults setObject:@"" forKey:@"college"];
+            [self Logout];
+        }
+            break;
         default:
             break;
     }
+}
+
+#pragma mark - 退出方法
+- (void)Logout {
+    [self.delegate removeFromSuperView];
+    [self.navigationController popToRootViewControllerAnimated:YES];
 }
 
 - (void)viewDidLoad {

@@ -10,6 +10,7 @@
 @protocol InfoViewControllerDelegate <NSObject>
 
 - (void)getNextViewController:(id)nextViewController;
+- (void)removeFromSuperView;
 
 @end
 @interface InfoViewController : UIViewController

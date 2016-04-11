@@ -18,6 +18,8 @@ CGFloat const kWXInputViewSymbolWH = 8;
 
 @property (nonatomic,strong) UITextField *textField;
 
+
+
 @end
 
 @implementation InputPasswordView
@@ -56,6 +58,7 @@ CGFloat const kWXInputViewSymbolWH = 8;
         
         NSUInteger length = _textField.text.length;
         
+        // 若正好输完，将text传给回调函数去判断 然后置为空
         if (length == self.places && self.WXInputViewDidCompletion) {
             self.WXInputViewDidCompletion(_textField.text);
             [_textField setText:@""];
@@ -68,13 +71,50 @@ CGFloat const kWXInputViewSymbolWH = 8;
         [_symbolArr enumerateObjectsUsingBlock:^(CAShapeLayer *symbol, NSUInteger idx, BOOL * stop) {
             
             symbol.hidden = idx < length ? NO : YES;
+            
+            NSString *password = _textField.text;
+            if (password.length > self.places) {
+                return;
+            }
+            
+            for (int i = 0; i < self.symbolArr.count; i++)
+            {
+                UITextField *pwdTextField= [self.symbolArr objectAtIndex:i];
+                
+                for (int i = 0; i < self.symbolArr.count; i++) {
+                    UITextField *pwdtextfield = [self.symbolArr objectAtIndex:i];
+                    pwdtextfield.hidden = NO;
+                }
+                if (i < password.length) {
+                    NSString *pwd = [password substringWithRange:NSMakeRange(i, 1)];
+                    
+                    pwdTextField.text = pwd;
+                } else {
+                    pwdTextField.text = nil;
+                }
+            }
+
         }];
     }];
 }
 
 - (void)setPlaces:(NSInteger)places{
     _places = places;
-    
+    for (int i = 0; i < places; i++)
+    {
+        UITextField *pwdTextField = [[UITextField alloc] init];
+//        pwdTextField.layer.borderColor = [UIColor grayColor].CGColor;
+        pwdTextField.enabled = YES;
+        pwdTextField.textAlignment = NSTextAlignmentCenter;//居中
+        pwdTextField.secureTextEntry = NO;//设置密码模式
+        pwdTextField.layer.borderWidth = 0.5;
+        pwdTextField.userInteractionEnabled = NO;
+//        [self insertSubview:pwdTextField belowSubview:self.textField];
+//        [self insertSubview:pwdTextField aboveSubview:self.textField];
+        pwdTextField.hidden = NO;
+        [self addSubview:pwdTextField];
+        [self.symbolArr addObject:pwdTextField];
+    }
     if (places > 0) {
         [self setupContents:places];
     }
@@ -93,18 +133,19 @@ CGFloat const kWXInputViewSymbolWH = 8;
         [self addSubview:line];
     }
     
-    // 创建中心原点
-    for (int i = 0; i < pages; i++) {
-        CAShapeLayer *symbol = [CAShapeLayer layer];
-        symbol.fillColor = [UIColor blackColor].CGColor;
-        UIBezierPath *path = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(0, 0, kWXInputViewSymbolWH, kWXInputViewSymbolWH)];
-        symbol.path = path.CGPath;
-        symbol.hidden = YES;
-        [self.layer addSublayer:symbol];
-        
-        // 将所有中心原点添加到数组中
-        [self.symbolArr addObject:symbol];
-    }
+//    // 创建中心原点
+//    for (int i = 0; i < pages; i++) {
+//        CAShapeLayer *symbol = [CAShapeLayer layer];
+//        symbol.fillColor = [UIColor blackColor].CGColor;
+//        UIBezierPath *path = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(0, 0, kWXInputViewSymbolWH, kWXInputViewSymbolWH)];
+//        symbol.path = path.CGPath;
+//        symbol.hidden = YES;
+//        [self.layer addSublayer:symbol];
+//        
+//        // 将所有中心原点添加到数组中
+//        [self.symbolArr addObject:symbol];
+//    }
+    
 }
 
 - (void)layoutSubviews{
@@ -124,19 +165,22 @@ CGFloat const kWXInputViewSymbolWH = 8;
         line.frame = CGRectMake(lineX, lineY, lineW, lineH);
     }
     
+    
     for (int i = 0; i < self.symbolArr.count; i++) {
-        CAShapeLayer *circle = self.symbolArr[i];
-        circle.position = CGPointMake(w * (0.5 + i) - margin, self.frame.size.height * 0.5 - margin);
+//        CAShapeLayer *circle = self.symbolArr[i];
+//        circle.position = CGPointMake(w * (0.5 + i) - margin, self.frame.size.height * 0.5 - margin);
+        UITextField *pwdTextField = [self.symbolArr objectAtIndex:i];
+//        lineX = i * (w + margin);
+        lineX = i * (self.frame.size.width/self.symbolArr.count);
+        pwdTextField.frame = CGRectMake(lineX, lineY, w, lineH);
     }
+    
 }
 
 #pragma mark - 共有方法
 - (void)beginInput{
     if (_textField == nil) {
-        _textField = [[UITextField alloc] init];
-        _textField.keyboardType = UIKeyboardTypeNumberPad;
-        _textField.hidden = YES;
-        [self addSubview:_textField];
+        
     }
     [self.textField becomeFirstResponder];
 }
@@ -152,6 +196,17 @@ CGFloat const kWXInputViewSymbolWH = 8;
     }
     return _symbolArr;
 }
+
+-(UITextField *)textField{
+    if (_textField == nil) {
+                _textField = [[UITextField alloc] initWithFrame:[UIScreen mainScreen].bounds];
+                _textField.keyboardType = UIKeyboardTypeNumberPad;
+                _textField.hidden = YES;
+                [self addSubview:_textField];
+    }
+    return _textField;
+}
+
 
 + (instancetype)inputView{
     return [[self alloc] init];
