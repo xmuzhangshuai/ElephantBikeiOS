@@ -42,11 +42,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "ElephantBike/SideMenu/InfoViewController.m"
-            timestampString = "481604002.155766"
+            timestampString = "482667418.13209"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "238"
-            endingLineNumber = "238"
+            startingLineNumber = "271"
+            endingLineNumber = "271"
             landmarkName = "-connection:didReceiveData:"
             landmarkType = "5">
          </BreakpointContent>
@@ -58,11 +58,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "ElephantBike/Login/LoginViewController.m"
-            timestampString = "481797786.636263"
+            timestampString = "483956100.186267"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "270"
-            endingLineNumber = "270"
+            startingLineNumber = "410"
+            endingLineNumber = "410"
             landmarkName = "-stopRequest"
             landmarkType = "5">
          </BreakpointContent>
@@ -74,44 +74,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "ElephantBike/Charge/ChargeViewController.m"
-            timestampString = "482041909.527765"
+            timestampString = "482661555.189603"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "467"
-            endingLineNumber = "467"
-            landmarkName = "-UILayout"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "ElephantBike/Charge/ChargeViewController.m"
-            timestampString = "482041909.527765"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "440"
-            endingLineNumber = "440"
-            landmarkName = "-UILayout"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "ElephantBike/Charge/ChargeViewController.m"
-            timestampString = "482041909.527765"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "800"
-            endingLineNumber = "800"
-            landmarkName = "-inputRestorePassword"
+            startingLineNumber = "849"
+            endingLineNumber = "849"
+            landmarkName = "-inputReturnPassword"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -154,27 +122,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "ElephantBike/Charge/ChargeViewController.m"
-            timestampString = "482041909.527765"
+            timestampString = "482747506.710987"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1075"
-            endingLineNumber = "1075"
-            landmarkName = "-MyConnection:didReceiveData:"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "ElephantBike/Charge/ChargeViewController.m"
-            timestampString = "482041909.527765"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1091"
-            endingLineNumber = "1091"
+            startingLineNumber = "1174"
+            endingLineNumber = "1174"
             landmarkName = "-MyConnection:didReceiveData:"
             landmarkType = "5">
          </BreakpointContent>
@@ -186,12 +138,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "ElephantBike/SideMenu/OpenMemberViewController.m"
-            timestampString = "481603452.704013"
+            timestampString = "483958887.712452"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "213"
-            endingLineNumber = "213"
-            landmarkName = "-dateFrom:time:"
+            startingLineNumber = "212"
+            endingLineNumber = "212"
+            landmarkName = "-backElephantMember"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -202,12 +154,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "ElephantBike/SideMenu/MemberPayViewController.m"
-            timestampString = "481796804.614207"
+            timestampString = "482665982.2079"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "254"
-            endingLineNumber = "254"
-            landmarkName = "-getMonth:"
+            startingLineNumber = "255"
+            endingLineNumber = "255"
+            landmarkName = "-tableView:didSelectRowAtIndexPath:"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -218,11 +170,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "ElephantBike/SideMenu/InfoViewController.m"
-            timestampString = "481517921.406479"
+            timestampString = "482492537.526638"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "138"
-            endingLineNumber = "138"
+            startingLineNumber = "142"
+            endingLineNumber = "142"
             landmarkName = "-UILayout"
             landmarkType = "5">
          </BreakpointContent>
@@ -234,11 +186,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "ElephantBike/AppDelegate.m"
-            timestampString = "481619737.200189"
+            timestampString = "483506140.127981"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "137"
-            endingLineNumber = "137"
+            startingLineNumber = "153"
+            endingLineNumber = "153"
             landmarkName = "-application:didFinishLaunchingWithOptions:"
             landmarkType = "5">
          </BreakpointContent>
@@ -250,12 +202,28 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "ElephantBike/SideMenu/InfoViewController.m"
-            timestampString = "481518069.420159"
+            timestampString = "482406149.360526"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "61"
-            endingLineNumber = "61"
+            startingLineNumber = "64"
+            endingLineNumber = "64"
             landmarkName = "-initWithFrame:"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ElephantBike/Identification/IdentityViewController.m"
+            timestampString = "484022869.580363"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "383"
+            endingLineNumber = "383"
+            landmarkName = "-MyConnection:didReceiveData:"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -265,14 +233,408 @@
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "ElephantBike/Identification/IdentityViewController.m"
-            timestampString = "481776117.553212"
+            filePath = "ElephantBike/Charge/ChargeViewController.m"
+            timestampString = "482661555.189603"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "339"
-            endingLineNumber = "339"
-            landmarkName = "-MyConnection:didReceiveData:"
+            startingLineNumber = "939"
+            endingLineNumber = "939"
+            landmarkName = "-PSWWrongMessage3Return"
             landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ElephantBike/SideMenu/InfoViewController.m"
+            timestampString = "482667418.13209"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "267"
+            endingLineNumber = "267"
+            landmarkName = "-gotoDetails"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ElephantBike/SideMenu/InfoViewController.m"
+            timestampString = "482667418.13209"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "266"
+            endingLineNumber = "266"
+            landmarkName = "-gotoDetails"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ElephantBike/SideMenu/MemberPayViewController.m"
+            timestampString = "482666866.27125"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "541"
+            endingLineNumber = "541"
+            landmarkName = "-MyConnection:didFailWithError:"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ElephantBike/SideMenu/HJFAlertView.m"
+            timestampString = "482394443.850899"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "53"
+            endingLineNumber = "53"
+            landmarkName = "-layoutSubviews"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ElephantBike/SideMenu/RechargeViewController.m"
+            timestampString = "483250318.986219"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "623"
+            endingLineNumber = "623"
+            landmarkName = "-TextFieldChanged"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ElephantBike/SideMenu/RechargeViewController.m"
+            timestampString = "483250318.986219"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "476"
+            endingLineNumber = "476"
+            landmarkName = "-tableView:heightForHeaderInSection:"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ElephantBike/SideMenu/MemberPayViewController.m"
+            timestampString = "482666866.27125"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "592"
+            endingLineNumber = "592"
+            landmarkName = "-dateFrom:time:"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ElephantBike/AppDelegate.m"
+            timestampString = "483506140.127981"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "187"
+            endingLineNumber = "187"
+            landmarkName = "-application:didFinishLaunchingWithOptions:"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ElephantBike/AppDelegate.m"
+            timestampString = "483506140.127981"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "189"
+            endingLineNumber = "189"
+            landmarkName = "-application:didFinishLaunchingWithOptions:"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ElephantBike/Charge/ChargeViewController.m"
+            timestampString = "482668802.348251"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "975"
+            endingLineNumber = "975"
+            landmarkName = "-setTimeAndMoney"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ElephantBike/Charge/ChargeViewController.m"
+            timestampString = "482661555.189603"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "424"
+            endingLineNumber = "424"
+            landmarkName = "-removeViewThenToLogin"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ElephantBike/AppDelegate.m"
+            timestampString = "483506140.127981"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "195"
+            endingLineNumber = "195"
+            landmarkName = "-application:didFinishLaunchingWithOptions:"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ElephantBike/AppDelegate.m"
+            timestampString = "483506140.127981"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "206"
+            endingLineNumber = "206"
+            landmarkName = "-application:didFinishLaunchingWithOptions:"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ElephantBike/AppDelegate.m"
+            timestampString = "483506140.127981"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "205"
+            endingLineNumber = "205"
+            landmarkName = "-application:didFinishLaunchingWithOptions:"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ElephantBike/QRCodeScan/QRCodeScanViewController.m"
+            timestampString = "483961580.840838"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "769"
+            endingLineNumber = "769"
+            landmarkName = "-viewDidAppear:"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ElephantBike/QRCodeScan/QRCodeScanViewController.m"
+            timestampString = "483961580.840838"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "834"
+            endingLineNumber = "834"
+            landmarkName = "-viewDidAppear:"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ElephantBike/QRCodeScan/QRCodeScanViewController.m"
+            timestampString = "483961580.840838"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "612"
+            endingLineNumber = "612"
+            landmarkName = "-alertView:clickedButtonAtIndex:"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ElephantBike/Login/LoginViewController.m"
+            timestampString = "483956100.186267"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "95"
+            endingLineNumber = "95"
+            landmarkName = "-viewDidDisappear:"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ElephantBike/Login/LoginViewController.m"
+            timestampString = "483956100.186267"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "90"
+            endingLineNumber = "90"
+            landmarkName = "-viewWillAppear:"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ElephantBike/QRCodeScan/QRCodeScanViewController.m"
+            timestampString = "483961580.840838"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "620"
+            endingLineNumber = "620"
+            landmarkName = "-alertView:clickedButtonAtIndex:"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ElephantBike/QRCodeScan/QRCodeScanViewController.m"
+            timestampString = "483961580.840838"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "851"
+            endingLineNumber = "851"
+            landmarkName = "-viewDidDisappear:"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ElephantBike/QRCodeScan/QRCodeScanViewController.m"
+            timestampString = "482922721.661338"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "287"
+            endingLineNumber = "287"
+            landmarkName = "-NavigationInit"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ElephantBike/AppDelegate.m"
+            timestampString = "483506140.127981"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "191"
+            endingLineNumber = "191"
+            landmarkName = "-application:didFinishLaunchingWithOptions:"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ElephantBike/QRCodeScan/QRCodeScanViewController.m"
+            timestampString = "483961580.840838"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "718"
+            endingLineNumber = "718"
+            landmarkName = "-viewWillAppear:"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.ExceptionBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            scope = "0"
+            stopOnStyle = "0">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

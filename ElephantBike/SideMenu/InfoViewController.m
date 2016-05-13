@@ -15,8 +15,11 @@
 #import "IdentityViewController.h"
 #import "ElephantMemberViewController.h"
 #import "RecommendController.h"
-
+#import "ActivityDetailsViewController.h"
 #import "UIImageView+WebCache.h"
+#import "CustomIOSAlertView.h"
+#import "HJFdxdcAlertView.h"
+
 
 #define AVATARIMAGE_WIDTH               0.16*SCREEN_WIDTH
 #define AVATARIMAGE_HEIGHT              AVATARIMAGE_WIDTH
@@ -32,7 +35,7 @@
 #define ELEPHANTMEMBER_WIDTH 0.2*SCREEN_WIDTH
 #define ELEPAHNTMEMBER_HEIGHT 0.3*AVATARIMAGE_HEIGHT
 
-@interface InfoViewController () <UITableViewDataSource, UITableViewDelegate, NSURLConnectionDataDelegate>
+@interface InfoViewController () <UITableViewDataSource, UITableViewDelegate, NSURLConnectionDataDelegate, UIAlertViewDelegate, HJFALertviewDelegate>
 
 @end
 
@@ -101,10 +104,10 @@
     phoneNumberLabel        = [[UILabel alloc] init];
     
     /** 会员按钮*/
-    ElephantMemberButton    = [UIButton buttonWithType:UIButtonTypeCustom];
+    ElephantMemberButton    = [[UIButton alloc] init];
     AdImageView             = [[UIImageView alloc] init];
     
-    listArray               = @[@"我的钱包", @"身份认证", @"活动中心", @"帮助", @"退出"];
+    listArray               = @[@"我的钱包", @"身份认证", @"消息中心", @"使用指南", @"退出登录"];
     
     [self NavigationInit];
     [self UILayout];
@@ -120,9 +123,10 @@
     avatarImage.frame = CGRectMake(0, 0, AVATARIMAGE_WIDTH, AVATARIMAGE_HEIGHT);
     avatarImage.center = CGPointMake(0.13*SCREEN_WIDTH, 0.11*SCREEN_HEIGHT);
     avatarImage.image = [UIImage imageNamed:@"头像"];
+    avatarImage.contentMode = UIViewContentModeScaleAspectFit;
     // 将方形图片剪裁成圆的
-    avatarImage.layer.masksToBounds = YES;
-    avatarImage.layer.cornerRadius = AVATARIMAGE_WIDTH/2;
+//    avatarImage.layer.masksToBounds = YES;
+//    avatarImage.layer.cornerRadius = AVATARIMAGE_WIDTH/2;
     
     
 //    nameLabel.frame = CGRectMake(0.05*SCREEN_WIDTH+AVATARIMAGE_WIDTH, STATUS_HEIGHT*2, NAMELABEL_WIDTH, NAMELABEL_HEIGHT);
@@ -143,6 +147,9 @@
         nameLabel.text = @"";
     }
     nameLabel.font = [UIFont fontWithName:@"QingYuanMono" size:14];
+    if (iPhone6P) {
+        nameLabel.font = [UIFont fontWithName:@"QingYuanMono" size:16];
+    }
     nameLabel.textAlignment = NSTextAlignmentLeft;
     
     identificationLabel.frame = CGRectMake(0.23*SCREEN_WIDTH, 0.09*SCREEN_HEIGHT, IDENTIFICATIONLABEL_WIDTH, IDENTIFICATIONLABEL_HEIGHT);
@@ -152,17 +159,19 @@
         identificationLabel.text = @"未认证";
     }
     identificationLabel.font = [UIFont fontWithName:@"QingYuanMono" size:10];
+    if (iPhone6P) {
+        identificationLabel.font = [UIFont fontWithName:@"QingYuanMono" size:12];
+    }
     identificationLabel.textAlignment = NSTextAlignmentLeft;
     
     /** 会员的按钮*/
-    ElephantMemberButton.frame = CGRectMake(0.23*SCREEN_WIDTH, 0.13*SCREEN_HEIGHT, ELEPHANTMEMBER_WIDTH, ELEPAHNTMEMBER_HEIGHT);
-    ElephantMemberButton.backgroundColor = [UIColor whiteColor];
+    ElephantMemberButton.frame = CGRectMake(0.23*SCREEN_WIDTH, 0.125*SCREEN_HEIGHT, ELEPHANTMEMBER_WIDTH, ELEPAHNTMEMBER_HEIGHT);
     
     //设置条件，是否是会员
     if ([userDefaults boolForKey:@"isVip"]) {
-        [ElephantMemberButton setBackgroundImage:[UIImage imageNamed:@"会员标识"] forState:UIControlStateNormal];
+        [ElephantMemberButton setImage:[UIImage imageNamed:@"会员标识"] forState:UIControlStateNormal];
     }else {
-        [ElephantMemberButton setBackgroundImage:[UIImage imageNamed:@"开通大象会员"] forState:UIControlStateNormal];
+        [ElephantMemberButton setImage:[UIImage imageNamed:@"开通大象会员"] forState:UIControlStateNormal];
     }
     [ElephantMemberButton addTarget:self action:@selector(openElephantMember) forControlEvents:UIControlEventTouchUpInside];
     
@@ -172,7 +181,7 @@
 //    phoneNumberLabel.text = phoneNumber;
 //    [self.view addSubview:phoneNumberLabel];
     
-    infoTableView.frame = CGRectMake(0, 0.28*SCREEN_HEIGHT, INFOTABLEVIEW_WIDTH, INFOTABLEVIEW_HEIGHT);
+    infoTableView.frame = CGRectMake(0, 0.25*SCREEN_HEIGHT, INFOTABLEVIEW_WIDTH, INFOTABLEVIEW_HEIGHT);
     infoTableView.dataSource = self;
     infoTableView.delegate = self;
     infoTableView.scrollEnabled = NO;
@@ -180,13 +189,16 @@
     
     logoImageView.frame = CGRectMake(0, 0, 0.12*SCREEN_WIDTH, 0.042*SCREEN_HEIGHT);
     logoImageView.center = CGPointMake(0.5*0.8666*SCREEN_WIDTH, 0.822*SCREEN_HEIGHT);
-    logoImageView.image = [UIImage imageNamed:@"绿色LOGO"];
+    logoImageView.image = [UIImage imageNamed:@"LOGO"];
     logoImageView.contentMode = UIViewContentModeScaleAspectFit;
     
     //预留的广告位
     AdImageView.frame = CGRectMake(0.05*SCREEN_WIDTH, 0.87*SCREEN_HEIGHT, 0.75*SCREEN_WIDTH, 0.12*SCREEN_HEIGHT);
     AdImageView.layer.masksToBounds = YES;
     AdImageView.layer.cornerRadius = 5;
+    AdImageView.userInteractionEnabled = YES;
+    UITapGestureRecognizer *activityDetails = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(gotoDetails)];
+    [AdImageView addGestureRecognizer:activityDetails];
     
     [self.view addSubview:avatarImage];
     [self.view addSubview:nameLabel];
@@ -198,6 +210,8 @@
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(changeMemberStatus) name:@"isVip" object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateInfo) name:@"updateInfo" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateIdentify) name:@"updateIdentify" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateMessage) name:@"updateMessage" object:nil];
 }
 
 #pragma mark - 私有方法
@@ -215,10 +229,10 @@
 }
 
 - (void)changeMemberStatus {
-    [ElephantMemberButton setBackgroundImage:[UIImage imageNamed:@"会员标识"] forState:UIControlStateNormal];
-    if (![userDefaults boolForKey:@"isVip"]) {
-        [ElephantMemberButton setTitle:@"" forState:UIControlStateNormal];
+    if ([userDefaults boolForKey:@"isVip"]) {
         [ElephantMemberButton setImage:[UIImage imageNamed:@"会员标识"] forState:UIControlStateNormal];
+    }else {
+        [ElephantMemberButton setImage:[UIImage imageNamed:@"开通大象会员"] forState:UIControlStateNormal];
     }
 }
 
@@ -235,6 +249,25 @@
     }
 }
 
+- (void)updateIdentify {
+    nameLabel.text = [userDefaults objectForKey:@"name"];
+    identificationLabel.text = [NSString stringWithFormat:@"已认证：%@", [userDefaults objectForKey:@"college"]];
+}
+
+- (void)updateMessage {
+    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:2 inSection:0];
+    UITableViewCell *cell = [infoTableView cellForRowAtIndexPath:indexPath];
+    cell.detailTextLabel.text = @"";
+}
+
+- (void)gotoDetails {
+    if (![myAppDelegate.linkUrlInfo isEqualToString:@""]) {
+        myAppDelegate.ad = 2;
+        ActivityDetailsViewController *activityDetailsViewController = [[ActivityDetailsViewController alloc] init];
+        [self.delegate getNextViewController:activityDetailsViewController];
+    }
+}
+
 #pragma mark - 服务器返回
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
     NSDictionary *receive = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableLeaves error:nil];
@@ -242,10 +275,13 @@
     NSString *imageurl = receive[@"imageurl"];
     NSString *linkurl = receive[@"linkurl"];
     if ([status isEqualToString:@"success"]) {
+        myAppDelegate.imageUrlInfo = @"";
+        myAppDelegate.linkUrlInfo = @"";
         NSString *temp = [IP stringByAppendingString:@"/"];
-        NSString *temp1 = [IP stringByAppendingString:@"/"];
         myAppDelegate.imageUrlInfo = [temp stringByAppendingString:imageurl];
-        myAppDelegate.linkUrlInfo = [temp1 stringByAppendingString:linkurl];
+        if (![linkurl isEqualToString:@""]) {
+            myAppDelegate.linkUrlInfo = linkurl;
+        }
         [AdImageView sd_setImageWithURL:[NSURL URLWithString:myAppDelegate.imageUrlInfo]];
     }
 }
@@ -274,6 +310,13 @@
         NSString *str = [@"余额:" stringByAppendingString:myAppDelegate.balance];
         NSString *str1 = [str stringByAppendingString:@"元"];
         cell.detailTextLabel.text = str1;
+    }
+    if (indexPath.row == 2 && [userDefaults boolForKey:@"isMessage"]) {
+        cell.detailTextLabel.text = @"您有新消息";
+    }
+    if (iPhone6P) {
+        cell.textLabel.font = [UIFont fontWithName:@"QingYuanMono" size:16];
+        cell.detailTextLabel.font = [UIFont fontWithName:@"QingYuanMono" size:12];
     }
     return cell;
 }
@@ -326,6 +369,77 @@
         }
             break;
         case 4:{
+            [self Logout];
+        }
+            break;
+        default:
+            break;
+    }
+}
+
+
+
+#pragma mark - 退出方法
+- (void)Logout {
+    
+    HJFdxdcAlertView *alertView = [[HJFdxdcAlertView alloc] initWithContent:@"您确定要退出登录？" Image:[UIImage imageNamed:@"退出的提醒"] CancelButton:@"取消" OkButton:@"确定"];
+    alertView.delegate = self;
+    [alertView show];
+    
+    
+//    CustomIOSAlertView *alertView = [[CustomIOSAlertView alloc] initWithParentView:self.view];
+//    UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 0.6*SCREEN_WIDTH, 0.2*SCREEN_HEIGHT)];
+//    UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 0.2*SCREEN_WIDTH, 0.2*SCREEN_WIDTH)];
+//    imageView.center = CGPointMake(view.center.x, view.center.y*0.8);
+//    [imageView setImage:[UIImage imageNamed:@"退出的提醒"]];
+//    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, imageView.center.y+0.15*SCREEN_WIDTH, 0.6*SCREEN_WIDTH, 0.2*view.frame.size.height)];
+//    [view addSubview:imageView];
+//    [view addSubview:label];
+//    label.text = @"是否退出登录";
+//    label.font = [UIFont fontWithName:@"QingYuanMono" size:15];
+//    if (iPhone6P) {
+//        label.font = [UIFont fontWithName:@"QingYuanMono" size:18];
+//    }
+//    label.textAlignment = YES;
+//    [alertView setContainerView:view];
+//    [alertView setButtonTitles:[NSMutableArray arrayWithObjects:@"确定", @"取消", nil]];
+//    [alertView setUseMotionEffects:YES];
+//    [alertView setOnButtonTouchUpInside:^(CustomIOSAlertView *alertView, int buttonIndex) {
+//        NSLog(@"Block: Button at position %d is clicked on alertView %d.", buttonIndex, (int)[alertView tag]);
+//        if (buttonIndex == 0) {
+//            // 退出登录
+//            myAppDelegate.isIdentify = NO;
+//            myAppDelegate.isFreeze = NO;
+//            myAppDelegate.isEndPay = YES;
+//            myAppDelegate.isEndRiding = YES;
+//            myAppDelegate.isRestart = NO;
+//            myAppDelegate.isMissing = NO;
+//            myAppDelegate.isUpload = NO;
+//            myAppDelegate.isLogin = NO;
+//            myAppDelegate.isLogout = YES;
+//            myAppDelegate.isLinked = YES;
+//            [userDefaults setBool:NO forKey:@"isLogin"];
+//            [userDefaults setBool:NO forKey:@"isVip"];
+//            [userDefaults setObject:@"" forKey:@"name"];
+//            [userDefaults setObject:@"" forKey:@"stunum"];
+//            [userDefaults setObject:@"" forKey:@"college"];
+//            [userDefaults setBool:NO forKey:@"isMessage"];
+//            [[SDImageCache sharedImageCache] removeImageForKey:@"学生证" fromDisk:YES];
+//            [self.delegate removeFromSuperView];
+//            [self.navigationController popToRootViewControllerAnimated:YES];
+//        }else {
+//            [alertView close];
+//        }
+//    }];
+//    [alertView show];
+}
+#pragma mark - alertViewDelegate
+-(void)didClickButtonAtIndex:(NSUInteger)index{
+    switch (index) {
+        case 0:
+            NSLog(@"Click Cancel");
+            break;
+        case 1:{
             // 退出登录
             myAppDelegate.isIdentify = NO;
             myAppDelegate.isFreeze = NO;
@@ -338,20 +452,20 @@
             myAppDelegate.isLogout = YES;
             myAppDelegate.isLinked = YES;
             [userDefaults setBool:NO forKey:@"isLogin"];
+            [userDefaults setBool:NO forKey:@"isVip"];
             [userDefaults setObject:@"" forKey:@"name"];
+            [userDefaults setObject:@"" forKey:@"stunum"];
             [userDefaults setObject:@"" forKey:@"college"];
-            [self Logout];
+            [userDefaults setBool:NO forKey:@"isMessage"];
+            [userDefaults setObject:@"" forKey:@"bikeNo"];
+            [[SDImageCache sharedImageCache] removeImageForKey:@"学生证" fromDisk:YES];
+            [self.delegate removeFromSuperView];
+            [self.navigationController popToRootViewControllerAnimated:YES];
         }
             break;
         default:
             break;
     }
-}
-
-#pragma mark - 退出方法
-- (void)Logout {
-    [self.delegate removeFromSuperView];
-    [self.navigationController popToRootViewControllerAnimated:YES];
 }
 
 - (void)viewDidLoad {

@@ -35,7 +35,7 @@
 #define MESBUTTON_CENTER_Y       0.409*SCREEN_HEIGHT
 
 
-@interface LoginViewController () <MyURLConnectionDelegate>
+@interface LoginViewController () <MyURLConnectionDelegate, UITextFieldDelegate>
 
 @end
 
@@ -53,6 +53,9 @@
     AppDelegate     *MyAppDelegate;
     BOOL            isConnect;
     int             countDown;
+    
+    NSString    *previousTextFieldContent;
+    UITextRange *previousSelection;
 }
 
 
@@ -82,6 +85,12 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     [phoneTF becomeFirstResponder];
+    [userDefaults setBool:NO forKey:@"isLogin"];
+    MyAppDelegate.isLogout = NO;
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
@@ -100,6 +109,7 @@
     phoneTF.borderStyle = UITextBorderStyleRoundedRect;
     phoneTF.keyboardType = UIKeyboardTypeNumberPad;
     phoneTF.font = [UIFont fontWithName:@"QingYuanMono" size:14];
+    phoneTF.delegate = self;
     [phoneTF addTarget:self action:@selector(TextFieldChanged) forControlEvents:UIControlEventEditingChanged];
     
     verifyButton.frame = CGRectMake(0, 0, VERIFYBUTTON_WIDTH, VERIFYBUTTON_HEIGHT);
@@ -124,6 +134,7 @@
     UIButton *rightButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, VERIFY_BUTTON_WIDTH*1.5, SAME_HEIGHT)];
     [rightButton setImage:[UIImage imageNamed:@"没收到验证码"] forState:UIControlStateNormal];
     verifyTF.rightView = rightButton;
+    verifyTF.rightView.hidden = YES;
     rightButton.titleLabel.font = [UIFont fontWithName:@"QingYuanMono" size:8];
     [rightButton addTarget:self action:@selector(requestForCalling) forControlEvents:UIControlEventTouchUpInside];
     [verifyTF addTarget:self action:@selector(TextFieldChanged) forControlEvents:UIControlEventEditingChanged];
@@ -143,7 +154,6 @@
     mesButton.titleLabel.font = [UIFont fontWithName:@"QingYuanMono" size:10];
     NSMutableAttributedString *title = [[NSMutableAttributedString alloc] initWithString:@"点击“开始”，即表示您同意《法律声明及隐私政策》"];
     NSRange titleRnage = {13, [title length]-13};
-    [title addAttribute:NSUnderlineStyleAttributeName value:[NSNumber numberWithInteger:NSUnderlineStyleSingle] range:titleRnage];
     [title addAttribute:NSForegroundColorAttributeName value:UICOLOR range:titleRnage];
     [mesButton setAttributedTitle:title forState:UIControlStateNormal];
     [mesButton addTarget:self action:@selector(gotoLawView) forControlEvents:UIControlEventTouchUpInside];
@@ -176,7 +186,7 @@
         [verifyButton setTitle:@"验证" forState:UIControlStateNormal];
         verifyButton.enabled = true;
     }else {
-        [verifyButton setTitle:[NSString stringWithFormat:@"%ds", countDown--] forState:UIControlStateNormal];
+        [verifyButton setTitle:[NSString stringWithFormat:@"%d秒", countDown--] forState:UIControlStateNormal];
     }
 }
 
@@ -184,69 +194,198 @@
 #pragma mark - TextField Changed
 - (void)TextFieldChanged {
     if (phoneTF.isFirstResponder) {
+//        if ([phoneTF.text length] >= 13) {
+//            phoneTF.text = [phoneTF.text substringWithRange:NSMakeRange(0, 13)];
+//        }else if ([phoneTF.text length] == 3) {
+//            phoneTF.text = [phoneTF.text stringByAppendingString:@" "];
+//        }else if ([phoneTF.text length] == 8) {
+//            phoneTF.text = [phoneTF.text stringByAppendingString:@" "];
+//        }else if ([phoneTF.text length] == 4) {
+//            if ([phoneTF.text rangeOfString:@" "].location != NSNotFound) {
+//                phoneTF.text = [phoneTF.text substringWithRange:NSMakeRange(0, 3)];
+//            }
+//        }else if ([phoneTF.text length] == 9) {
+//            phoneTF.text = [phoneTF.text substringWithRange:NSMakeRange(0, 8)];
+//        }
+//        if ([verifyButton.titleLabel.text isEqualToString:@"验证"]) {
+//            if ([phoneTF.text isEqual:@""]) {
+//                verifyButton.backgroundColor = [UIColor grayColor];
+//            }else if ([self isMobileNumber:[phoneTF.text stringByReplacingOccurrencesOfString:@" " withString:@""]]){
+//                verifyButton.backgroundColor = UICOLOR;
+//                verifyButton.enabled = YES;
+//            }
+//        }
+        NSUInteger targetCursorPosition =
+        [phoneTF offsetFromPosition:phoneTF.beginningOfDocument
+                           toPosition:phoneTF.selectedTextRange.start];
+        // nStr表示不带空格的号码
+        NSString* nStr = [phoneTF.text stringByReplacingOccurrencesOfString:@" " withString:@""];
+        NSString* preTxt = [previousTextFieldContent stringByReplacingOccurrencesOfString:@" " withString:@""];
+        
+        char editFlag = 0;// 正在执行删除操作时为0，否则为1
+        
+        if (nStr.length <= preTxt.length) {
+            editFlag = 0;
+        }
+        else {
+            editFlag = 1;
+        }
+        
+        // textField设置text
+        if (nStr.length > 11)
+        {
+            phoneTF.text = previousTextFieldContent;
+            phoneTF.selectedTextRange = previousSelection;
+            return;
+        }
+        
+        // 空格
+        NSString* spaceStr = @" ";
+        
+        NSMutableString* mStrTemp = [NSMutableString new];
+        int spaceCount = 0;
+        if (nStr.length < 3 && nStr.length > -1)
+        {
+            spaceCount = 0;
+        }else if (nStr.length < 7 && nStr.length >2)
+        {
+            spaceCount = 1;
+            
+        }else if (nStr.length < 12 && nStr.length > 6)
+        {
+            spaceCount = 2;
+        }
+        
+        for (int i = 0; i < spaceCount; i++)
+        {
+            if (i == 0) {
+                [mStrTemp appendFormat:@"%@%@", [nStr substringWithRange:NSMakeRange(0, 3)], spaceStr];
+            }else if (i == 1)
+            {
+                [mStrTemp appendFormat:@"%@%@", [nStr substringWithRange:NSMakeRange(3, 4)], spaceStr];
+            }else if (i == 2)
+            {
+                [mStrTemp appendFormat:@"%@%@", [nStr substringWithRange:NSMakeRange(7, 4)], spaceStr];
+            }
+        }
+        
+        if (nStr.length == 11)
+        {
+            [mStrTemp appendFormat:@"%@%@", [nStr substringWithRange:NSMakeRange(7, 4)], spaceStr];
+        }
+        
+        if (nStr.length < 4)
+        {
+            [mStrTemp appendString:[nStr substringWithRange:NSMakeRange(nStr.length-nStr.length % 3, nStr.length % 3)]];
+        }else if(nStr.length > 3)
+        {
+            NSString *str = [nStr substringFromIndex:3];
+            [mStrTemp appendString:[str substringWithRange:NSMakeRange(str.length-str.length % 4,
+                                                                       str.length % 4)]];
+            if (nStr.length == 11)
+            {
+                [mStrTemp deleteCharactersInRange:NSMakeRange(13, 1)];
+            }
+        }
+        
+        phoneTF.text = mStrTemp;
+        // textField设置selectedTextRange
+        NSUInteger curTargetCursorPosition = targetCursorPosition;// 当前光标的偏移位置
+        if (editFlag == 0)
+        {
+            //删除
+            if (targetCursorPosition == 9 || targetCursorPosition == 4)
+            {
+                curTargetCursorPosition = targetCursorPosition - 1;
+            }
+        }
+        else {
+            //添加
+            if (nStr.length == 8 || nStr.length == 4)
+            {
+                curTargetCursorPosition = targetCursorPosition + 1;
+            }
+        }
+        
+        UITextPosition *targetPosition = [phoneTF positionFromPosition:[phoneTF beginningOfDocument]
+                                                                  offset:curTargetCursorPosition];
+        [phoneTF setSelectedTextRange:[phoneTF textRangeFromPosition:targetPosition
+                                                             toPosition :targetPosition]];
+        
         if ([verifyButton.titleLabel.text isEqualToString:@"验证"]) {
             if ([phoneTF.text isEqual:@""]) {
                 verifyButton.backgroundColor = [UIColor grayColor];
-            }else {
+            }else if ([self isMobileNumber:[phoneTF.text stringByReplacingOccurrencesOfString:@" " withString:@""]]){
                 verifyButton.backgroundColor = UICOLOR;
                 verifyButton.enabled = YES;
             }
         }
     }else if(verifyTF.isFirstResponder){
+        if ([verifyTF.text length] >= 6) {
+            verifyTF.text = [verifyTF.text substringWithRange:NSMakeRange(0, 6)];
+        }
         if ([verifyTF.text isEqual:@""]) {
             startButton.backgroundColor = [UIColor grayColor];
-        }else {
+        }else if([self isVerifyNumber:verifyTF.text]){
             startButton.backgroundColor = UICOLOR;
             startButton.enabled = YES;
         }
     }
 }
 
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
+    if (textField == phoneTF) {
+        previousTextFieldContent = textField.text;
+        previousSelection = textField.selectedTextRange;
+    }
+    
+    return YES;
+}
+
+
 #pragma mark - VerifyButton TouchInside
 - (void)buttonDidVerify {
-    if (![self isMobileNumber:phoneTF.text]) {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"请输入正确的电话号码" delegate:self cancelButtonTitle:@"确认" otherButtonTitles:nil, nil];
-        [alert show];
-    }else {
-        phoneNumber = phoneTF.text;
-        verifyButton.enabled = false; //摁下验证后显示倒计时 不可用按钮
-        verifyTF.rightViewMode = UITextFieldViewModeAlways;
-        verifyButton.backgroundColor = [UIColor grayColor];
-        countDownTime = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(timeChanged) userInfo:nil repeats:YES];  // 存在问题，当60s后会怎么样
-        countDown = 60;
-        [[NSRunLoop mainRunLoop] addTimer:countDownTime forMode:NSDefaultRunLoopMode];
-        // 集成api  此处是膜
-        cover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
-        cover.alpha = 1;
-        // 半黑膜
-        UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
-        containerView.backgroundColor = [UIColor blackColor];
-        containerView.alpha = 0.8;
-        containerView.layer.cornerRadius = CORNERRADIUS*2;
-        [cover addSubview:containerView];
-        // 两个控件
-        UIActivityIndicatorView *waitActivityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-        waitActivityView.frame = CGRectMake(0.33*containerView.frame.size.width, 0.1*containerView.frame.size.width, 0.33*containerView.frame.size.width, 0.4*containerView.frame.size.height);
-        [waitActivityView startAnimating];
-        [containerView addSubview:waitActivityView];
-        
-        UILabel *hintMes = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.7*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
-        hintMes.text = @"正在发送验证码";
-        hintMes.textColor = [UIColor whiteColor];
-        hintMes.textAlignment = NSTextAlignmentCenter;
-        [containerView addSubview:hintMes];
-        
-        [self.view addSubview:cover];
-        
-        NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/msg/sms"];
-        NSURL *url = [NSURL URLWithString:urlStr];
-        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-        NSString *dataStr = [NSString stringWithFormat:@"phone=%@", phoneNumber];
-        NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
-        [request setHTTPBody:data];
-        [request setHTTPMethod:@"POST"];
-        MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"getNumber"];
-    }
+    // 30秒后显示没收到
+    NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:15 target:self selector:@selector(showTheMes) userInfo:nil repeats:NO];
+    
+    phoneNumber = [phoneTF.text stringByReplacingOccurrencesOfString:@" " withString:@""];
+    verifyButton.enabled = false; //摁下验证后显示倒计时 不可用按钮
+    verifyTF.rightViewMode = UITextFieldViewModeAlways;
+    verifyButton.backgroundColor = [UIColor grayColor];
+    countDownTime = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(timeChanged) userInfo:nil repeats:YES];  // 存在问题，当60s后会怎么样
+    countDown = 60;
+    [[NSRunLoop mainRunLoop] addTimer:countDownTime forMode:NSDefaultRunLoopMode];
+    // 集成api  此处是膜
+    cover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    cover.alpha = 1;
+    // 半黑膜
+    UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+    containerView.backgroundColor = [UIColor blackColor];
+    containerView.alpha = 0.8;
+    containerView.layer.cornerRadius = CORNERRADIUS*2;
+    [cover addSubview:containerView];
+    // 两个控件
+    UIActivityIndicatorView *waitActivityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+    waitActivityView.frame = CGRectMake(0.33*containerView.frame.size.width, 0.1*containerView.frame.size.width, 0.33*containerView.frame.size.width, 0.4*containerView.frame.size.height);
+    [waitActivityView startAnimating];
+    [containerView addSubview:waitActivityView];
+    
+    UILabel *hintMes = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.7*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
+    hintMes.text = @"正在发送验证码";
+    hintMes.textColor = [UIColor whiteColor];
+    hintMes.textAlignment = NSTextAlignmentCenter;
+    [containerView addSubview:hintMes];
+    
+    [self.view addSubview:cover];
+    
+    NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/msg/sms"];
+    NSURL *url = [NSURL URLWithString:urlStr];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    NSString *dataStr = [NSString stringWithFormat:@"phone=%@", phoneNumber];
+    NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
+    [request setHTTPBody:data];
+    [request setHTTPMethod:@"POST"];
+    MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"getNumber"];
 }
 
 - (void)stopRequest {
@@ -281,7 +420,7 @@
 
 - (void)buttonDidStart {
     // 提交按钮
-    if (![self isMobileNumber:phoneTF.text]) {
+    if (![self isMobileNumber:phoneNumber]) {
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"请输入正确的电话号码" delegate:self cancelButtonTitle:@"确认" otherButtonTitles:nil, nil];
         [alert show];
     }else if ([verifyTF.text length] != 6) {
@@ -319,7 +458,7 @@
         NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/user/login"];
         NSURL *url = [NSURL URLWithString:urlStr];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-        NSString *dataStr = [NSString stringWithFormat:@"phone=%@&islogin=%d&verify_code=%@", phoneTF.text, isLogin, verifyTF.text];
+        NSString *dataStr = [NSString stringWithFormat:@"phone=%@&islogin=%d&verify_code=%@", phoneNumber, isLogin, verifyTF.text];
         NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
         [request setHTTPBody:data];
         [request setHTTPMethod:@"POST"];
@@ -340,14 +479,15 @@
         NSString *name = receiveJson[@"name"];
         NSString *college = receiveJson[@"college"];
         NSString *isVip = receiveJson[@"isvip"];
+        NSNumber *ismessage = receiveJson[@"ismessage"];
         NSString *accessToken = receiveJson[@"access_token"];
-        [userDefaults setValue:accessToken forKey:@"accessToken"];//缓存access_token
+        [userDefaults setObject:accessToken forKey:@"accessToken"];//缓存access_token
         if ([status isEqualToString:@"success"]) {
             MyAppDelegate.isLinked = YES;
             isConnect = YES;
             MyAppDelegate.isLogin = YES;
             // 将islogin写入本地缓存
-            if ([isfrozen isEqualToString:@"-1"]) {
+            if ([isfrozen isEqualToString:@"-1"] || [isfrozen isEqualToString:@"3"]) {
                 MyAppDelegate.isFreeze = true;
                 MyAppDelegate.isIdentify = true;
                 // 将状态写入本地缓存
@@ -373,9 +513,16 @@
             }
             if ([isVip isEqualToString:@"1"]) {
                 [userDefaults setBool:YES forKey:@"isVip"];
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"isVip" object:nil];
+            }else {
+                [userDefaults setBool:NO forKey:@"isVip"];
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"isVip" object:nil];
             }
             if (![college isEqualToString:@""]) {
                 [userDefaults setObject:college forKey:@"college"];
+            }
+            if ([ismessage intValue] != 0) {
+                [userDefaults setBool:YES forKey:@"isMessage"];
             }
             // 优化部分
 //            [userDefaults setBool:MyAppDelegate.isFreeze forKey:@"isFreeze"];
@@ -384,15 +531,17 @@
 //            [userDefaults setBool:MyAppDelegate.isEndRiding forKey:@"isEndRiding"];
 //            [userDefaults setBool:MyAppDelegate.isEndPay forKey:@"isEndPay"];
             [userDefaults setBool:true forKey:@"isLogin"];
+            if (phoneNumber == nil) {
+                phoneNumber = [phoneTF.text stringByReplacingOccurrencesOfString:@" " withString:@""];
+            }
             [userDefaults setObject:phoneNumber forKey:@"phoneNumber"];
             // 通知个人信息页面 修改个人信息
             [[NSNotificationCenter defaultCenter] postNotificationName:@"updateInfo" object:nil];
-            NSLog(@"phonttf:%@,   phonenumber:%@", phoneTF.text, phoneNumber);
             // 需要登陆的时候  登陆后请求服务器获取余额
             NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/balance"];
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
-            NSString *dataStr = [NSString stringWithFormat:@"phone=%@", phoneNumber];
+            NSString *dataStr = [NSString stringWithFormat:@"phone=%@&access_token=%@", phoneNumber, [userDefaults objectForKey:@"accessToken"]];
             NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
             [request setHTTPBody:data];
             [request setHTTPMethod:@"POST"];
@@ -420,11 +569,15 @@
             containerView.layer.cornerRadius = CORNERRADIUS*2;
             [cover addSubview:containerView];
             // 一个控件
-            UILabel *hintMes = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
-            hintMes.text = @"登陆成功";
-            hintMes.textColor = [UIColor whiteColor];
-            hintMes.textAlignment = NSTextAlignmentCenter;
-            [containerView addSubview:hintMes];
+            //            UILabel *hintMes = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
+            //            hintMes.text = @"登陆成功";
+            //            hintMes.textColor = [UIColor whiteColor];
+            //            hintMes.textAlignment = NSTextAlignmentCenter;
+            //            [containerView addSubview:hintMes];
+            UIImageView *success = [[UIImageView alloc] initWithFrame:CGRectMake(0.3*containerView.frame.size.width, (containerView.frame.size.height-0.4*containerView.frame.size.width)/2, 0.4*containerView.frame.size.width, 0.4*containerView.frame.size.width)];
+            [success setImage:[UIImage imageNamed:@"成功"]];
+            success.contentMode = UIViewContentModeScaleToFill;
+            [containerView addSubview:success];
             [self.view addSubview:cover];
             // 显示时间
             NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(removeViewThenToQR) userInfo:nil repeats:NO];
@@ -438,6 +591,7 @@
     }else if ([connection.name isEqualToString:@"getNumber"]) {
         NSString *status = receiveJson[@"status"];
         NSString *message = receiveJson[@"message"];
+        NSLog(@"短信条数达到上限：%@", message);
         if ([status isEqualToString:@"success"]) {
             isConnect = YES;
             [cover removeFromSuperview];
@@ -463,15 +617,45 @@
             NSLog(@"收到验证码");
             [verifyTF becomeFirstResponder];
         }else {
+//            if ([message isEqualToString:@""]) {
+//                // 不倒计时
+//            }
             [cover removeFromSuperview];
             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"您手机的当天验证次数已达上限" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
             [alertView   show];
+            [verifyButton setTitle:@"验证" forState:UIControlStateNormal];
+            [countDownTime invalidate];
+            verifyButton.backgroundColor = UICOLOR;
+            verifyButton.enabled = YES;
         }
     }else if ([connection.name isEqualToString:@"requestForCalling"]) {
         [cover removeFromSuperview];
-        NSString *message = receiveJson[@"message"];
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:message delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-        [alertView show];
+        NSString *status = receiveJson[@"status"];
+        if ([status isEqualToString:@"success"]) {
+            NSString *message = receiveJson[@"message"];
+            [verifyTF becomeFirstResponder];
+            // 收到验证码  进行提示
+            cover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+            cover.alpha = 1;
+            // 半黑膜
+            UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+            containerView.backgroundColor = [UIColor blackColor];
+            containerView.alpha = 0.8;
+            containerView.layer.cornerRadius = CORNERRADIUS*2;
+            [cover addSubview:containerView];
+            // 一个控件
+            UILabel *hintMes = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
+            hintMes.text = @"请求成功,请稍后";
+            hintMes.textColor = [UIColor whiteColor];
+            hintMes.textAlignment = NSTextAlignmentCenter;
+            [containerView addSubview:hintMes];
+            [self.view addSubview:cover];
+            NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(removeView) userInfo:nil repeats:NO];
+            [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
+        }else {
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"请求失败" delegate:nil cancelButtonTitle:@"知道了" otherButtonTitles:nil, nil];
+            [alertView show];
+        }
     }
 }
 
@@ -489,7 +673,7 @@
     [cover addSubview:containerView];
     // 一个控件
     UILabel *hintMes = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
-    hintMes.text = @"无法连接网络";
+    hintMes.text = @"请检查您的网络";
     hintMes.textColor = [UIColor whiteColor];
     hintMes.textAlignment = NSTextAlignmentCenter;
     [containerView addSubview:hintMes];
@@ -532,6 +716,14 @@
     return isMatch;
 }
 
+- (BOOL)isVerifyNumber:(NSString *)verifyNum
+{
+    NSString *pattern = @"[0-9]{6}";
+    NSPredicate *pred = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", pattern];
+    BOOL isMatch = [pred evaluateWithObject:verifyNum];
+    return isMatch;
+}
+
 - (void)requestForCalling {
     //验证 验证码是否正确。
     //验证等待动画
@@ -561,11 +753,15 @@
     NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/msg/voicesms"];
     NSURL *url = [NSURL URLWithString:urlStr];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-    NSString *dataStr = [NSString stringWithFormat:@"phone=%@", phoneTF.text];
+    NSString *dataStr = [NSString stringWithFormat:@"phone=%@", phoneNumber];
     NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
     [request setHTTPBody:data];
     [request setHTTPMethod:@"POST"];
     MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"requestForCalling"];
+}
+
+- (void)showTheMes {
+    verifyTF.rightView.hidden = NO;
 }
 
 #pragma mark - TouchesBegin

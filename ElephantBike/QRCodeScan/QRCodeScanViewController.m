@@ -16,6 +16,9 @@
 #import "PayViewController.h"
 #import "AppDelegate.h"
 #import "IdentityViewController.h"
+#import "CustomIOSAlertView.h"
+
+#import "HJFdxdcAlertView.h"
 
 
 #import "UIImageView+WebCache.h"
@@ -28,7 +31,6 @@
     AVCaptureSession            *session;//输入输出的中间桥梁
     AVCaptureDevice             *device;
     int                         line_tag;
-    UILabel                     *freezeLabel;//冻结标签
     AppDelegate                 *myDelegate;
     UIImageView                 *upView;
     UIImageView                 *downView;
@@ -41,17 +43,26 @@
     UISwipeGestureRecognizer    *leftSwipGestureRecognizer;
     //活动View
     UIImageView                 *discountImageView;
+    // 关闭活动页面按钮
+    UIButton                    *closeAdButton;
     // 缓存
     NSUserDefaults              *userDefaults;
     
     BOOL                        isConnect;
     
-    AVCaptureVideoPreviewLayer * layer;
+    AVCaptureVideoPreviewLayer  *layer;
+    
+    UILabel                     *msg;
+    
+    UIView                      *adView;
+    
+    UIButton *torchButton;
 }
 
 - (id)init {
     if (self = [super init]) {
-        
+        closeAdButton = [[UIButton alloc] init];
+        userDefaults = [NSUserDefaults standardUserDefaults];
     }
     return self;
 }
@@ -88,7 +99,9 @@
     
     AVAuthorizationStatus status = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
     if(status == AVAuthorizationStatusAuthorized) {
-        [output setMetadataObjectTypes:[NSArray arrayWithObject:AVMetadataObjectTypeQRCode]];
+//        [output setMetadataObjectTypes:[NSArray arrayWithObject:AVMetadataObjectTypeQRCode]]
+//        ;
+        [output setMetadataObjectTypes:[NSArray arrayWithObjects:AVMetadataObjectTypeEAN13Code, AVMetadataObjectTypeEAN8Code, AVMetadataObjectTypeCode128Code, nil]];
     } else {
         NSLog(@"没有camera权限"); // 弹窗提醒
     }
@@ -104,8 +117,10 @@
     
     //开始捕获
     if (myDelegate.isFreeze) {
-        [upView addSubview:freezeLabel];
         [session stopRunning];
+        msg.text = @"您的账号已经被临时冻结，工作人员将尽快核实您反映的问题并解冻您的账户";
+        [layer removeFromSuperlayer];
+        self.view.backgroundColor = [UIColor blackColor];
     }else {
         [session startRunning];
     }
@@ -120,9 +135,9 @@
     if ([object isKindOfClass:[AVCaptureSession class]]) {
         BOOL isRunning = ((AVCaptureSession *)object).isRunning;
         if (isRunning) {
-            [self addAnimation];
+//            [self addAnimation];
         }else{
-            [self removeAnimation];
+//            [self removeAnimation];
         }
     }
 }
@@ -131,55 +146,70 @@
 - (void)setOverlayPickerView
 {
     //左侧的view
-    UIImageView *leftView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 0.1867*SCREEN_WIDTH, SCREEN_HEIGHT)];
+    UIImageView *leftView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 0.1666*SCREEN_WIDTH, SCREEN_HEIGHT)];
     leftView.alpha = 0.5;
     leftView.backgroundColor = [UIColor blackColor];
     [self.view addSubview:leftView];
     //右侧的view
-    UIImageView *rightView = [[UIImageView alloc] initWithFrame:CGRectMake(SCREEN_WIDTH-0.1867*SCREEN_WIDTH, 0, 0.1867*SCREEN_WIDTH, SCREEN_HEIGHT)];
+    UIImageView *rightView = [[UIImageView alloc] initWithFrame:CGRectMake(SCREEN_WIDTH-0.1666*SCREEN_WIDTH, 0, 0.1666*SCREEN_WIDTH, SCREEN_HEIGHT)];
     rightView.alpha = 0.5;
     rightView.backgroundColor = [UIColor blackColor];
     [self.view addSubview:rightView];
     
     //最上部view
-    upView = [[UIImageView alloc] initWithFrame:CGRectMake(0.1867*SCREEN_WIDTH, 0, SCREEN_WIDTH-0.1867*SCREEN_WIDTH*2, 0.24*SCREEN_HEIGHT)];
+    upView = [[UIImageView alloc] initWithFrame:CGRectMake(0.1666*SCREEN_WIDTH, 0, SCREEN_WIDTH-0.1666*SCREEN_WIDTH*2, 0.2353*SCREEN_HEIGHT)];
     upView.alpha = 0.5;
     upView.backgroundColor = [UIColor blackColor];
     [self.view addSubview:upView];
     
     //底部view
-    downView = [[UIImageView alloc] initWithFrame:CGRectMake(0.1867*SCREEN_WIDTH, SCREEN_HEIGHT-0.408*SCREEN_HEIGHT, SCREEN_WIDTH-0.1867*SCREEN_WIDTH*2, 0.408*SCREEN_HEIGHT)];
+    downView = [[UIImageView alloc] initWithFrame:CGRectMake(0.1666*SCREEN_WIDTH, SCREEN_HEIGHT-0.6*SCREEN_HEIGHT, SCREEN_WIDTH-0.1666*SCREEN_WIDTH*2, 0.6*SCREEN_HEIGHT)];
     downView.alpha = 0.5;
     downView.backgroundColor = [UIColor blackColor];
     [self.view addSubview:downView];
     
     // 限定二维码扫描范围  cgrectmake(Y,X,H,W) 右下角为起点
-    [output setRectOfInterest:CGRectMake((upView.frame.size.height)/SCREEN_HEIGHT, 0.1867*SCREEN_WIDTH/SCREEN_WIDTH, 0.627*SCREEN_WIDTH/SCREEN_WIDTH, 0.627*SCREEN_WIDTH/SCREEN_WIDTH)];
+    [output setRectOfInterest:CGRectMake((upView.frame.size.height)/SCREEN_HEIGHT, 0.1666*SCREEN_WIDTH/SCREEN_WIDTH, 0.627*SCREEN_WIDTH/SCREEN_WIDTH, 0.627*SCREEN_WIDTH/SCREEN_WIDTH)];
 
     
-    UIImageView *centerView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 0.627*SCREEN_WIDTH, 0.627*SCREEN_WIDTH)];
-    centerView.center = CGPointMake(0.5*SCREEN_WIDTH, 0.416*SCREEN_HEIGHT);
-    centerView.image = [UIImage imageNamed:@"扫描框.png"];
-    centerView.contentMode = UIViewContentModeScaleAspectFit;
+    UIImageView *centerView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 0.6933*SCREEN_WIDTH, 0.180*SCREEN_HEIGHT)];
+    centerView.center = CGPointMake(0.5*SCREEN_WIDTH, 0.316*SCREEN_HEIGHT);
+    centerView.image = [UIImage imageNamed:@"扫描框"];
+    centerView.contentMode = UIViewContentModeScaleToFill;
     centerView.backgroundColor = [UIColor clearColor];
     centerView.clipsToBounds = YES;
     [self.view addSubview:centerView];
     
     UIImageView *line = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, SCREEN_WIDTH-60, 2)];
-    line.tag = line_tag;
-    line.image = [UIImage imageNamed:@"扫描线.png"];
+    line.center = centerView.center;
+    line.image = [UIImage imageNamed:@"对齐线"];
     line.contentMode = UIViewContentModeScaleAspectFill;
     line.backgroundColor = [UIColor clearColor];
     [centerView addSubview:line];
     
-    UILabel *msg = [[UILabel alloc] initWithFrame:CGRectMake(0.1867*SCREEN_WIDTH, CGRectGetMinY(downView.frame), SCREEN_WIDTH-0.1867*SCREEN_WIDTH*2, 60)];
+    msg = [[UILabel alloc] initWithFrame:CGRectMake(0.1666*SCREEN_WIDTH, CGRectGetMinY(downView.frame), SCREEN_WIDTH-0.1666*SCREEN_WIDTH*2, 80)];
+    
     msg.backgroundColor = [UIColor clearColor];
     msg.textColor = [UIColor whiteColor];
     msg.textAlignment = NSTextAlignmentCenter;
     msg.numberOfLines = 2;
-    msg.text = @"将大象单车上得二维码放入框内获取开锁密码";
-    msg.font = [UIFont fontWithName:@"QingYuanMono" size:14];
+    msg.text = @"将大象单车上的二维码放入框内获取开锁密码";
+    msg.font = [UIFont fontWithName:@"QingYuanMono" size:17];
+    if (iPhone5) {
+        msg.font = [UIFont fontWithName:@"QingYuanMono" size:12];
+    }
     [self.view addSubview:msg];
+    
+    NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc]initWithString:msg.text];;
+    NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc]init];
+    [paragraphStyle setLineSpacing:5];
+    [attributedString addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:NSMakeRange(0, msg.text.length)];
+    
+    msg.attributedText = attributedString;
+    //调节高度
+    CGSize size = CGSizeMake(SCREEN_WIDTH-0.1666*SCREEN_WIDTH*2, 500000);
+    
+    CGSize labelSize = [msg sizeThatFits:size];
     
 //    UIButton *buttonTemp = [[UIButton alloc] initWithFrame:CGRectMake(0, SCREEN_HEIGHT-100, SCREEN_WIDTH/2, 50)];
 //    buttonTemp.backgroundColor = [UIColor clearColor];
@@ -195,8 +225,8 @@
 //    [identifyButton addTarget:self action:@selector(gotoIdentifyView) forControlEvents:UIControlEventTouchUpInside];
 ////    [self.view addSubview:identifyButton];
     
-    UIButton *torchButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 0.208*SCREEN_WIDTH, 0.208*SCREEN_WIDTH)];
-    torchButton.center = CGPointMake(0.5*SCREEN_WIDTH, 0.809*SCREEN_HEIGHT);
+    torchButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 0.208*SCREEN_WIDTH, 0.208*SCREEN_WIDTH)];
+    torchButton.center = CGPointMake(0.5*SCREEN_WIDTH, 0.7*SCREEN_HEIGHT);
 //    UIWindow *window = [[UIApplication sharedApplication].windows lastObject];
 //    if (window.frame.size.width == 320) {
 //        torchButton.frame = CGRectMake((SCREEN_WIDTH-SCREEN_WIDTH/6)/2, SCREEN_HEIGHT-150/2, SCREEN_WIDTH/6, 100/2);
@@ -204,15 +234,11 @@
 //            torchButton.frame = CGRectMake((SCREEN_WIDTH-SCREEN_WIDTH/6)/2, SCREEN_HEIGHT-100/2, SCREEN_WIDTH/6, 100/2);
 //        }
 //    }
-    [torchButton setImage:[UIImage imageNamed:@"闪光灯"] forState:UIControlStateNormal];
+    [torchButton setImage:[UIImage imageNamed:@"闪光灯未开启状态"] forState:UIControlStateNormal];
     torchButton.contentMode = UIViewContentModeScaleAspectFit;
     [torchButton addTarget:self action:@selector(torchSwitch) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:torchButton];
     
-    freezeLabel = [[UILabel alloc] initWithFrame:CGRectMake(0.25*upView.frame.size.width, 0.7*upView.frame.size.height, 0.5*upView.frame.size.width, upView.frame.size.height*0.25)];
-    freezeLabel.text = @"账户冻结中";
-    freezeLabel.textAlignment = NSTextAlignmentCenter;
-    freezeLabel.textColor = [UIColor whiteColor];
     
     cover = [[UIView alloc] initWithFrame:CGRectMake(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)];
     cover.backgroundColor = [UIColor blackColor];
@@ -231,22 +257,39 @@
     infoViewController.delegate = self;
     [self.navigationController.view addSubview:infoViewController.view];
     
-    leftSwipGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(showMenu)];
+    leftSwipGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(showCover)];
     [self.view addGestureRecognizer:leftSwipGestureRecognizer];
     
-    discountImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0.2*SCREEN_WIDTH, 0.2*SCREEN_HEIGHT, 0.6*SCREEN_WIDTH, 0.6*SCREEN_HEIGHT)];
+    discountImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 0.4*SCREEN_HEIGHT, 0.6*SCREEN_HEIGHT)];
+    discountImageView.center = self.view.center;
     discountImageView.userInteractionEnabled = YES;
     UITapGestureRecognizer *activityDetails = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(gotoDetails)];
     [discountImageView addGestureRecognizer:activityDetails];
+    
+    closeAdButton.frame = CGRectMake(0, 0, 0.15*SCREEN_WIDTH, 0.15*SCREEN_WIDTH);
+    closeAdButton.center = CGPointMake(0.5*SCREEN_WIDTH, 0.9*SCREEN_HEIGHT);
+    [closeAdButton setImage:[UIImage imageNamed:@"首页广告的关闭键"] forState:UIControlStateNormal];
+    [closeAdButton addTarget:self action:@selector(none) forControlEvents:UIControlEventTouchUpInside];
+    
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateMessage) name:@"updateMessage" object:nil];
 }
 
 - (void)NavigationInit {
-    UIImageView *titleImageView = [[UIImageView alloc] initWithFrame:CGRectMake(SCREEN_WIDTH/2-30, STATUS_HEIGHT, 0.15*SCREEN_WIDTH, 0.05*SCREEN_HEIGHT)];
-    titleImageView.center = CGPointMake(0.50*SCREEN_WIDTH, 0.06*SCREEN_HEIGHT);
+    UIImageView *titleImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 0.1133*SCREEN_WIDTH, 0.0412*SCREEN_HEIGHT)];
     titleImageView.image = [UIImage imageNamed:@"LOGO"];
     titleImageView.contentMode = UIViewContentModeScaleAspectFit;
-    self.navigationItem.titleView = titleImageView;
-    UIBarButtonItem *infoButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"个人中心"] style:UIBarButtonItemStylePlain target:self action:@selector(information)];
+    
+    UIView *view1 = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 0.1133*SCREEN_WIDTH, 0.0412*SCREEN_HEIGHT)];
+    [view1 addSubview:titleImageView];
+    self.navigationItem.titleView = view1;
+    UIBarButtonItem *infoButton;
+    NSLog(@"qr.ismessage:%d", [userDefaults boolForKey:@"isMessage"]);
+    if ([userDefaults boolForKey:@"isMessage"]) {
+        infoButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"个人中心未读"] style:UIBarButtonItemStylePlain target:self action:@selector(information)];
+    }else {
+        infoButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"个人中心"] style:UIBarButtonItemStylePlain target:self action:@selector(information)];
+    }
     infoButton.tintColor = [UIColor grayColor];
     self.navigationItem.leftBarButtonItem = infoButton;
     // 若没有身份认证，显示，若已经身份认证，不显示
@@ -300,13 +343,21 @@
             [device lockForConfiguration:nil];
             [device setTorchMode:AVCaptureTorchModeOn];
             [device unlockForConfiguration];
+            [torchButton setImage:[UIImage imageNamed:@"闪光灯开启状态"] forState:UIControlStateNormal];
         }
     }else if(device.torchMode == AVCaptureTorchModeOn) {
         [device lockForConfiguration:nil];
         [device setTorchMode:AVCaptureTorchModeOff];
         [device unlockForConfiguration];
+        [torchButton setImage:[UIImage imageNamed:@"闪光灯未开启状态"] forState:UIControlStateNormal];
     }
     
+}
+
+- (void)showCover {
+    if (myDelegate.isLogin) {
+        [self showMenu];
+    }
 }
 
 - (void)hiddenCover {
@@ -348,36 +399,52 @@
     CGRect infoView = infoViewController.view.frame;
     infoView.origin.x -= SCREEN_WIDTH;
     // 动画
-    cover.hidden = YES;
-    [UIView animateWithDuration:0.4f
-                          delay:0.05f
-         usingSpringWithDamping:1.0
-          initialSpringVelocity:4.0
-                        options: UIViewAnimationOptionCurveEaseInOut
-                     animations:^{
-                         infoViewController.view.frame = infoView;
-                         cover.alpha = 0;
-                     }
-                     completion:^(BOOL finished){
-                         
-                     }];
-    [UIView commitAnimations];
+    if (infoViewController.view.frame.origin.x >= 0) {
+        cover.hidden = YES;
+        [UIView animateWithDuration:0.4f
+                              delay:0.05f
+             usingSpringWithDamping:1.0
+              initialSpringVelocity:4.0
+                            options: UIViewAnimationOptionCurveEaseInOut
+                         animations:^{
+                             infoViewController.view.frame = infoView;
+                             cover.alpha = 0;
+                         }
+                         completion:^(BOOL finished){
+                             
+                         }];
+        [UIView commitAnimations];
+    }
 }
 
 - (void)gotoDetails {
     [cover removeFromSuperview];
-    ActivityDetailsViewController *activityDetailsViewController = [[ActivityDetailsViewController alloc] init];
-    [self.navigationController pushViewController:activityDetailsViewController animated:YES];
+    if (![myDelegate.linkUrlShouYe isEqualToString:@""]) {
+        myDelegate.ad = 1;
+        ActivityDetailsViewController *activityDetailsViewController = [[ActivityDetailsViewController alloc] init];
+        [self.navigationController pushViewController:activityDetailsViewController animated:YES];
+    }
 }
 
 - (void)none {
-    [waitCover removeFromSuperview];
+    [discountImageView removeFromSuperview];
+    [closeAdButton removeFromSuperview];
     [session startRunning];
     if (myDelegate.isFreeze) {
-        [upView addSubview:freezeLabel];
         [session stopRunning];
+        [layer removeFromSuperlayer];
+        msg.text = @"您的账号已经被临时冻结，工作人员将尽快核实您反映的问题并解冻您的账户";
+        self.view.backgroundColor = [UIColor blackColor];
     }
 }
+
+- (void)updateMessage {
+    UIBarButtonItem *infoButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"个人中心"] style:UIBarButtonItemStylePlain target:self action:@selector(information)];
+    infoButton.tintColor = [UIColor grayColor];
+    self.navigationItem.leftBarButtonItem = infoButton;
+}
+
+
 
 #pragma mark - AVCaptureMetadataOutputObjectsDelegate
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputMetadataObjects:(NSArray *)metadataObjects fromConnection:(AVCaptureConnection *)connection{
@@ -387,9 +454,11 @@
         [device setTorchMode:AVCaptureTorchModeOff];
         [device unlockForConfiguration];
         if (!myDelegate.isLogin) {
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"您还没有登陆" delegate:self cancelButtonTitle:@"去登陆" otherButtonTitles:nil, nil];
-            alertView.tag = 2;
-            [alertView show];
+//            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"您还没有登陆" delegate:self cancelButtonTitle:@"去登陆" otherButtonTitles:nil, nil];
+//            alertView.tag = 2;
+//            [alertView show];
+            LoginViewController *loginViewController = [[LoginViewController alloc] init];
+            [self.navigationController pushViewController:loginViewController animated:YES];
         }else if (!myDelegate.isIdentify) {
             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"您还没有身份认证" delegate:self cancelButtonTitle:@"去认证" otherButtonTitles:nil, nil];
             alertView.tag = 3;
@@ -424,13 +493,13 @@
             
             // 请求服务器 异步post
             // 获取手机号码
-            userDefaults = [NSUserDefaults standardUserDefaults];
+            
             NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
             // 请求
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/pass/unlockcode"];
+            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/pass/unlockcode2"];
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
-            NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&phone=%@", bikeNO, phoneNumber];
+            NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&phone=%@&access_token=%@", bikeNO, phoneNumber, [userDefaults objectForKey:@"accessToken"]];
             NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
             [request setHTTPBody:data];
             [request setHTTPMethod:@"POST"];
@@ -484,11 +553,19 @@
         ChargeViewController *chargeViewController = [[ChargeViewController alloc] init];
         self.delegate = chargeViewController;
         [self.delegate getBikeNO:bikeNO andPassword:password];
+        myDelegate.isEndRiding = NO;
         [self.navigationController pushViewController:chargeViewController animated:YES];
     }else {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:message delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-        alert.tag = 1;
-        [alert show];
+        if ([message rangeOfString:@"invalid token"].location != NSNotFound) {
+            // 账号在别的地方登陆
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"您的身份验证已过期，请重新登录" delegate:self cancelButtonTitle:@"好的" otherButtonTitles:nil, nil];
+            alertView.tag = 10;
+            [alertView show];
+        }else {
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:message delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+            alert.tag = 1;
+            [alert show];
+        }
     }
 }
 
@@ -507,7 +584,7 @@
     [cover addSubview:containerView];
     // 一个控件
     UILabel *hintMes = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
-    hintMes.text = @"无法连接网络";
+    hintMes.text = @"请检查您的网络";
     hintMes.textColor = [UIColor whiteColor];
     hintMes.textAlignment = NSTextAlignmentCenter;
     [containerView addSubview:hintMes];
@@ -520,43 +597,67 @@
 
 #pragma mark - uialertview delegate
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
-    if (alertView.tag == 1) {
-        [session startRunning];
-    }else if (alertView.tag == 2) {
+    if(alertView.tag == 10) {
+        // 别的设备登录
+        myDelegate.isIdentify = NO;
+        myDelegate.isFreeze = NO;
+        myDelegate.isEndPay = YES;
+        myDelegate.isEndRiding = YES;
+        myDelegate.isRestart = NO;
+        myDelegate.isMissing = NO;
+        myDelegate.isUpload = NO;
+        myDelegate.isLogin = NO;
+        myDelegate.isLogout = YES;
+        myDelegate.isLinked = YES;
+        [userDefaults setBool:NO forKey:@"isLogin"];
+        [userDefaults setBool:NO forKey:@"isVip"];
+        [userDefaults setObject:@"" forKey:@"name"];
+        [userDefaults setObject:@"" forKey:@"stunum"];
+        [userDefaults setObject:@"" forKey:@"college"];
+        [userDefaults setBool:NO forKey:@"isMessage"];
+        [[SDImageCache sharedImageCache] removeImageForKey:@"学生证" fromDisk:YES];
         LoginViewController *loginViewController = [[LoginViewController alloc] init];
+         NSLog(@"%d", [userDefaults boolForKey:@"isLogin"]);
         [self.navigationController pushViewController:loginViewController animated:YES];
-    }else if (alertView.tag == 3){
-        IdentityViewController *identificationViewController = [[IdentityViewController alloc] init];
-        [self.navigationController pushViewController:identificationViewController animated:YES];
+    }else {
+        if (alertView.tag == 1) {
+            [session startRunning];
+        }
+        if (alertView.tag == 3){
+            IdentityViewController *identificationViewController = [[IdentityViewController alloc] init];
+            [self.navigationController pushViewController:identificationViewController animated:YES];
+        }
     }
+    
+    
 }
 
-- (void)addAnimation{
-    UIView *line = [self.view viewWithTag:line_tag];
-    line.hidden = NO;
-    CABasicAnimation *animation = [QRCodeScanViewController moveYTime:2 fromY:[NSNumber numberWithFloat:0] toY:[NSNumber numberWithFloat:SCREEN_WIDTH-60-2-30] rep:OPEN_MAX];
-    [line.layer addAnimation:animation forKey:@"LineAnimation"];
-}
-
-+ (CABasicAnimation *)moveYTime:(float)time fromY:(NSNumber *)fromY toY:(NSNumber *)toY rep:(int)rep
-{
-    CABasicAnimation *animationMove = [CABasicAnimation animationWithKeyPath:@"transform.translation.y"];
-    [animationMove setFromValue:fromY];
-    [animationMove setToValue:toY];
-    animationMove.duration = time;
-    animationMove.delegate = self;
-    animationMove.repeatCount  = rep;
-    animationMove.fillMode = kCAFillModeForwards;
-    animationMove.removedOnCompletion = NO;
-    animationMove.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
-    return animationMove;
-}
-
-- (void)removeAnimation{
-    UIView *line = [self.view viewWithTag:line_tag];
-    [line.layer removeAnimationForKey:@"LineAnimation"];
-    line.hidden = YES;
-}
+//- (void)addAnimation{
+//    UIView *line = [self.view viewWithTag:line_tag];
+//    line.hidden = NO;
+//    CABasicAnimation *animation = [QRCodeScanViewController moveYTime:2 fromY:[NSNumber numberWithFloat:0] toY:[NSNumber numberWithFloat:0.627*SCREEN_WIDTH/2] rep:OPEN_MAX];
+//    [line.layer addAnimation:animation forKey:@"LineAnimation"];
+//}
+//
+//+ (CABasicAnimation *)moveYTime:(float)time fromY:(NSNumber *)fromY toY:(NSNumber *)toY rep:(int)rep
+//{
+//    CABasicAnimation *animationMove = [CABasicAnimation animationWithKeyPath:@"transform.translation.y"];
+//    [animationMove setFromValue:fromY];
+//    [animationMove setToValue:toY];
+//    animationMove.duration = time;
+//    animationMove.delegate = self;
+//    animationMove.repeatCount  = rep;
+//    animationMove.fillMode = kCAFillModeForwards;
+//    animationMove.removedOnCompletion = NO;
+//    animationMove.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+//    return animationMove;
+//}
+//
+//- (void)removeAnimation{
+//    UIView *line = [self.view viewWithTag:line_tag];
+//    [line.layer removeAnimationForKey:@"LineAnimation"];
+//    line.hidden = YES;
+//}
 
 #pragma mark - InfoViewControllerDelegate
 - (void)getNextViewController:(id)nextViewController {
@@ -565,6 +666,7 @@
 }
 
 - (void)removeFromSuperView {
+    self.navigationItem.leftBarButtonItem.enabled = NO;
     [self hiddenCover];
     // 收到验证码  进行提示
     waitCover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
@@ -585,14 +687,16 @@
     // 显示时间
     NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(removeViewThenToLogin) userInfo:nil repeats:NO];
     [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
-    
 }
 
 - (void)removeViewThenToLogin {
+    self.navigationItem.leftBarButtonItem.enabled = YES;
     [waitCover removeFromSuperview];
     if (!myDelegate.isIdentify) {
         UIBarButtonItem *rightButton = [[UIBarButtonItem alloc]initWithTitle:@"身份认证" style:UIBarButtonItemStylePlain target:self action:@selector(gotoIdentification)];
+        rightButton.tintColor = [UIColor whiteColor];
         self.navigationItem.rightBarButtonItem = rightButton;
+        self.navigationItem.rightBarButtonItem.tintColor = [UIColor whiteColor];
     }
     if (myDelegate.isLogout) {
         LoginViewController *loginViewController = [[LoginViewController alloc] init];
@@ -605,18 +709,26 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    self.view.backgroundColor = [UIColor whiteColor];
+    self.view.backgroundColor = [UIColor blackColor];
     [self instanceDevice];
     myDelegate = [[UIApplication sharedApplication] delegate];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
+    NSLog(@"qr.ismessage:%d", [userDefaults boolForKey:@"isMessage"]);
     [super viewWillAppear:animated];
     if (myDelegate.isFreeze) {
-        [upView addSubview:freezeLabel];
         [session stopRunning];
+        [layer removeFromSuperlayer];
+        msg.text = @"您的账号已经被临时冻结，工作人员将尽快核实您反映的问题并解冻您的账户";
+        msg.font = [UIFont fontWithName:@"QingYuanMono" size:13];
+        if (iPhone5) {
+            msg.font = [UIFont fontWithName:@"QingYuanMono" size:12];
+        }
+        self.view.backgroundColor = [UIColor blackColor];
     }else {
-        [freezeLabel removeFromSuperview];
+        msg.text = @"将大象单车上的二维码放入框内获取开锁密码";
+//        msg.text = @"您的账号已经被临时冻结，工作人员将尽快核实您反映的问题并解冻您的账户";
         [session startRunning];
     }
     [self NavigationInit];
@@ -650,12 +762,12 @@
     NSLog(@"骑行结束：%d 付款：%d", myDelegate.isEndRiding, myDelegate.isEndPay);
     if (!myDelegate.isLinked) {
         [session stopRunning];
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"您的网络忙，未能获取用户状态,建议您重新重新登录" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+        [waitCover removeFromSuperview];
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"您的网络忙，未能获取用户状态,建议您重新登录" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         [alertView show];
-    }else {
+    }else if (myDelegate.isUserPower) {
         [waitCover removeFromSuperview];
         if (!myDelegate.isEndRiding) {
-            NSLog(@"将waitcover删除");
             ChargeViewController *chargeViewController = [[ChargeViewController alloc] init];
             [self.navigationController pushViewController:chargeViewController animated:YES];
         }else if (!myDelegate.isEndPay) {
@@ -671,36 +783,42 @@
             // 显示活动页面
             NSString *temp = [IP stringByAppendingString:@"/"];
             NSString *imageurl;
-            if (![myDelegate.imageUrlShouYe isEqualToString:@""]) {
-                imageurl = [temp stringByAppendingString:myDelegate.imageUrlShouYe];
+            imageurl = [temp stringByAppendingString:myDelegate.imageUrlShouYe];
+            NSString *linkurl;
+            if (![myDelegate.linkUrlShouYe isEqualToString:@""]) {
+                linkurl = [temp stringByAppendingString:myDelegate.linkUrlShouYe];
             }
-            waitCover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+            adView = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
             UITapGestureRecognizer *noneTap = [[UITapGestureRecognizer alloc] init];
             [noneTap addTarget:self action:@selector(none)];
-            [waitCover addGestureRecognizer:noneTap];
-            waitCover.alpha = 0.8;
-            waitCover.backgroundColor = [UIColor blackColor];
-//            UIImage *activityImage = [[SDImageCache sharedImageCache] imageFromDiskCacheForKey:@"活动页面"];
-            discountImageView.contentMode = UIViewContentModeScaleAspectFit;
-//            if (!activityImage) {
-                __block UIActivityIndicatorView *activityIndicator;
-                [discountImageView sd_setImageWithURL:[NSURL URLWithString:imageurl] placeholderImage:nil options:SDWebImageProgressiveDownload progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-                    if (!activityIndicator)
-                    {
-                        [discountImageView addSubview:activityIndicator = [UIActivityIndicatorView.alloc initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite]];
-                        activityIndicator.center = discountImageView.center;
-                        [activityIndicator startAnimating];
-                    }
-                } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-                    [activityIndicator removeFromSuperview];
-                    activityIndicator = nil;
-//                    [[SDImageCache sharedImageCache] storeImage:image forKey:@"活动页面" toDisk:YES];
-                }];
-//            }else {
-//                [discountImageView setImage:activityImage];
-//            }
-            [waitCover addSubview:discountImageView];
-            [self.view addSubview:waitCover];
+            [adView addGestureRecognizer:noneTap];
+            adView.alpha = 0.8;
+            adView.backgroundColor = [UIColor blackColor];
+            NSLog(@"%@", imageurl);
+            //            UIImage *activityImage = [[SDImageCache sharedImageCache] imageFromDiskCacheForKey:@"活动页面"];
+            discountImageView.contentMode = UIViewContentModeScaleToFill;
+            //            if (!activityImage) {
+            __block UIActivityIndicatorView *activityIndicator;
+            [discountImageView sd_setImageWithURL:[NSURL URLWithString:imageurl] placeholderImage:nil options:SDWebImageProgressiveDownload progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+                if (!activityIndicator)
+                {
+                    [discountImageView addSubview:activityIndicator = [UIActivityIndicatorView.alloc initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite]];
+                    activityIndicator.center = discountImageView.center;
+                    [activityIndicator startAnimating];
+                }
+            } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+                [activityIndicator removeFromSuperview];
+                activityIndicator = nil;
+                //                    [[SDImageCache sharedImageCache] storeImage:image forKey:@"活动页面" toDisk:YES];
+            }];
+            //            }else {
+            //                [discountImageView setImage:activityImage];
+            //            }
+            //            [adView addSubview:discountImageView];
+            //            [adView addSubview:closeAdButton];
+            [self.view addSubview:discountImageView];
+            [self.view addSubview:closeAdButton];
+            //            [self.view addSubview:adView];
         }
         if (!myDelegate.isIdentify) {
             UIBarButtonItem *rightButton = [[UIBarButtonItem alloc]initWithTitle:@"身份认证" style:UIBarButtonItemStylePlain target:self action:@selector(gotoIdentification)];
@@ -713,12 +831,24 @@
             LoginViewController *loginViewController = [[LoginViewController alloc] init];
             [self.navigationController pushViewController:loginViewController animated:YES];
         }
+    }else {
+        // 账号在别的地方登陆
+        myDelegate.isUserPower = YES;
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"您的身份验证已过期，请重新登录" delegate:self cancelButtonTitle:@"好的" otherButtonTitles:nil, nil];
+        alertView.tag = 10;
+        [alertView show];
     }
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
     [session stopRunning];
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+    [super viewDidDisappear:animated];
+    [torchButton setImage:[UIImage imageNamed:@"闪光灯未开启状态"] forState:UIControlStateNormal];
+     NSLog(@"%d", [userDefaults boolForKey:@"isLogin"]);
 }
 
 - (void)didReceiveMemoryWarning {

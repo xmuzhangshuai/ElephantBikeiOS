@@ -42,6 +42,10 @@
 @property (nonatomic, strong) NSString *linkUrlCharge;  // 计费页面广告内容链接
 @property (nonatomic, strong) NSString *deadLineDate;   // 会员到期日期
 @property (nonatomic) BOOL  isWXPay;                    // 判断是微信还是支付宝
+@property (nonatomic) BOOL  isGoToPay;                  // 判断是否开启支付宝或微信支付
+@property (nonatomic) int   ad;                         // 判断打开哪个广告
+@property (nonatomic) BOOL  isUserPower;                // 判断是否单点登录
+@property (nonatomic) BOOL  isShowShouYeAD;             // 是否显示首页广告
 
 @property (nonatomic, weak) id<PayDelegate> myDelegate; // 代理
 

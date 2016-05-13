@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4217F2131CC0C47100DA7CBB /* HJFdxdcAlertView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4217F2121CC0C47100DA7CBB /* HJFdxdcAlertView.m */; };
+		4217F2161CC0DCB400DA7CBB /* RecommendTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 4217F2151CC0DCB400DA7CBB /* RecommendTableViewCell.m */; };
 		4223848C1C453FD300A9C793 /* ElephantBikeTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4223848B1C453FD300A9C793 /* ElephantBikeTests.m */; };
 		422384971C453FD300A9C793 /* ElephantBikeUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 422384961C453FD300A9C793 /* ElephantBikeUITests.m */; };
 		422384F31C48A8BE00A9C793 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 422384F21C48A8BE00A9C793 /* AVFoundation.framework */; };
@@ -30,6 +32,7 @@
 		423D55141C4FD55D0057EB52 /* MyWalletViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 423D55131C4FD55D0057EB52 /* MyWalletViewController.m */; };
 		423D551A1C4FD75E0057EB52 /* HelpViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 423D55191C4FD75E0057EB52 /* HelpViewController.m */; };
 		423D55231C50ADA00057EB52 /* RechargeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 423D55221C50ADA00057EB52 /* RechargeViewController.m */; };
+		424D6E5D1CBF752E0058509C /* CustomIOSAlertView.m in Sources */ = {isa = PBXBuildFile; fileRef = 424D6E5C1CBF752E0058509C /* CustomIOSAlertView.m */; };
 		427F87F81CB4E0E9001BD1F1 /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 427F87F71CB4E0E9001BD1F1 /* CoreMotion.framework */; };
 		427F87FA1CB4E0FB001BD1F1 /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 427F87F91CB4E0FB001BD1F1 /* CoreText.framework */; };
 		427F87FC1CB4E128001BD1F1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 427F87FB1CB4E128001BD1F1 /* Foundation.framework */; };
@@ -75,6 +78,7 @@
 		4297CADD1CB3AB2700BC9B3A /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 4297CADC1CB3AB2700BC9B3A /* Reachability.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		42A3E9A11C72D024003F7260 /* HJFScrollNumberView.m in Sources */ = {isa = PBXBuildFile; fileRef = 42A3E9A01C72D024003F7260 /* HJFScrollNumberView.m */; };
 		42A3EA611C75F07E003F7260 /* MyURLConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 42A3EA601C75F07E003F7260 /* MyURLConnection.m */; };
+		42B7F18F1CD8A0EF00555EED /* msyh.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 42B7F18E1CD8A0EF00555EED /* msyh.ttf */; };
 		42CE9AD81C4CBCF10009BE49 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 42CE9ABB1C4CBCF10009BE49 /* AppDelegate.m */; };
 		42CE9AD91C4CBCF10009BE49 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 42CE9ABC1C4CBCF10009BE49 /* Assets.xcassets */; };
 		42CE9ADA1C4CBCF10009BE49 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 42CE9ABD1C4CBCF10009BE49 /* LaunchScreen.storyboard */; };
@@ -120,7 +124,6 @@
 		E1FBBC8E1CAB84EF007EFDCD /* RecommendController.m in Sources */ = {isa = PBXBuildFile; fileRef = E1FBBC8D1CAB84EF007EFDCD /* RecommendController.m */; };
 		E1FBBC941CAB852B007EFDCD /* MeetQuestionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E1FBBC901CAB852B007EFDCD /* MeetQuestionViewController.m */; };
 		E1FBBC961CAB852B007EFDCD /* QuestionDetailViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = E1FBBC931CAB852B007EFDCD /* QuestionDetailViewController.xib */; };
-		E1FBBC981CACC2D8007EFDCD /* msyh.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E1FBBC971CACC2D8007EFDCD /* msyh.ttf */; };
 		E1FBBC9B1CACC93F007EFDCD /* MemberPayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E1FBBC9A1CACC93F007EFDCD /* MemberPayViewController.m */; };
 /* End PBXBuildFile section */
 
@@ -142,6 +145,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		4217F2111CC0C47100DA7CBB /* HJFdxdcAlertView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HJFdxdcAlertView.h; sourceTree = "<group>"; };
+		4217F2121CC0C47100DA7CBB /* HJFdxdcAlertView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HJFdxdcAlertView.m; sourceTree = "<group>"; };
+		4217F2141CC0DCB400DA7CBB /* RecommendTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RecommendTableViewCell.h; sourceTree = "<group>"; };
+		4217F2151CC0DCB400DA7CBB /* RecommendTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RecommendTableViewCell.m; sourceTree = "<group>"; };
 		4223846E1C453FD300A9C793 /* dxdc.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = dxdc.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		422384871C453FD300A9C793 /* ElephantBikeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ElephantBikeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4223848B1C453FD300A9C793 /* ElephantBikeTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ElephantBikeTests.m; sourceTree = "<group>"; };
@@ -177,6 +184,8 @@
 		423D55191C4FD75E0057EB52 /* HelpViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HelpViewController.m; sourceTree = "<group>"; };
 		423D55211C50ADA00057EB52 /* RechargeViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RechargeViewController.h; sourceTree = "<group>"; };
 		423D55221C50ADA00057EB52 /* RechargeViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RechargeViewController.m; sourceTree = "<group>"; };
+		424D6E5B1CBF752E0058509C /* CustomIOSAlertView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomIOSAlertView.h; sourceTree = "<group>"; };
+		424D6E5C1CBF752E0058509C /* CustomIOSAlertView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CustomIOSAlertView.m; sourceTree = "<group>"; };
 		427F87F71CB4E0E9001BD1F1 /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
 		427F87F91CB4E0FB001BD1F1 /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
 		427F87FB1CB4E128001BD1F1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -340,6 +349,7 @@
 		42A3E9A01C72D024003F7260 /* HJFScrollNumberView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HJFScrollNumberView.m; sourceTree = "<group>"; };
 		42A3EA5F1C75F07E003F7260 /* MyURLConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MyURLConnection.h; sourceTree = "<group>"; };
 		42A3EA601C75F07E003F7260 /* MyURLConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MyURLConnection.m; sourceTree = "<group>"; };
+		42B7F18E1CD8A0EF00555EED /* msyh.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = msyh.ttf; path = UIConfig/msyh.ttf; sourceTree = "<group>"; };
 		42CE9ABA1C4CBCF10009BE49 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		42CE9ABB1C4CBCF10009BE49 /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		42CE9ABC1C4CBCF10009BE49 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -422,7 +432,6 @@
 		E1FBBC8F1CAB852B007EFDCD /* MeetQuestionViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MeetQuestionViewController.h; sourceTree = "<group>"; };
 		E1FBBC901CAB852B007EFDCD /* MeetQuestionViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MeetQuestionViewController.m; sourceTree = "<group>"; };
 		E1FBBC931CAB852B007EFDCD /* QuestionDetailViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = QuestionDetailViewController.xib; sourceTree = "<group>"; };
-		E1FBBC971CACC2D8007EFDCD /* msyh.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = msyh.ttf; sourceTree = "<group>"; };
 		E1FBBC991CACC93F007EFDCD /* MemberPayViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemberPayViewController.h; sourceTree = "<group>"; };
 		E1FBBC9A1CACC93F007EFDCD /* MemberPayViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MemberPayViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -576,6 +585,10 @@
 		423D55081C4F82050057EB52 /* SideMenu */ = {
 			isa = PBXGroup;
 			children = (
+				4217F2141CC0DCB400DA7CBB /* RecommendTableViewCell.h */,
+				4217F2151CC0DCB400DA7CBB /* RecommendTableViewCell.m */,
+				424D6E5B1CBF752E0058509C /* CustomIOSAlertView.h */,
+				424D6E5C1CBF752E0058509C /* CustomIOSAlertView.m */,
 				42F080681CAB827900AF4C07 /* ElephantMemberViewController.h */,
 				42F080691CAB827900AF4C07 /* ElephantMemberViewController.m */,
 				42F080641CAB825800AF4C07 /* OpenMemberViewController.h */,
@@ -595,6 +608,8 @@
 				423D55221C50ADA00057EB52 /* RechargeViewController.m */,
 				42904B2C1C7C668800046FF0 /* LoadingView.h */,
 				42904B2D1C7C668800046FF0 /* LoadingView.m */,
+				4217F2111CC0C47100DA7CBB /* HJFdxdcAlertView.h */,
+				4217F2121CC0C47100DA7CBB /* HJFdxdcAlertView.m */,
 			);
 			path = SideMenu;
 			sourceTree = "<group>";
@@ -814,8 +829,8 @@
 		42CE9AB91C4CBCF10009BE49 /* ElephantBike */ = {
 			isa = PBXGroup;
 			children = (
+				42B7F18E1CD8A0EF00555EED /* msyh.ttf */,
 				E1F948781C9A505A0026D3DA /* 晴圆等宽.ttc */,
-				E1FBBC971CACC2D8007EFDCD /* msyh.ttf */,
 				42CE9AD01C4CBCF10009BE49 /* main.m */,
 				42CE9ACC1C4CBCF10009BE49 /* Info.plist */,
 				42CE9ABA1C4CBCF10009BE49 /* AppDelegate.h */,
@@ -1017,7 +1032,7 @@
 				TargetAttributes = {
 					4223846D1C453FD300A9C793 = {
 						CreatedOnToolsVersion = 7.0.1;
-						DevelopmentTeam = 893B7AB67K;
+						DevelopmentTeam = 8UWSEU3A7Z;
 					};
 					422384861C453FD300A9C793 = {
 						CreatedOnToolsVersion = 7.0.1;
@@ -1062,8 +1077,8 @@
 				42CE9ADA1C4CBCF10009BE49 /* LaunchScreen.storyboard in Resources */,
 				42CE9AD91C4CBCF10009BE49 /* Assets.xcassets in Resources */,
 				42CE9AE11C4CBCF10009BE49 /* Info.plist in Resources */,
-				E1FBBC981CACC2D8007EFDCD /* msyh.ttf in Resources */,
 				42CE9ADF1C4CBCF10009BE49 /* ModalPayView.xib in Resources */,
+				42B7F18F1CD8A0EF00555EED /* msyh.ttf in Resources */,
 				42F080661CAB825800AF4C07 /* OpenMemberCell.xib in Resources */,
 				E128EC921C914E6100F4BC03 /* read_me.txt in Resources */,
 				42CE9ADB1C4CBCF10009BE49 /* Main.storyboard in Resources */,
@@ -1118,6 +1133,7 @@
 				42CE9AE01C4CBCF10009BE49 /* IdentificationViewController.m in Sources */,
 				4297CAC61CB3A69000BC9B3A /* ASIS3ServiceRequest.m in Sources */,
 				E128EC2A1C8FCB8600F4BC03 /* SDWebImageDecoder.m in Sources */,
+				4217F2131CC0C47100DA7CBB /* HJFdxdcAlertView.m in Sources */,
 				E1FBBC8E1CAB84EF007EFDCD /* RecommendController.m in Sources */,
 				E1F9487B1C9AACE90026D3DA /* IdentityViewController.m in Sources */,
 				42CE9AE21C4CBCF10009BE49 /* LoginViewController.m in Sources */,
@@ -1126,6 +1142,7 @@
 				4297CAC31CB3A69000BC9B3A /* ASIS3BucketRequest.m in Sources */,
 				E128EC341C8FCB8600F4BC03 /* UIImageView+WebCache.m in Sources */,
 				42F41E871C60A4D900FE76C0 /* LawViewController.m in Sources */,
+				4217F2161CC0DCB400DA7CBB /* RecommendTableViewCell.m in Sources */,
 				42CE9AD81C4CBCF10009BE49 /* AppDelegate.m in Sources */,
 				4297CABD1CB3A69000BC9B3A /* ASICloudFilesContainerXMLParserDelegate.m in Sources */,
 				E128EC271C8FCB8600F4BC03 /* NSData+ImageContentType.m in Sources */,
@@ -1165,6 +1182,7 @@
 				E128EC321C8FCB8600F4BC03 /* UIImage+WebP.m in Sources */,
 				423D55041C4E6AD20057EB52 /* PayViewController.m in Sources */,
 				427F88DB1CB4E2A7001BD1F1 /* openssl_wrapper.m in Sources */,
+				424D6E5D1CBF752E0058509C /* CustomIOSAlertView.m in Sources */,
 				E128EC281C8FCB8600F4BC03 /* SDImageCache.m in Sources */,
 				4297CADD1CB3AB2700BC9B3A /* Reachability.m in Sources */,
 				4297CAB21CB3A69000BC9B3A /* ASIDataCompressor.m in Sources */,
@@ -1258,7 +1276,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -1296,7 +1314,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1331,7 +1349,7 @@
 					"$(PROJECT_DIR)/FrameWork/AliIOS",
 				);
 				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_BUNDLE_IDENTIFIER = jf.ElephantBike;
+				PRODUCT_BUNDLE_IDENTIFIER = com.xxn.ElephantBike;
 				PRODUCT_NAME = dxdc;
 				PROVISIONING_PROFILE = "";
 			};
@@ -1364,7 +1382,7 @@
 					"$(PROJECT_DIR)/FrameWork/AliIOS",
 				);
 				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_BUNDLE_IDENTIFIER = jf.ElephantBike;
+				PRODUCT_BUNDLE_IDENTIFIER = com.xxn.ElephantBike;
 				PRODUCT_NAME = dxdc;
 				PROVISIONING_PROFILE = "";
 			};
@@ -1418,6 +1436,101 @@
 			};
 			name = Release;
 		};
+		42478A931CC491E4002433E8 /* add-hoc */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = "add-hoc";
+		};
+		42478A941CC491E4002433E8 /* add-hoc */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				ENABLE_BITCODE = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/FrameWork",
+					"$(PROJECT_DIR)/FrameWork/AliIOS",
+				);
+				GCC_INPUT_FILETYPE = automatic;
+				HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)",
+					"$(SRCROOT)/FrameWork/ALIIOS",
+				);
+				INFOPLIST_FILE = ElephantBike/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/FrameWork/SDK1.6.2",
+					"$(PROJECT_DIR)/FrameWork/lame",
+					"$(PROJECT_DIR)/FrameWork/AliIOS",
+				);
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_BUNDLE_IDENTIFIER = com.xxn.ElephantBike;
+				PRODUCT_NAME = dxdc;
+				PROVISIONING_PROFILE = "";
+			};
+			name = "add-hoc";
+		};
+		42478A951CC491E4002433E8 /* add-hoc */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				INFOPLIST_FILE = ElephantBikeTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = jf.ElephantBikeTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ElephantBike.app/ElephantBike";
+			};
+			name = "add-hoc";
+		};
+		42478A961CC491E4002433E8 /* add-hoc */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = ElephantBikeUITests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = jf.ElephantBikeUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_TARGET_NAME = ElephantBike;
+				USES_XCTRUNNER = YES;
+			};
+			name = "add-hoc";
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1426,6 +1539,7 @@
 			buildConfigurations = (
 				422384991C453FD300A9C793 /* Debug */,
 				4223849A1C453FD300A9C793 /* Release */,
+				42478A931CC491E4002433E8 /* add-hoc */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -1435,6 +1549,7 @@
 			buildConfigurations = (
 				4223849C1C453FD300A9C793 /* Debug */,
 				4223849D1C453FD300A9C793 /* Release */,
+				42478A941CC491E4002433E8 /* add-hoc */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -1444,6 +1559,7 @@
 			buildConfigurations = (
 				4223849F1C453FD300A9C793 /* Debug */,
 				422384A01C453FD300A9C793 /* Release */,
+				42478A951CC491E4002433E8 /* add-hoc */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -1453,6 +1569,7 @@
 			buildConfigurations = (
 				422384A21C453FD300A9C793 /* Debug */,
 				422384A31C453FD300A9C793 /* Release */,
+				42478A961CC491E4002433E8 /* add-hoc */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

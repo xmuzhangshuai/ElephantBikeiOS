@@ -30,7 +30,8 @@
 
 @implementation ElephantMemberViewController{
     UIImageView *MemberImageView;
-    UILabel *NumberLabel;
+    /** 去除电话号码*/
+//    UILabel *NumberLabel;
     UILabel *DeadLineLabel;
     UIButton *OpenMember;
     NSNumber *date;
@@ -60,7 +61,7 @@
 
 -(void)UIinit{
     MemberImageView = [[UIImageView alloc] init];
-    NumberLabel = [[UILabel alloc] init];
+//    NumberLabel = [[UILabel alloc] init];
     DeadLineLabel = [[UILabel alloc] init];
     OpenMember = [[UIButton alloc] init];
     self.view.backgroundColor = [UIColor whiteColor];
@@ -76,14 +77,14 @@
     MemberImageView.backgroundColor = [UIColor whiteColor];
     MemberImageView.contentMode = UIViewContentModeScaleAspectFit;
     
-    NumberLabel.frame = CGRectMake(0, 0, NUMBERLABEL_WIDTH, NUMBERLABEL_HEIGHT);
-    NumberLabel.center = CGPointMake(0.45*SCREEN_WIDTH, 0.40*SCREEN_HEIGHT);
-    /** 填写电话号码*/
-    NumberLabel.textAlignment = NSTextAlignmentCenter;
-    [NumberLabel setNumberOfLines:0];
-//    NumberLabel.font = [UIFont systemFontOfSize:25];
-    NumberLabel.font = [UIFont fontWithName:@"QingYuanMono" size:25];
-    NumberLabel.textColor = [UIColor whiteColor];
+//    NumberLabel.frame = CGRectMake(0, 0, NUMBERLABEL_WIDTH, NUMBERLABEL_HEIGHT);
+//    NumberLabel.center = CGPointMake(0.45*SCREEN_WIDTH, 0.40*SCREEN_HEIGHT);
+//    /** 填写电话号码*/
+//    NumberLabel.textAlignment = NSTextAlignmentCenter;
+//    [NumberLabel setNumberOfLines:0];
+////    NumberLabel.font = [UIFont systemFontOfSize:25];
+//    NumberLabel.font = [UIFont fontWithName:@"QingYuanMono" size:25];
+//    NumberLabel.textColor = [UIColor whiteColor];
     
     /** 到期时间*/
     DeadLineLabel.frame = CGRectMake(0.15*SCREEN_WIDTH, 0.20*SCREEN_WIDTH, DEADLINELABEL_WIDTH, DEADLINELABEL_HEIGHT);
@@ -108,14 +109,14 @@
         [OpenMember setTitle:[NSString stringWithFormat:@"开通会员"] forState:UIControlStateNormal];
     }else {
         MemberImageView.image = [UIImage imageNamed:@"大象会员页面"];
-        NumberLabel.text = [userDefaults objectForKey:@"phoneNumber"];
+//        NumberLabel.text = [userDefaults objectForKey:@"phoneNumber"];
         DeadLineLabel.text = @"";
         [OpenMember setTitle:[NSString stringWithFormat:@"会员续费"] forState:UIControlStateNormal];
     }
     
     [self.view addSubview:MemberImageView];
     [self.view addSubview:OpenMember];
-    [MemberImageView addSubview:NumberLabel];
+//    [MemberImageView addSubview:NumberLabel];
     [MemberImageView addSubview:DeadLineLabel];
    
 }
@@ -150,7 +151,11 @@
     if ([status isEqualToString:@"success"]) {
         NSString *vipdate = receiveJson[@"vipdate"];
         NSLog(@"会员到期：%@", vipdate);
-        DeadLineLabel.text = [NSString stringWithFormat:@"您的会员将于%@到期", vipdate];
+        NSArray *array = [vipdate componentsSeparatedByString:@"-"];
+        DeadLineLabel.text = [NSString stringWithFormat:@"您的会员将于%@年%@月%@日到期", array[0], array[1], array[2]];
+        if (iPhone5) {
+            DeadLineLabel.font = [UIFont fontWithName:@"QingYuanMono" size:13];
+        }
         myAppDelegate.deadLineDate = vipdate;
     }
 }

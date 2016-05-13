@@ -62,7 +62,7 @@
       </AdditionalOptions>
    </TestAction>
    <LaunchAction
-      buildConfiguration = "Debug"
+      buildConfiguration = "Release"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
@@ -105,7 +105,8 @@
       buildConfiguration = "Debug">
    </AnalyzeAction>
    <ArchiveAction
-      buildConfiguration = "Release"
+      buildConfiguration = "add-hoc"
+      customArchiveName = "ElephantBike"
       revealArchiveInOrganizer = "YES">
    </ArchiveAction>
 </Scheme>

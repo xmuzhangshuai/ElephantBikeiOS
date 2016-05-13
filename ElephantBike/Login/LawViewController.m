@@ -30,7 +30,7 @@
     //    webView.backgroundColor = [UIColor colorWithRed:0.9 green:0.9 blue:0.9 alpha:1.0];
     webView.dataDetectorTypes = UIDataDetectorTypeAll;
     webView.delegate = self;
-    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http://www.baidu.com"]];
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http://www.daxiangdanche.com/ElephantBike/protocol.html"]];
     NSURLRequest *request = [NSURLRequest requestWithURL:url];
     [webView loadRequest:request];
     
@@ -54,32 +54,32 @@
 
 #pragma mark - uiwebviewdelegate
 - (void)webViewDidStartLoad:(UIWebView *)webView {
-    // 菊花等待动画
-    // 集成api  此处是膜
-    waitCover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
-    waitCover.alpha = 1;
-    // 半黑膜
-    UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
-    containerView.backgroundColor = [UIColor blackColor];
-    containerView.alpha = 0.8;
-    containerView.layer.cornerRadius = CORNERRADIUS*2;
-    [waitCover addSubview:containerView];
-    // 两个控件
-    UIActivityIndicatorView *waitActivityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-    waitActivityView.frame = CGRectMake(0.33*containerView.frame.size.width, 0.1*containerView.frame.size.width, 0.33*containerView.frame.size.width, 0.4*containerView.frame.size.height);
-    [waitActivityView startAnimating];
-    [containerView addSubview:waitActivityView];
-    
-    UILabel *hintMes = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.7*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
-    hintMes.text = @"请稍后...";
-    hintMes.textColor = [UIColor whiteColor];
-    hintMes.textAlignment = NSTextAlignmentCenter;
-    [containerView addSubview:hintMes];
-    [self.view addSubview:waitCover];
+//    // 菊花等待动画
+//    // 集成api  此处是膜
+//    waitCover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+//    waitCover.alpha = 1;
+//    // 半黑膜
+//    UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+//    containerView.backgroundColor = [UIColor blackColor];
+//    containerView.alpha = 0.8;
+//    containerView.layer.cornerRadius = CORNERRADIUS*2;
+//    [waitCover addSubview:containerView];
+//    // 两个控件
+//    UIActivityIndicatorView *waitActivityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+//    waitActivityView.frame = CGRectMake(0.33*containerView.frame.size.width, 0.1*containerView.frame.size.width, 0.33*containerView.frame.size.width, 0.4*containerView.frame.size.height);
+//    [waitActivityView startAnimating];
+//    [containerView addSubview:waitActivityView];
+//    
+//    UILabel *hintMes = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.7*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
+//    hintMes.text = @"请稍后...";
+//    hintMes.textColor = [UIColor whiteColor];
+//    hintMes.textAlignment = NSTextAlignmentCenter;
+//    [containerView addSubview:hintMes];
+//    [self.view addSubview:waitCover];
 }
 
 - (void)webViewDidFinishLoad:(UIWebView *)webView {
-    [waitCover removeFromSuperview];
+//    [waitCover removeFromSuperview];
 }
 
 

@@ -78,6 +78,7 @@
     NSString    *money;
     NSString    *Month;
     NSString    *outTradeNO;    // 存放订单号（微信或支付宝
+    NSString    *WXOutTradeNo;  // 微信订单号
 }
 
 - (id)init {
@@ -131,13 +132,12 @@
     
     
 //    261,52  750*230
-    OrderName.frame = CGRectMake(0.348*SCREEN_WIDTH, 0.226*ORDERDETAILVIEW_HEIGHT, SCREEN_WIDTH-0.348*SCREEN_WIDTH, 0.14*ORDERDETAILVIEW_HEIGHT);
-//    OrderName.backgroundColor = [UIColor greenColor];
-    OrderName.font = [UIFont fontWithName:@"QingYuanMono" size:12];
-    
+    OrderName.frame = CGRectMake(0.348*SCREEN_WIDTH, 0.21*ORDERDETAILVIEW_HEIGHT, SCREEN_WIDTH-0.348*SCREEN_WIDTH, 0.14*ORDERDETAILVIEW_HEIGHT);
+    //    OrderName.backgroundColor = [UIColor greenColor];
+    OrderName.font = [UIFont fontWithName:@"QingYuanMono" size:13];
     
     OrderMoney.frame = CGRectMake(0.348*SCREEN_WIDTH, OrderName.frame.origin.y+ORDERNAME_HEIGHT, ORDERNAME_WIDTH, ORDERNAME_HEIGHT);
-    OrderMoney.font = [UIFont fontWithName:@"QingYuanMono" size:12];
+    OrderMoney.font = [UIFont fontWithName:@"QingYuanMono" size:13];
     
     
     
@@ -147,7 +147,7 @@
     
     Previlege.frame = CGRectMake(0.348*SCREEN_WIDTH, MemberValid.frame.origin.y+MemberValid.frame.size.height, ORDERNAME_WIDTH, ORDERNAME_HEIGHT);
     Previlege.text = @"特权：使用单车享0元起步费";
-    Previlege.font = [UIFont fontWithName:@"QingYuanMono" size:12];
+    Previlege.font = [UIFont fontWithName:@"QingYuanMono" size:13];
     
     payListTableView.frame = CGRectMake(0, 0.3*SCREEN_HEIGHT, SCREEN_WIDTH, 0.18*SCREEN_HEIGHT);
     payListTableView.dataSource = self;
@@ -213,10 +213,27 @@
     cell.imageView.image = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     
-    cell.textLabel.text = [payWay objectAtIndex:indexPath.row];
-    cell.textLabel.font = [UIFont fontWithName:@"QingYuanMono" size:16];
-    cell.detailTextLabel.text = [wayDetails objectAtIndex:indexPath.row];
-    cell.detailTextLabel.font = [UIFont fontWithName:@"QingYuanMono" size:10];
+//    cell.textLabel.text = [payWay objectAtIndex:indexPath.row];
+//    cell.textLabel.font = [UIFont fontWithName:@"QingYuanMono" size:16];
+//    cell.detailTextLabel.text = [wayDetails objectAtIndex:indexPath.row];
+//    cell.detailTextLabel.font = [UIFont fontWithName:@"QingYuanMono" size:10];
+    cell.textLabel.numberOfLines = 0;
+    /** 设置成统一的label*/
+    NSString *temp = [[payWay objectAtIndex:indexPath.row] stringByAppendingString:@"\n"];
+    NSString *lastTemp = [temp stringByAppendingString:[wayDetails objectAtIndex:indexPath.row]];
+    NSMutableAttributedString *cellcontent = [[NSMutableAttributedString alloc] initWithString:lastTemp];
+    cell.textLabel.font = [UIFont fontWithName:@"QingYuanMono" size:11];
+    if ([temp isEqualToString:@"支付宝"]) {
+        [cellcontent addAttribute:NSFontAttributeName value:[UIFont fontWithName:@"QingYuanMono" size:17] range:NSMakeRange(0, 3)];
+    }else {
+        [cellcontent addAttribute:NSFontAttributeName value:[UIFont fontWithName:@"QingYuanMono" size:17] range:NSMakeRange(0, 4)];
+    }
+    /** 设置 行间距*/
+    NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
+    [paragraphStyle setLineSpacing:6];
+    [cellcontent addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:NSMakeRange(0, [lastTemp length])];
+    cell.textLabel.attributedText = cellcontent;
+    
     if (indexPath.row == 0) {
         UIImageView *imageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"选项选中打钩"]];
         cell.accessoryView =imageView;
@@ -252,7 +269,13 @@
     if ([month isEqualToString:@"0"]) {
         Month = @"1";
         [OrderName setText:[NSString stringWithFormat:@"名称: 大象单车会员卡（%d个月）", 1]];
-        OrderMoney.text = @"金额: 3:00元";
+//        OrderMoney.text = @"金额: 3:00元";
+        NSString *OrderMoneyStr = @"金额: 3:00元";
+        NSMutableAttributedString *OrderMoneyContent = [[NSMutableAttributedString alloc] initWithString:OrderMoneyStr];
+        [OrderMoneyContent addAttribute:NSForegroundColorAttributeName value:[UIColor colorWithRed:112.0/255 green:177.0/255 blue:52.0/255 alpha:1] range:NSMakeRange(3, [OrderMoneyStr length]-3)];
+        OrderMoney.attributedText = OrderMoneyContent;
+        
+        
         if ([userDefaults boolForKey:@"isVip"]) {
             MemberValid.text = [NSString stringWithFormat:@"有效期至：%@", [self dateFrom:myAppDelegate.deadLineDate time:1]];
         }else {
@@ -262,7 +285,12 @@
     }else if ([month isEqualToString:@"1"]) {
         Month = @"3";
         [OrderName setText:[NSString stringWithFormat:@"名称: 大象单车会员卡（%d个月）", 3]];
-        OrderMoney.text = @"金额: 7:00元";
+//        OrderMoney.text = @"金额: 7:00元";
+        NSString *OrderMoneyStr = @"金额: 7:00元";
+        NSMutableAttributedString *OrderMoneyContent = [[NSMutableAttributedString alloc] initWithString:OrderMoneyStr];
+        [OrderMoneyContent addAttribute:NSForegroundColorAttributeName value:[UIColor colorWithRed:112.0/255 green:177.0/255 blue:52.0/255 alpha:1] range:NSMakeRange(3, [OrderMoneyStr length]-3)];
+        OrderMoney.attributedText = OrderMoneyContent;
+        
         if ([userDefaults boolForKey:@"isVip"]) {
             MemberValid.text = [NSString stringWithFormat:@"有效期至：%@", [self dateFrom:myAppDelegate.deadLineDate time:3]];
         }else {
@@ -272,7 +300,12 @@
     }else if ([month isEqualToString:@"2"]) {
         Month = @"6";
         [OrderName setText:[NSString stringWithFormat:@"名称: 大象单车会员卡（%d个月）", 6]];
-        OrderMoney.text = @"金额: 11:00元";
+//        OrderMoney.text = @"金额: 11:00元";
+        NSString *OrderMoneyStr = @"金额: 11:00元";
+        NSMutableAttributedString *OrderMoneyContent = [[NSMutableAttributedString alloc] initWithString:OrderMoneyStr];
+        [OrderMoneyContent addAttribute:NSForegroundColorAttributeName value:[UIColor colorWithRed:112.0/255 green:177.0/255 blue:52.0/255 alpha:1] range:NSMakeRange(3, [OrderMoneyStr length]-3)];
+        OrderMoney.attributedText = OrderMoneyContent;
+        
         if ([userDefaults boolForKey:@"isVip"]) {
             MemberValid.text = [NSString stringWithFormat:@"有效期至：%@", [self dateFrom:myAppDelegate.deadLineDate time:6]];
         }else {
@@ -282,7 +315,11 @@
     }else {
         Month = @"12";
         [OrderName setText:[NSString stringWithFormat:@"名称: 大象单车会员卡（%d个月）", 12]];
-        OrderMoney.text = @"金额: 18:00元";
+//        OrderMoney.text = @"金额: 18:00元";
+        NSString *OrderMoneyStr = @"金额: 18:00元";
+        NSMutableAttributedString *OrderMoneyContent = [[NSMutableAttributedString alloc] initWithString:OrderMoneyStr];
+        [OrderMoneyContent addAttribute:NSForegroundColorAttributeName value:[UIColor colorWithRed:112.0/255 green:177.0/255 blue:52.0/255 alpha:1] range:NSMakeRange(3, [OrderMoneyStr length]-3)];
+        OrderMoney.attributedText = OrderMoneyContent;
         if ([userDefaults boolForKey:@"isVip"]) {
             MemberValid.text = [NSString stringWithFormat:@"有效期至：%@", [self dateFrom:myAppDelegate.deadLineDate time:12]];
         }else {
@@ -325,13 +362,14 @@
         // 微信支付
         // 请求api 获取预付单
         NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
-        NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/pay/wxpayorder"];
+        NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/pay/wxpayvip"];
         NSURL *url = [NSURL URLWithString:urlStr];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
-        NSString *dataStr = [NSString stringWithFormat:@"phone=%@&totalfee=%@", phoneNumber, money];
+        NSString *dataStr = [NSString stringWithFormat:@"phone=%@&month=%@", phoneNumber, Month];
         NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
         [request setHTTPBody:data];
         [request setHTTPMethod:@"POST"];
+        myAppDelegate.isGoToPay = YES;
         MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"getPrepay"];
     }else if (indexPath.row == 1) {
         //支付宝
@@ -345,6 +383,7 @@
         NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
         [request setHTTPBody:data];
         [request setHTTPMethod:@"POST"];
+        myAppDelegate.isGoToPay = YES;
         MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"getAlipay"];
     }
      /*
@@ -387,27 +426,37 @@
             request.nonceStr= receiveJson[@"noncestr"];
             request.timeStamp= [receiveJson[@"timestamp"] intValue];
             request.sign = receiveJson[@"sign"];
+            WXOutTradeNo = receiveJson[@"out_trade_no"];
             NSLog(@"appid:%@\npartnerid:%@\nprepayid:%@\npackage:%@\nonceStr:%@\ntimestamp:%d\nsign:%@", request.openID, request.partnerId, request.prepayId, request.package, request.nonceStr, (unsigned int)request.timeStamp, request.sign);
             [WXApi sendReq:request];
         }else {
             NSLog(@"预付单没有收到");
         }
     }else if ([connection.name isEqualToString:@"wxcheck"]) {
+        myAppDelegate.isGoToPay = NO;
         NSString *status = receiveJson[@"status"];
         NSLog(@"充值会员返回");
         NSLog(@"status:%@", status);
         if ([status isEqualToString:@"success"]) {
             [waitCover removeFromSuperview];
+            [userDefaults setBool:YES forKey:@"isVip"];
             [[NSNotificationCenter defaultCenter] postNotificationName:@"isVip" object:nil];
             // 将本地isVip修改 然后回到之前的页面
-            [userDefaults setBool:YES forKey:@"isVip"];
+            
             
             // 充值成功动画再做修改
             waitCover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
             waitCover.alpha = 1;
-            UIImageView *imageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"充值成功"]];
-            imageView.center = waitCover.center;
-            [waitCover addSubview:imageView];
+            // 半黑膜
+            UIView *containerView1 = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+            containerView1.backgroundColor = [UIColor blackColor];
+            containerView1.alpha = 0.8;
+            containerView1.layer.cornerRadius = CORNERRADIUS*2;
+            [waitCover addSubview:containerView1];
+            UIImageView *success = [[UIImageView alloc] initWithFrame:CGRectMake(0.3*containerView1.frame.size.width, (containerView1.frame.size.height-0.4*containerView1.frame.size.width)/2, 0.4*containerView1.frame.size.width, 0.4*containerView1.frame.size.width)];
+            [success setImage:[UIImage imageNamed:@"成功"]];
+            success.contentMode = UIViewContentModeScaleToFill;
+            [containerView1 addSubview:success];
             [self.view addSubview:waitCover];
         
             NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(removeView) userInfo:nil repeats:NO];
@@ -429,55 +478,51 @@
         NSString *orderString = nil;
         orderString = [NSString stringWithFormat:@"%@&sign=\"%@\"&sign_type=\"%@\"", param,  sign, sign_type];
         
+        NSArray *array = [[UIApplication sharedApplication] windows];
+        UIWindow* win=[array objectAtIndex:0];
+        [win setHidden:YES];
         [[AlipaySDK defaultService] payOrder:orderString fromScheme:appScheme callback:^(NSDictionary *resultDic) {
-            NSLog(@"result=%@", resultDic);
-            NSString *result = resultDic[@"resultStatus"];
-            if ([result isEqualToString:@"9000"]) {
-                [waitCover removeFromSuperview];
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"isVip" object:nil];
-                // 将本地isVip修改 然后回到之前的页面
-                [userDefaults setBool:YES forKey:@"isVip"];
-                // 充值成功动画再做修改
-                waitCover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
-                waitCover.alpha = 1;
-                UIImageView *imageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"充值成功"]];
-                imageView.center = waitCover.center;
-                [waitCover addSubview:imageView];
-                [self.view addSubview:waitCover];
-                
-                NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(removeView) userInfo:nil repeats:NO];
-                [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
-            }else {
-                [waitCover removeFromSuperview];
-                // 充值失败
-                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"充值失败，请重试" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-                [alertView show];
-            }
+                            NSLog(@"result=%@", resultDic);
+                            // 请求
+            
         }];
+//        NSURL * myURL_APP_A = [NSURL URLWithString:@"alipay.com"];
+//        if (![[UIApplication sharedApplication] canOpenURL:myURL_APP_A]) {
+//            [waitCover removeFromSuperview];
+//            //如果没有安装支付宝客户端那么需要安装
+//            UIAlertView *message = [[UIAlertView alloc]initWithTitle:@"提示信息" message:@"请先安装支付宝" delegate:nil cancelButtonTitle:@"确定" otherButtonTitles: nil];
+//            [message show];
+//        }else {
+//            [[AlipaySDK defaultService] payOrder:orderString fromScheme:appScheme callback:^(NSDictionary *resultDic) {
+//                NSLog(@"result=%@", resultDic);
+//                // 请求
+//                
+//            }];
+//        }
     }else if ([connection.name isEqualToString:@"alipaycheck"]) {
+        myAppDelegate.isGoToPay = NO;
         NSString *status = receiveJson[@"status"];
         NSLog(@"%@", status);
         [waitCover removeFromSuperview];
         if ([status isEqualToString:@"success"]) {
+            [userDefaults setBool:YES forKey:@"isVip"];
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"isVip" object:nil];
             // 付款成功
-            myAppDelegate.isEndPay = YES;
             waitCover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
             waitCover.alpha = 1;
             // 半黑膜
-            UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
-            containerView.backgroundColor = [UIColor blackColor];
-            containerView.alpha = 0.8;
-            containerView.layer.cornerRadius = CORNERRADIUS*2;
-            [waitCover addSubview:containerView];
-            // 一个控件
-            UILabel *hintMes1 = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
-            hintMes1.text = @"付款成功";
-            hintMes1.textColor = [UIColor whiteColor];
-            hintMes1.textAlignment = NSTextAlignmentCenter;
-            [containerView addSubview:hintMes1];
+            UIView *containerView1 = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+            containerView1.backgroundColor = [UIColor blackColor];
+            containerView1.alpha = 0.8;
+            containerView1.layer.cornerRadius = CORNERRADIUS*2;
+            [waitCover addSubview:containerView1];
+            UIImageView *success = [[UIImageView alloc] initWithFrame:CGRectMake(0.3*containerView1.frame.size.width, (containerView1.frame.size.height-0.4*containerView1.frame.size.width)/2, 0.4*containerView1.frame.size.width, 0.4*containerView1.frame.size.width)];
+            [success setImage:[UIImage imageNamed:@"成功"]];
+            success.contentMode = UIViewContentModeScaleToFill;
+            [containerView1 addSubview:success];
             [self.view addSubview:waitCover];
             // 显示时间
-            NSTimer *gotoQRScanTimer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(gotoQRScan) userInfo:nil repeats:NO];
+            NSTimer *gotoQRScanTimer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(removeView) userInfo:nil repeats:NO];
         }else {
             // 付款失败
             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"付款失败，请重试" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
@@ -487,8 +532,29 @@
 }
 
 - (void)MyConnection:(MyURLConnection *)connection didFailWithError:(NSError *)error {
-    UIAlertView *alerView = [[UIAlertView alloc] initWithTitle:nil message:@"网络超时" delegate:nil cancelButtonTitle:@"知道了" otherButtonTitles:nil, nil];
-    [alerView show];
+    [waitCover removeFromSuperview];
+    waitCover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    waitCover.alpha = 1;
+    // 半黑膜
+    UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+    containerView.backgroundColor = [UIColor blackColor];
+    containerView.alpha = 0.8;
+    containerView.layer.cornerRadius = CORNERRADIUS*2;
+    [waitCover addSubview:containerView];
+    // 一个控件
+    UILabel *hintMes1 = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
+    hintMes1.text = @"请检查您的网络";
+    hintMes1.textColor = [UIColor whiteColor];
+    hintMes1.textAlignment = NSTextAlignmentCenter;
+    [containerView addSubview:hintMes1];
+    [self.view addSubview:waitCover];
+    // 显示时间
+    NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(removeCoverView) userInfo:nil repeats:NO];
+    [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
+}
+
+- (void)removeCoverView {
+    [waitCover removeFromSuperview];
 }
 
 - (void)gotoQRScan {
@@ -502,7 +568,7 @@
     NSURL *url = [NSURL URLWithString:urlStr];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
     NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
-    NSString *dataStr = [NSString stringWithFormat:@"phone=%@", phoneNumber];
+    NSString *dataStr = [NSString stringWithFormat:@"out_trade_no=%@", WXOutTradeNo];
     NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
     [request setHTTPBody:data];
     [request setHTTPMethod:@"POST"];
@@ -574,10 +640,14 @@
     self.view.backgroundColor = BACKGROUNDCOLOR;
     [self UIInit];
     [self UILayout];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
     myAppDelegate.isMoneyView = YES;
 }
 
-- (void)viewDidDisappear:(BOOL)animated {
+- (void)viewWillDisappear:(BOOL)animated {
     [super viewDidDisappear:animated];
     myAppDelegate.isMoneyView = NO;
 }

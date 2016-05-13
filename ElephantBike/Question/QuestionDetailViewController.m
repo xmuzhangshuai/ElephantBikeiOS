@@ -15,6 +15,7 @@
 #import "AppDelegate.h"
 #import "ChargeViewController.h"
 #import "PayViewController.h"
+#import "UIImageView+WebCache.h"
 
 /**
  *  ASI部分
@@ -24,17 +25,51 @@
 
 #define kRecordAudioFile @"myRecord.caf"
 #define documentPath    [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject]
+#define spaceWidth 0.02*SCREEN_HEIGHT
 
-@interface QuestionDetailViewController ()<AVAudioRecorderDelegate, MyURLConnectionDelegate, AVAudioPlayerDelegate, ASIHTTPRequestDelegate>
-@property (weak, nonatomic) IBOutlet UILabel *QuestionNameLabel;
-@property (weak, nonatomic) IBOutlet UILabel *FirstLabel;
-@property (weak, nonatomic) IBOutlet UILabel *SecondLabel;
-@property (weak, nonatomic) IBOutlet UILabel *ThirdLabel;
-@property (weak, nonatomic) IBOutlet UIView *QuestionDetailView;
+#define QUESTIONDETAILVIEW_WIDTH 0.907*SCREEN_WIDTH
+#define QUESTIONDETAILVIEW_HEIGHT 0.075*SCREEN_HEIGHT+FirstlabelSize.height+SecondlabelSize.height+ThirdlabelSize.height+2*spaceWidth
+#define FIRSTLABELMAGIN 0.031*SCREEN_HEIGHT
+
+
+@interface QuestionDetailViewController ()<AVAudioRecorderDelegate, MyURLConnectionDelegate, AVAudioPlayerDelegate, ASIHTTPRequestDelegate, UIAlertViewDelegate>
+//@property (weak, nonatomic) IBOutlet UILabel *QuestionNameLabel;
+//@property (weak, nonatomic) IBOutlet UILabel *FirstLabel;
+//@property (weak, nonatomic) IBOutlet UILabel *SecondLabel;
+//@property (weak, nonatomic) IBOutlet UILabel *ThirdLabel;
+//
+////@property (weak, nonatomic) IBOutlet UIView *QuestionDetailView;
+//
+//@property (strong, nonatomic)UIView *QuestionDetailView;
+//
+//
+//@property (weak, nonatomic) IBOutlet UIView *tiniLineView;
 
 @end
 
 @implementation QuestionDetailViewController{
+    /** 纯代码创建详细问题界面*/
+    UIView *QuestionDetailView;
+    /** 分割线*/
+    UIView *tiniLineView;
+    /** 问题名称label*/
+    UILabel *QuestionNameLabel;
+    /** 第一个label*/
+    UILabel *FirstLabel;
+    UILabel *SecondLabel;
+    UILabel *ThirdLabel;
+
+    /** 初始宽度*/
+//    CGSize size;
+    /** 最终写入文字时的宽度*/
+    CGSize FirstlabelSize;
+    CGSize SecondlabelSize;
+    CGSize ThirdlabelSize;
+    
+    /** view的高度*/
+    CGFloat QuestionDetailViewHeight;
+    
+    
     /** 确定提交按钮*/
     UIButton *confirmButton;
     /** 录音功能按钮*/
@@ -85,6 +120,8 @@
 
 -(id)init{
     if (self == [super init]) {
+        
+        
         userDefaults = [NSUserDefaults standardUserDefaults];
         fileManager = [NSFileManager defaultManager];
         RecordData = [[NSData alloc] init];
@@ -93,6 +130,7 @@
         myAppDelegate = [[UIApplication sharedApplication] delegate];
         cover = [[UIView alloc] init];
         payViewController = [[PayViewController alloc] init];
+        voiceUrl = @"";
     }
     return self;
 }
@@ -109,12 +147,22 @@
 }
 
 -(void)UIInit{
+
+    QuestionDetailView = [[UIView alloc] init];
+    QuestionNameLabel = [[UILabel alloc] init];
+    tiniLineView = [[UIView alloc] init];
+    FirstLabel = [[UILabel alloc] init];
+    SecondLabel = [[UILabel alloc] init];
+    ThirdLabel = [[UILabel alloc] init];
+    
+    tiniLineView.backgroundColor = [UIColor colorWithRed:240.0/255 green:240.0/255 blue:240.0/255 alpha:1];
+    
     confirmButton = [[UIButton alloc] init];
     speakButton = [[UIButton alloc] init];
-    self.QuestionDetailView.backgroundColor = [UIColor colorWithRed:255.0/255 green:255.0/255 blue:255.0/255 alpha:1];
+    QuestionDetailView.backgroundColor = [UIColor colorWithRed:255.0/255 green:255.0/255 blue:255.0/255 alpha:1];
     self.view.backgroundColor = [UIColor colorWithRed:240.0/255 green:240.0/255 blue:240.0/255 alpha:1];
-    
-    [self setTitleLabel];
+//    /** 设置label的内容*/
+//    [self setTitleLabel];
  
 
     /** 设置音频会话*/
@@ -145,7 +193,7 @@
     /** 动画效果View*/
     callView = [[UIView alloc] init];
     maskView = [[UIView alloc] init];
-    VoiceImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"yinjie(6) @2x.png"]];
+//    VoiceImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"yinjie(6) @2x.png"]];
     
     
     
@@ -154,6 +202,50 @@
 }
 
 -(void)UILayout{
+    //初始化label
+    QuestionNameLabel.frame = CGRectZero;
+    FirstLabel.frame = CGRectZero;
+    FirstLabel.numberOfLines = 0;
+    SecondLabel.frame = CGRectZero;
+    SecondLabel.numberOfLines = 0;
+    ThirdLabel.frame = CGRectZero;
+    ThirdLabel.numberOfLines = 0;
+    
+    /** 设置label的内容*/
+    [self setTitleLabel];
+    
+    
+    NSLog(@"F:.....%f, S:.......%f, T:......%f", FirstlabelSize.height, SecondlabelSize.height, ThirdlabelSize.height);
+    if (iPhone5) {
+        QuestionDetailView.frame = CGRectMake(0.043*SCREEN_WIDTH, 0.13*SCREEN_HEIGHT, 0.907*SCREEN_WIDTH, 0.075*SCREEN_HEIGHT+FirstlabelSize.height+SecondlabelSize.height+ThirdlabelSize.height+3*spaceWidth);
+        QuestionNameLabel.frame = CGRectMake(0, 0, 0.907*SCREEN_WIDTH, 0.075*SCREEN_HEIGHT);
+        QuestionNameLabel.textAlignment = NSTextAlignmentCenter;
+        QuestionNameLabel.font = [UIFont fontWithName:@"QingYuanMono" size:15];
+        tiniLineView.frame = CGRectMake(0.043*SCREEN_WIDTH, 0.075*SCREEN_HEIGHT, 0.8*SCREEN_WIDTH, 1);
+        
+        FirstLabel.frame = CGRectMake(0.043*SCREEN_WIDTH, 0.085*SCREEN_HEIGHT+1, 0.8*SCREEN_WIDTH, FirstlabelSize.height);
+        SecondLabel.frame = CGRectMake(0.043*SCREEN_WIDTH, FirstLabel.frame.origin.y+FirstlabelSize.height+spaceWidth, 0.8*SCREEN_WIDTH, SecondlabelSize.height);
+        ThirdLabel.frame = CGRectMake(0.043*SCREEN_WIDTH, SecondLabel.frame.origin.y+SecondlabelSize.height+spaceWidth, 0.8*SCREEN_WIDTH, ThirdlabelSize.height);
+    }else{
+        QuestionDetailView.frame = CGRectMake(0.043*SCREEN_WIDTH, 0.13*SCREEN_HEIGHT, 0.907*SCREEN_WIDTH, 0.075*SCREEN_HEIGHT+FirstlabelSize.height+SecondlabelSize.height+ThirdlabelSize.height+2.5*spaceWidth+FIRSTLABELMAGIN);
+        QuestionNameLabel.frame = CGRectMake(0, 0, 0.907*SCREEN_WIDTH, 0.075*SCREEN_HEIGHT);
+        QuestionNameLabel.textAlignment = NSTextAlignmentCenter;
+        QuestionNameLabel.font = [UIFont fontWithName:@"QingYuanMono" size:17];
+        tiniLineView.frame = CGRectMake(0.043*SCREEN_WIDTH, 0.075*SCREEN_HEIGHT, 0.8*SCREEN_WIDTH, 1);
+      
+        FirstLabel.frame = CGRectMake(0.043*SCREEN_WIDTH, 0.075*SCREEN_HEIGHT+1+FIRSTLABELMAGIN, 0.75*SCREEN_WIDTH, FirstlabelSize.height);
+        FirstLabel.center = CGPointMake(0.4703*SCREEN_WIDTH, 0.14*SCREEN_HEIGHT);
+        
+//        SecondLabel.frame = CGRectMake(0.043*SCREEN_WIDTH,FirstLabel.frame.origin.y+FirstlabelSize.height+spaceWidth, 0.75*SCREEN_WIDTH, SecondlabelSize.height);
+        SecondLabel.frame = CGRectMake(0.09*SCREEN_WIDTH, 0.204*SCREEN_HEIGHT, 0.75*SCREEN_WIDTH, SecondlabelSize.height);
+//        SecondLabel.center = CGPointMake(0.4703*SCREEN_WIDTH, 0.157*SCREEN_HEIGHT+FirstlabelSize.height+spaceWidth);
+//
+//        ThirdLabel.frame = CGRectMake(0.043*SCREEN_WIDTH, SecondLabel.frame.origin.y+SecondlabelSize.height+spaceWidth, 0.75*SCREEN_WIDTH, ThirdlabelSize.height);
+        ThirdLabel.frame = CGRectMake(0.09*SCREEN_WIDTH, 0.204*SCREEN_HEIGHT+SecondlabelSize.height+spaceWidth, 0.75*SCREEN_WIDTH, ThirdlabelSize.height);
+//        ThirdLabel.center = CGPointMake(0.4703*SCREEN_WIDTH, SecondLabel.center.y+SecondlabelSize.height+2*spaceWidth);
+
+    }
+    
     confirmButton.frame = CGRectMake(0, 0, 0.8*SCREEN_WIDTH, 0.06*SCREEN_HEIGHT);
     confirmButton.center = CGPointMake(0.50*SCREEN_WIDTH, 0.95*SCREEN_HEIGHT);
 //    [confirmButton setTitle:@"下一步" forState:UIControlStateNormal];
@@ -165,9 +257,10 @@
     confirmButton.layer.cornerRadius = 6;
 
     
-    speakButton.frame = CGRectMake(0, 0, 0.281*SCREEN_WIDTH, 0.151*SCREEN_HEIGHT);
+    speakButton.frame = CGRectMake(0, 0, 0.272*SCREEN_WIDTH, 0.272*SCREEN_WIDTH);
     speakButton.center = CGPointMake(0.50*SCREEN_WIDTH, 0.80*SCREEN_HEIGHT);
-    speakButton.backgroundColor = [UIColor greenColor];
+    [speakButton setImage:[UIImage imageNamed:@"话筒"] forState:UIControlStateNormal];
+    speakButton.contentMode = UIViewContentModeScaleAspectFit;
     speakButton.layer.masksToBounds = YES;
     speakButton.layer.cornerRadius = 15;
     
@@ -182,11 +275,12 @@
     [speakButton addGestureRecognizer:longPressGR];
     
     
-    self.QuestionNameLabel.text = self.QuestionName;
-    self.QuestionNameLabel.font = [UIFont fontWithName:@"QingYuanMono" size:16];
+    QuestionNameLabel.text = self.QuestionName;
     if ([self.QuestionName isEqualToString:@"在计费期间单车丢失"]) {
         speakButton.hidden = YES;
     }
+
+    
     
     
     /** 设置语音动画效果*/
@@ -200,7 +294,12 @@
     
     
     
-    
+    [self.view addSubview:QuestionDetailView];
+    [QuestionDetailView addSubview:QuestionNameLabel];
+    [QuestionDetailView addSubview:tiniLineView];
+    [QuestionDetailView addSubview:FirstLabel];
+    [QuestionDetailView addSubview:SecondLabel];
+    [QuestionDetailView addSubview:ThirdLabel];
     [callView addSubview:VoiceImageView];
     [self.view addSubview:callView];
     [self.view addSubview:confirmButton];
@@ -374,7 +473,7 @@
         NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/question/ques"];
         NSURL *url = [NSURL URLWithString:urlStr];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-        NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&phone=%@&type=%@&voiceurl=%@", bikeno, phoneNumber, self.QuestionName, voiceUrl];
+        NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&phone=%@&type=%@&voiceurl=%@&needfrozen=%d&access_token=%@", bikeno, phoneNumber, self.QuestionName, voiceUrl, 0, [userDefaults objectForKey:@"accessToken"]];
         NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
         [request setHTTPBody:data];
         [request setHTTPMethod:@"POST"];
@@ -400,7 +499,7 @@
         NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/question/ques"];
         NSURL *url = [NSURL URLWithString:urlStr];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-        NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&phone=%@&type=%@&voiceurl=%@", bikeno, phoneNumber, self.QuestionName, voiceUrl];
+        NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&phone=%@&type=%@&voiceurl=%@&needfrozen=%d&access_token=%@", bikeno, phoneNumber, self.QuestionName, voiceUrl, myAppDelegate.isFreeze, [userDefaults objectForKey:@"accessToken"]];
         NSLog(@"bikeno%@, phone=%@, type%@, voiceurl%@", bikeno, phoneNumber, self.QuestionName, voiceUrl);
         NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
         [request setHTTPBody:data];
@@ -456,7 +555,7 @@
                     NSURL *url = [NSURL URLWithString:urlStr];
                     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
                     NSLog(@"bikeid=%@, phone=%@, type=%@, ismissing=%d", bikeno, phoneNumber, self.QuestionName, myAppDelegate.isMissing);
-                    NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&phone=%@&type=%@&ismissing=%d", bikeno, phoneNumber, self.QuestionName, 1];
+                    NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&phone=%@&type=%@&ismissing=%d&access_token=%@", bikeno, phoneNumber, self.QuestionName, 1, [userDefaults objectForKey:@"accessToken"]];
                     NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
                             [request setHTTPBody:data];
                     [request setHTTPMethod:@"POST"];
@@ -481,8 +580,15 @@
         }else {
             [cover removeFromSuperview];
             NSString *message = receiveData[@"message"];
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:message delegate:nil cancelButtonTitle:@"知道了" otherButtonTitles:nil, nil];
+            if ([message rangeOfString:@"invalid token"].location != NSNotFound) {
+                // 账号在别的地方登陆
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"您的身份验证已过期，请重新登录" delegate:self cancelButtonTitle:@"好的" otherButtonTitles:nil, nil];
+                alertView.tag = 10;
+                [alertView show];
+            }else {
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:message delegate:nil cancelButtonTitle:@"知道了" otherButtonTitles:nil, nil];
             [alertView show];
+            }
         }
     }else if ([connection.name isEqualToString:@"getMoney"]) {
         // 解析数据
@@ -513,6 +619,15 @@
             [self.view addSubview:cover];
             // 显示时间
             NSTimer *timer1 = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(removeView) userInfo:nil repeats:NO];
+        }else {
+            // 失败
+            NSString *message = receiveData[@"message"];
+            if ([message rangeOfString:@"invalid token"].location != NSNotFound) {
+                // 账号在别的地方登陆
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"您的身份验证已过期，请重新登录" delegate:self cancelButtonTitle:@"好的" otherButtonTitles:nil, nil];
+                alertView.tag = 10;
+                [alertView show];
+            }
         }
     }else if ([connection.name isEqualToString:@"getMissBikeFee"]) {
         if ([status isEqualToString:@"success"]) {
@@ -538,6 +653,14 @@
             [self.view addSubview:cover];
             // 显示时间
             NSTimer *timer1 = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(removeView) userInfo:nil repeats:NO];
+        }else {
+            NSString *message = receiveData[@"message"];
+            if ([message rangeOfString:@"invalid token"].location != NSNotFound) {
+                // 账号在别的地方登陆
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"您的身份验证已过期，请重新登录" delegate:self cancelButtonTitle:@"好的" otherButtonTitles:nil, nil];
+                alertView.tag = 10;
+                [alertView show];
+            }
         }
     }
 }
@@ -578,6 +701,17 @@
 -(void)commitRecord{
     NSFileManager *fileManager1 = [NSFileManager defaultManager];
     if ([fileManager1 fileExistsAtPath:mp3FilePath] || [self.QuestionName isEqualToString:@"在计费期间单车丢失"]) {
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"是否确认丢失" delegate:self cancelButtonTitle:@"确认" otherButtonTitles:@"取消", nil];
+        [alertView show];
+    }else {
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"请录入您的语音" delegate:nil cancelButtonTitle:@"知道了" otherButtonTitles:nil, nil];
+        [alertView show];
+    }
+}
+
+#pragma mark - alertViewDelegate
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
+    if (buttonIndex == 0) {
         //验证等待动画
         // 集成api  此处是膜
         cover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
@@ -601,9 +735,27 @@
         [containerView addSubview:hintMes1];
         [self.view addSubview:cover];
         [self requestForDetailQuestion];
-    }else {
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"请录入您的语音" delegate:nil cancelButtonTitle:@"知道了" otherButtonTitles:nil, nil];
-        [alertView show];
+    }else if (alertView.tag == 10) {
+        myAppDelegate.isLogout = YES;
+        // 退出登录
+        myAppDelegate.isIdentify = NO;
+        myAppDelegate.isFreeze = NO;
+        myAppDelegate.isEndPay = YES;
+        myAppDelegate.isEndRiding = YES;
+        myAppDelegate.isRestart = NO;
+        myAppDelegate.isMissing = NO;
+        myAppDelegate.isUpload = NO;
+        myAppDelegate.isLogin = NO;
+        myAppDelegate.isLogout = YES;
+        myAppDelegate.isLinked = YES;
+        [userDefaults setBool:NO forKey:@"isLogin"];
+        [userDefaults setBool:NO forKey:@"isVip"];
+        [userDefaults setObject:@"" forKey:@"name"];
+        [userDefaults setObject:@"" forKey:@"stunum"];
+        [userDefaults setObject:@"" forKey:@"college"];
+        [userDefaults setBool:NO forKey:@"isMessage"];
+        [[SDImageCache sharedImageCache] removeImageForKey:@"学生证" fromDisk:YES];
+        [self.navigationController popToRootViewControllerAnimated:YES];
     }
 }
 
@@ -628,34 +780,88 @@
     }
 }
 
-#pragma mark - 界面显示
+#pragma mark - 设置三个label的文字
 -(void)setTitleLabel{
-     self.FirstLabel.font = [UIFont fontWithName:@"QingYuanMono" size:14];
-     self.SecondLabel.font = [UIFont fontWithName:@"QingYuanMono" size:14];
-     self.ThirdLabel.font = [UIFont fontWithName:@"QingYuanMono" size:14];
+    FirstLabel.font = [UIFont fontWithName:@"QingYuanMono" size:15];
+    SecondLabel.font = [UIFont fontWithName:@"QingYuanMono" size:15];
+    ThirdLabel.font = [UIFont fontWithName:@"QingYuanMono" size:15];
     
     if ([self.QuestionName isEqualToString:@"输入密码后无法开锁"]) {
-        self.FirstLabel.text = @"由于大象车锁的自身问题，可能存在输入密码后无法开锁的情况，请您通过语音方式向我们描述具体情况，经工作人员核实后，您将获得5元误时赔偿。";
-        self.SecondLabel.text = [NSString stringWithFormat:@"语音描述：\n请您尽可能详细的描述单车停放的具体位置和具体问题，以便我们工作人员尽快找到问题单车"];
-        self.ThirdLabel.text =  [NSString stringWithFormat:@"其他说明：\n请您再次确认车锁无法被打开，当您点击“确认无法开锁后”，您的账户会被临时锁定，待工作人员找到问题单车后即可解锁，时间一般不超过3小时。"];
-       
+        NSString *firstLabelStr = @"由于大象车锁的自身问题，可能存在输入密码后无法开锁的情况，请您通过语音方式向我们描述具体情况，经工作人员核实后，您将获得5元误时赔偿。";
+        /** 通过自定义的方法 获取label的值*/
+        FirstlabelSize = [self getLabelSizeWithLabel:FirstLabel andLineSpacing:2 andText:firstLabelStr];
+        
+        NSString *secondLabelStr = @"语音描述：\n请您尽可能详细地描述单车停放的具体位置和具体问题，以便我们工作人员尽快找到问题单车。";
+        
+        SecondlabelSize = [self getLabelSizeWithLabel:SecondLabel andLineSpacing:2 andText:secondLabelStr];
+        
+        NSString *thirdLabelStr = @"其他说明：\n请您再次确认车锁无法被打开，当您点击“确认无法开锁”后，您的账户会被临时锁定，待工作人员找到问题单车后即可解锁，时间一般不超过3小时。";
+        ThirdlabelSize = [self getLabelSizeWithLabel:ThirdLabel andLineSpacing:2 andText:thirdLabelStr];
     }
     if ([self.QuestionName isEqualToString:@"在计费期间单车丢失"]) {
-        self.FirstLabel.text = @"在计费期间，如果由于您的疏忽导致您借用的单车丢失，您需要赔偿由于单车丢失，所带来的财产损失";
-        self.SecondLabel.text = [NSString stringWithFormat:@"赔偿金额：\n300元/辆"];
-        self.ThirdLabel.text = [NSString stringWithFormat:@"其他说明：\n请您再次确认您借用的单车已经丢失，当您点击“确认丢失后”，您的账户会被锁定，在您支付了赔偿金后即可解锁。"];
+        NSString *firstLabelStr = @"在计费期间，如果由于您的疏忽导致您借用的单车丢失，您需要赔偿由于单车丢失，所带来的财产损失。";
+        FirstlabelSize = [self getLabelSizeWithLabel:FirstLabel andLineSpacing:2 andText:firstLabelStr];
+        
+        NSString *secondLabelStr = @"赔偿金额：\n300元/辆";
+        SecondlabelSize = [self getLabelSizeWithLabel:SecondLabel andLineSpacing:2 andText:secondLabelStr];
+        
+        NSString *thirdLabelStr = @"其他说明：\n请您再次确认您借用的单车已经丢失，当您点击“确认丢失”后，您的账户会被锁定，在您支付了赔偿金后即可解锁。";
+        ThirdlabelSize = [self getLabelSizeWithLabel:ThirdLabel andLineSpacing:2 andText:thirdLabelStr];
+
     }
     if ([self.QuestionName isEqualToString:@"锁车后不显示还车密码或还车密码错误"]) {
-        self.FirstLabel.text = @"由于大象车锁的自身问题，可能存在锁车后不显示还车密码或提示还车密码错误的情况，请您在确认车锁已经被锁上后，通过语音方式向我们描述具体情况";
-        self.SecondLabel.text = [NSString stringWithFormat:@"语音描述：\n请您尽可能详细地描述单车停放的具体位置和具体问题，以便我们的工作人员尽快找到问题单车。"];
-        self.ThirdLabel.text = @"其他说明：\n请您再次确认已经将车锁锁上，当您点击“确认无法还车”后，您的账户会被临时锁定，待工作人员找到问题单车后即可解锁，时间一般不超过3个小时。";
+        
+        NSString *firstLabelStr = @"由于大象车锁的自身问题，可能存在锁车后不显示还车密码或提示还车密码错误的情况，请您在确认车锁已经被锁上后，通过语音方式向我们描述具体情况。";
+        FirstlabelSize = [self getLabelSizeWithLabel:FirstLabel andLineSpacing:2 andText:firstLabelStr];
+        
+        NSString *secondLabelStr = @"语音描述：\n请您尽可能详细地描述单车停放的具体位置和具体问题，以便我们的工作人员尽快找到问题单车。";
+        SecondlabelSize = [self getLabelSizeWithLabel:SecondLabel andLineSpacing:2 andText:secondLabelStr];
+        
+        NSString *thirdLabelStr = @"其他说明：\n请您再次确认已经将车锁锁上，当您点击“确认无法还车”后，您的账户会被临时锁定，待工作人员找到问题单车后即可解锁，时间一般不超过3个小时。";
+        ThirdlabelSize = [self getLabelSizeWithLabel:ThirdLabel andLineSpacing:2 andText:thirdLabelStr];
+
+        
     }
     if ([self.QuestionName isEqualToString:@"不影响还车的损坏问题"]) {
-        self.FirstLabel.text = @"我们非常抱歉由于单车损坏没能提供最好的骑行服务，您不需要为任何原因的损坏负有责任，如果您能通过语音方式向我们描述损坏的具体情况，我们将不胜感激！";
-        self.SecondLabel.text = @"语音描述：\n请您尽可能详细地描述单车停放的具体位置和具体问题，以便我们的工作人员尽快找到问题单车。";
-        self.ThirdLabel.hidden = YES;
+        FirstLabel.text = @"我们非常抱歉由于单车损坏没能提供最好的骑行服务，您不需要为任何原因的损坏负有责任，如果您能通过语音方式向我们描述损坏的具体情况，我们将不胜感激！";
+        SecondLabel.text = @"语音描述：\n请您尽可能详细地描述单车停放的具体位置和具体问题，以便我们的工作人员尽快找到问题单车。";
+        ThirdLabel.hidden = YES;
+        
+        NSString *firstLabelStr = @"我们非常抱歉由于单车损坏没能提供最好的骑行服务，您不需要为任何原因的损坏负有责任，如果您能通过语音方式向我们描述损坏的具体情况，我们将不胜感激！";
+        FirstlabelSize = [self getLabelSizeWithLabel:FirstLabel andLineSpacing:2 andText:firstLabelStr];
+        
+        NSString *secondLabelStr = @"语音描述：\n请您尽可能详细地描述单车停放的具体位置和具体问题，以便我们的工作人员尽快找到问题单车。";
+        SecondlabelSize = [self getLabelSizeWithLabel:SecondLabel andLineSpacing:2 andText:secondLabelStr];
     }
     
+}
+
+
+#pragma mark - 获取自适应的label的高度
+-(CGSize)getLabelSizeWithLabel:(UILabel *)label andLineSpacing:(CGFloat)lineSpacing andText:(NSString *)text{
+    label.numberOfLines = 0;
+    CGFloat oneRowHeight = [text sizeWithAttributes:@{NSFontAttributeName:[UIFont fontWithName:@"QingYuanMono" size:15]}].height;
+    CGSize textSize = [text boundingRectWithSize:CGSizeMake(0.8*SCREEN_WIDTH, CGFLOAT_MAX) options:NSStringDrawingUsesLineFragmentOrigin |NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:[UIFont fontWithName:@"QingYuanMono" size:15]} context:nil].size;
+    NSMutableAttributedString * attributedString1 = [[NSMutableAttributedString alloc] initWithString:text];
+    NSMutableParagraphStyle * paragraphStyle = [[NSMutableParagraphStyle alloc] init];
+//    paragraphStyle.alignment = NSTextAlignmentJustified;
+    [paragraphStyle setLineSpacing:lineSpacing];
+    [attributedString1 addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:NSMakeRange(0, [text length])];
+    if (label == SecondLabel) {
+        if ([self.QuestionName isEqualToString:@"输入密码后无法开锁"] || [self.QuestionName isEqualToString:@"锁车后不显示还车密码或还车密码错误"] || [self.QuestionName isEqualToString:@"不影响还车的损坏问题"]) {
+            [attributedString1 addAttribute:NSUnderlineStyleAttributeName value:[NSNumber numberWithInteger:NSUnderlineStyleSingle] range:NSMakeRange(16, 9)];
+        }
+    }
+    
+    
+    CGFloat rows = textSize.height / oneRowHeight;
+    CGFloat realHeight = oneRowHeight;
+    if (rows > 1) {
+        realHeight = (rows * oneRowHeight) + (rows - 1) * lineSpacing;
+    }
+    [label setAttributedText:attributedString1];
+    /** 返回该label的长宽*/
+    return CGSizeMake(textSize.width, realHeight);
 }
 
 

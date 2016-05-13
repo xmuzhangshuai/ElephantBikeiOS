@@ -33,7 +33,7 @@
 
 #define HINTMES_Y           0.7*SIMAGEVIEW_HEIGHT
 
-@interface IdentityViewController ()<UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate, UIActionSheetDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, MyURLConnectionDelegate>
+@interface IdentityViewController ()<UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate, UIActionSheetDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, MyURLConnectionDelegate, UIAlertViewDelegate>
 
 @end
 
@@ -41,6 +41,7 @@
     UIImageView *studentImageView;  // 学生卡imageview
     UIButton    *cameraButton;      // 相框button
     UILabel     *hintMes;           // 提示信息label
+    UILabel     *buttonHint;        // 底部提示信息
     UIButton    *schoolButton;      // 选择学校按钮
     UITextField *nameTF;            // 姓名输入栏
     UITextField *numberTF;          // 学号输入栏
@@ -66,6 +67,11 @@
     NSData      *studentData;       // 存储学生证照片数据
     
     NSMutableArray *schoolArary;    // 存储学校列表
+    
+    UITapGestureRecognizer *tap;
+    
+    
+    UIView *mesView;
 }
 
 - (id)init {
@@ -73,6 +79,7 @@
         studentImageView = [[UIImageView alloc] init];
         cameraButton = [[UIButton alloc] init];
         hintMes = [[UILabel alloc] init];
+        buttonHint = [[UILabel alloc] init];
         schoolButton = [[UIButton alloc] init];
         nameTF = [[UITextField alloc] init];
         numberTF = [[UITextField alloc] init];
@@ -86,6 +93,9 @@
         studentData         = [[NSData alloc] init];
         schoolArary = [[NSMutableArray alloc] init];
         picNumber = 0;
+        
+        mesView = [[UIView alloc] init];
+
     }
     return self;
 }
@@ -111,6 +121,10 @@
     layer.masksToBounds = YES;
     layer.cornerRadius = 15;
     studentImageView.userInteractionEnabled = YES;
+    if (!MyDelegate.isUpload && !MyDelegate.isIdentify) {
+        tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(choosePicture)];
+        [studentImageView addGestureRecognizer:tap];
+    }
     
     cameraButton.frame = CGRectMake(CAMERABUTTON_X, CAMERABUTTON_Y, CAMERABUTTON_WIDTH, CAMERABUTTON_WIDTH);
     cameraButton.backgroundColor = [UIColor colorWithRed:255.0/255 green:255.0/255 blue:255.0/255 alpha:1];;
@@ -122,14 +136,21 @@
     hintMes.frame = CGRectMake(0, HINTMES_Y, WIDTH, SCHOOLBUTTON_HEIGHT);
     NSMutableAttributedString *content = [[NSMutableAttributedString alloc]initWithString:[NSString stringWithFormat:@"请拍摄 学生卡有信息的一面 的照片"]];
     /** 更改label的字体大小及颜色*/
-    [content addAttribute:NSFontAttributeName value:[UIFont fontWithName:@"QingYuanMono" size:15] range:NSMakeRange(0, [content length]-3)];
-    [content addAttribute:NSForegroundColorAttributeName value:[UIColor grayColor] range:NSMakeRange(0, [content length]-3)];
-    [content addAttribute:NSForegroundColorAttributeName value:[UIColor blackColor] range:NSMakeRange(3, [content length]-3)];
-    NSRange contentRange = {3,[content length]-3};
+    [content addAttribute:NSFontAttributeName value:[UIFont fontWithName:@"QingYuanMono" size:15] range:NSMakeRange(0, [content length])];
+//    [content addAttribute:NSForegroundColorAttributeName value:[UIColor grayColor] range:NSMakeRange(0, [content length])];
+    [content addAttribute:NSForegroundColorAttributeName value:[UIColor blackColor] range:NSMakeRange(3, [content length]-6)];
+    NSRange contentRange = {3,[content length]-6};
     [content addAttribute:NSUnderlineStyleAttributeName value:[NSNumber numberWithInteger:NSUnderlineStyleSingle] range:contentRange];
     hintMes.attributedText = content;
     hintMes.textAlignment = NSTextAlignmentCenter;
     [studentImageView addSubview:hintMes];
+    
+    buttonHint.frame = CGRectMake(0, 0, SCREEN_WIDTH, SCHOOLBUTTON_HEIGHT);
+    buttonHint.center = CGPointMake(0.5*SCREEN_WIDTH, 0.817*SCREEN_HEIGHT);
+    buttonHint.text = @"大象单车仅限于在校学生使用，请进行身份认证";
+    buttonHint.textAlignment = NSTextAlignmentCenter;
+    buttonHint.font = [UIFont fontWithName:@"QingYuanMono" size:13];
+    [self.view addSubview:buttonHint];
     
     schoolButton.frame = CGRectMake(X, STATUS_HEIGHT+NAVIGATIONBAR_HEIGHT+Y*2+SIMAGEVIEW_HEIGHT, WIDTH, SCHOOLBUTTON_HEIGHT);
     schoolButton.backgroundColor = [UIColor colorWithRed:255.0/255 green:255.0/255 blue:255.0/255 alpha:1];
@@ -194,7 +215,10 @@
     chooseSchoolView.layer.cornerRadius = 6;
     SchoolTableView.frame = chooseSchoolView.bounds;
     [chooseSchoolView addSubview:SchoolTableView];
+    chooseSchoolView.userInteractionEnabled = YES;
     chooseSchoolView.hidden = YES;
+    
+
     
     [self.view addSubview:resultLabel];
     [self.view addSubview:commitButton];
@@ -228,6 +252,7 @@
 }
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    NSLog(@"选中学校");
     chooseSchoolView.hidden = YES;
     //获得选择的学校名称
     //    NSString *string = listArray[indexPath.row];
@@ -264,6 +289,7 @@
     // 上传学生证 后传url 姓名等信息
     if ([connection.name isEqualToString:@"studentCard"]) {
         NSString *status = receiveJson[@"status"];
+        NSString *message = receiveJson[@"message"];
         NSString *url = receiveJson[@"url"];
         NSLog(@"图片url:%@", url);
         if ([status isEqualToString:@"success"]) {
@@ -281,16 +307,26 @@
             [request setHTTPMethod:@"POST"];
             MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"uploadUrl"];
         }else {
-            // 图片上传失败
-            [cover removeFromSuperview];
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"图片上传失败" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-            [alertView show];
+            if ([message rangeOfString:@"invalid token"].location != NSNotFound) {
+                // 账号在别的地方登陆
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"您的身份验证已过期，请重新登录" delegate:self cancelButtonTitle:@"好的" otherButtonTitles:nil, nil];
+                alertView.tag = 10;
+                [alertView show];
+            }else {
+                // 图片上传失败
+                [cover removeFromSuperview];
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"图片上传失败" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+                [alertView show];
+            }
         }
     }else if ([connection.name isEqualToString:@"uploadUrl"]) {
         NSString *status = receiveJson[@"status"];
         if ([status isEqualToString:@"success"]) {
-            // 将图片缓存在本地
+            // 将图片缓存在本地 还有学号等数据
             [[SDImageCache sharedImageCache] storeImage:[UIImage imageWithData:studentData] forKey:@"学生证" toDisk:YES];
+            [userDefaults setObject:schoolButton.titleLabel.text forKey:@"college"];
+            [userDefaults setObject:numberTF.text forKey:@"stunum"];
+            [userDefaults setObject:nameTF.text forKey:@"name"];
             MyDelegate.isUpload = YES;
             
             NSLog(@"图片上传成功");
@@ -301,6 +337,7 @@
             cameraButton.hidden = YES;
             hintMes.hidden = YES;
             resultLabel.hidden = NO;
+            buttonHint.hidden = YES;
             if (SCREEN_WIDTH == 320) {
                 resultLabel.font = [UIFont fontWithName:@"QingYuanMono" size:12];
             }
@@ -320,15 +357,26 @@
             hintMes1.textAlignment = NSTextAlignmentCenter;
             [containerView addSubview:hintMes1];
             
+            [studentImageView removeGestureRecognizer:tap];
+            
             [self.view addSubview:cover];
             // 显示时间
             NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(removeView) userInfo:nil repeats:NO];
             [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
         }else {
-            // 图片上传失败
-            [cover removeFromSuperview];
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"图片上传失败" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-            [alertView show];
+            NSString *message = receiveJson[@"message"];
+            if ([message rangeOfString:@"invalid token"].location != NSNotFound) {
+                // 账号在别的地方登陆
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"您的身份验证已过期，请重新登录" delegate:self cancelButtonTitle:@"好的" otherButtonTitles:nil, nil];
+                alertView.tag = 10;
+                [alertView show];
+            }else {
+                // 图片上传失败
+                [cover removeFromSuperview];
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"信息上传失败" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+                [alertView show];
+            }
+            
         }
     }else if ([connection.name isEqualToString:@"getImageUrl"]) {
         NSString *status = receiveJson[@"status"];
@@ -339,6 +387,7 @@
         NSLog(@"获取身份认证信息：%@\n%@\n%@\n%@\n", studentImageurl, name, college, stunum);
         NSString *studentimageurl = [IP stringByAppendingString:@"/"];
         if ([status isEqualToString:@"success"]) {
+            [cover removeFromSuperview];
             // 将信息缓存到本地
             [userDefaults setObject:name forKey:@"name"];
             [userDefaults setObject:college forKey:@"college"];
@@ -364,8 +413,17 @@
                     studentImageView.image = [UIImage imageNamed:@"黑色背景"];
                 }
             }];
+        }else {
+            NSString *message = receiveJson[@"message"];
+            if ([message rangeOfString:@"invalid token"].location != NSNotFound) {
+                // 账号在别的地方登陆
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"您的身份验证已过期，请重新登录" delegate:self cancelButtonTitle:@"好的" otherButtonTitles:nil, nil];
+                alertView.tag = 10;
+                [alertView show];
+            }
         }
     }else if ([connection.name isEqualToString:@"getAllCollege"]) {
+        [cover removeFromSuperview];
         NSString *status = receiveJson[@"status"];
         NSLog(@"status:%@", status);
         if ([status isEqualToString:@"success"]) {
@@ -377,9 +435,73 @@
             }];
             SchoolTableView.delegate = self;
             SchoolTableView.dataSource = self;
+            SchoolTableView.allowsSelection = YES;
             [SchoolTableView reloadData];
+        }else {
+            NSString *message = receiveJson[@"message"];
+            if ([message rangeOfString:@"invalid token"].location != NSNotFound) {
+                // 账号在别的地方登陆
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"您的身份验证已过期，请重新登录" delegate:self cancelButtonTitle:@"好的" otherButtonTitles:nil, nil];
+                alertView.tag = 10;
+                [alertView show];
+            }
+        }
+    }else if ([connection.name isEqualToString:@"getIsIdentify"]) {
+        NSString *status = receiveJson[@"status"];
+        if ([status isEqualToString:@"success"]) {
+            NSString *isFrozen = receiveJson[@"userstate"];
+            if ([isFrozen isEqualToString:@"1"] || [isFrozen isEqualToString:@"3"] || [isFrozen isEqualToString:@"-1"]) {
+                MyDelegate.isIdentify = YES;
+                resultLabel.text = @"您已通过审核，开始使用大象单车吧";
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"updateIdentify" object:nil];
+            }else if ([isFrozen isEqualToString:@"0"]){
+                MyDelegate.isUpload = NO;
+                resultLabel.hidden = YES;
+                commitButton.hidden = NO;
+                hintMes.hidden = NO;
+                buttonHint.hidden = NO;
+                cameraButton.hidden = NO;
+                [schoolButton setTitle:@"请选择学校" forState:UIControlStateNormal];
+                numberTF.placeholder = @"请输入学号";
+                nameTF.placeholder = @"请输入姓名";
+                [studentImageView setImage:nil];
+            }
+        }else {
+            NSString *message = receiveJson[@"message"];
+            if ([message rangeOfString:@"invalid token"].location != NSNotFound) {
+                // 账号在别的地方登陆
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"您的身份验证已过期，请重新登录" delegate:self cancelButtonTitle:@"好的" otherButtonTitles:nil, nil];
+                alertView.tag = 10;
+                [alertView show];
+            }
         }
     }
+}
+
+- (void)MyConnection:(MyURLConnection *)connection didFailWithError:(NSError *)error {
+    [cover removeFromSuperview];
+    cover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    cover.alpha = 1;
+    // 半黑膜
+    UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+    containerView.backgroundColor = [UIColor blackColor];
+    containerView.alpha = 0.8;
+    containerView.layer.cornerRadius = CORNERRADIUS*2;
+    [cover addSubview:containerView];
+    // 一个控件
+    UILabel *hintMes1 = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
+    hintMes1.text = @"请检查您的网络";
+    hintMes1.textColor = [UIColor whiteColor];
+    hintMes1.textAlignment = NSTextAlignmentCenter;
+    [containerView addSubview:hintMes1];
+    [self.view addSubview:cover];
+    // 显示时间
+    NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(removeCoverView) userInfo:nil repeats:NO];
+    [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
+}
+
+- (void)removeCoverView {
+    [cover removeFromSuperview];
 }
 
 #pragma mark - 私有方法
@@ -411,6 +533,10 @@
     }
     [sheet showInView:self.view];
     
+}
+
+- (void)hiddenSchool {
+    chooseSchoolView.hidden = YES;
 }
 
 #pragma ActionSheet Delegate
@@ -445,8 +571,65 @@
     imagePickerController.delegate = self;
     imagePickerController.allowsEditing = YES;
     imagePickerController.sourceType = sourceType;
+    
+    /** 自定义*/
+    if (buttonIndex == 0) {
+        imagePickerController.showsCameraControls = YES;
+    }
+    //添加自定义信息层
+    UIView *subview = [[UIView alloc] init];
+    subview.layer.borderWidth = 1.0;
+    subview.layer.borderColor = [UIColor redColor].CGColor;
+    subview.alpha = 1.0;
+    subview.frame = CGRectMake(10, 10, 0.9*SCREEN_WIDTH, 0.3*SCREEN_HEIGHT);
+    subview.center = CGPointMake(0.5*SCREEN_WIDTH, 0.445*SCREEN_HEIGHT);
+    
+    //    mesView.backgroundColor = [UIColor grayColor];
+    UILabel *mesLabel = [[UILabel alloc] init];
+    mesLabel.textColor = [UIColor whiteColor];
+    mesLabel.text = @"请将您的学生证正面置于此区域，尽量对齐边缘再拍照";
+    mesLabel.textAlignment = NSTextAlignmentCenter;
+    mesLabel.numberOfLines = 0;
+    mesLabel.frame = CGRectMake(0, 0, subview.frame.size.width, subview.frame.size.height);
+    
+    [subview addSubview:mesLabel];
+    
+    if (buttonIndex == 0) {
+        imagePickerController.cameraOverlayView = subview;
+    }
+    imagePickerController.allowsEditing =  NO;
+
+    
     [self presentViewController:imagePickerController animated:YES completion:nil];
+    
 }
+
+#pragma mark - 图片裁剪
+
+- (UIImage *)cutImage:(UIImage*)image
+{
+    //压缩图片
+    CGSize newSize;
+    CGImageRef imageRef = nil;
+    
+    if ((image.size.width / image.size.height) < (SCREEN_WIDTH / SCREEN_HEIGHT)) {
+        newSize.width = image.size.width;
+        newSize.height = image.size.width * SCREEN_HEIGHT / SCREEN_WIDTH;
+        
+        imageRef = CGImageCreateWithImageInRect([image CGImage], CGRectMake(0, fabs(image.size.height - newSize.height), newSize.width, newSize.height));
+        
+    } else {
+        newSize.height = image.size.height;
+        newSize.width = image.size.height * SCREEN_WIDTH / SCREEN_HEIGHT;
+        
+        imageRef = CGImageCreateWithImageInRect([image CGImage], CGRectMake(fabs(image.size.width - newSize.width), 0, newSize.width, newSize.height));
+        
+    }
+    
+    return [UIImage imageWithCGImage:imageRef];
+}
+
+
 #pragma imagePicker Delegate
 -(void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info{
     [picker dismissViewControllerAnimated:YES completion:^{
@@ -469,7 +652,14 @@
                 break;
             }
         }
+
+        
+        savedImage = [self cutImage:savedImage];
+        savedImage = [UIImage imageWithCGImage:savedImage.CGImage scale:1 orientation:UIImageOrientationRight];
         [studentImageView setImage:savedImage];
+
+        
+        
         picNumber = 0;
         picNumber ++;
         [cameraButton removeFromSuperview];
@@ -477,6 +667,10 @@
         studentData = imageData;
     }
 }
+
+
+
+
 -(void)imagePickerControllerDidCancel:(UIImagePickerController *)picker{
     [self dismissViewControllerAnimated:YES completion:nil];
 }
@@ -578,6 +772,37 @@
     [request setHTTPMethod:@"POST"];
 }
 
+#pragma mark - alertViewDelegate
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
+    if (alertView.tag == 10) {
+        MyDelegate.isLogout = YES;
+        // 退出登录
+        MyDelegate.isIdentify = NO;
+        MyDelegate.isFreeze = NO;
+        MyDelegate.isEndPay = YES;
+        MyDelegate.isEndRiding = YES;
+        MyDelegate.isRestart = NO;
+        MyDelegate.isMissing = NO;
+        MyDelegate.isUpload = NO;
+        MyDelegate.isLogin = NO;
+        MyDelegate.isLogout = YES;
+        MyDelegate.isLinked = YES;
+        [userDefaults setBool:NO forKey:@"isLogin"];
+        [userDefaults setBool:NO forKey:@"isVip"];
+        [userDefaults setObject:@"" forKey:@"name"];
+        [userDefaults setObject:@"" forKey:@"stunum"];
+        [userDefaults setObject:@"" forKey:@"college"];
+        [userDefaults setBool:NO forKey:@"isMessage"];
+        [[SDImageCache sharedImageCache] removeImageForKey:@"学生证" fromDisk:YES];
+        [self.navigationController popToRootViewControllerAnimated:YES];
+    }
+}
+
+#pragma mark - 触摸事件
+- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
+    [self hiddenSchool];
+}
+
 #pragma mark - Life Cycle
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -593,6 +818,27 @@
 }
 
 - (void)viewDidAppear:(BOOL)animated {
+    // 集成api  此处是膜
+    cover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    cover.alpha = 1;
+    // 半黑膜
+    UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0.3*SCREEN_WIDTH, 0.4*SCREEN_HEIGHT, 0.4*SCREEN_WIDTH, 0.15*SCREEN_HEIGHT)];
+    containerView.backgroundColor = [UIColor blackColor];
+    containerView.alpha = 0.8;
+    containerView.layer.cornerRadius = CORNERRADIUS*2;
+    [cover addSubview:containerView];
+    // 两个控件
+    UIActivityIndicatorView *waitActivityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+    waitActivityView.frame = CGRectMake(0.33*containerView.frame.size.width, 0.1*containerView.frame.size.width, 0.33*containerView.frame.size.width, 0.4*containerView.frame.size.height);
+    [waitActivityView startAnimating];
+    [containerView addSubview:waitActivityView];
+    
+    UILabel *hintMes1 = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.7*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
+    hintMes1.text = @"请稍后...";
+    hintMes1.textColor = [UIColor whiteColor];
+    hintMes1.textAlignment = NSTextAlignmentCenter;
+    [containerView addSubview:hintMes1];
+    [self.view addSubview:cover];
     NSLog(@"%d", MyDelegate.isUpload);
     if (MyDelegate.isUpload) {
         // 限制控件不能使用
@@ -604,27 +850,40 @@
         hintMes.hidden = YES;
         commitButton.hidden = YES;
         resultLabel.hidden = NO;
+        buttonHint.hidden = YES;
         resultLabel.text = @"信息审核中，结果将在2个工作日内通知您";
         resultLabel.font = [UIFont fontWithName:@"QingYuanMono" size:14];
         if (SCREEN_WIDTH == 320) {
             resultLabel.font = [UIFont fontWithName:@"QingYuanMono" size:12];
         }
         UIImage *studentCardImage = [[SDImageCache sharedImageCache] imageFromDiskCacheForKey:@"学生证"];
-        if (studentCardImage == nil || [[userDefaults objectForKey:@"stunum"] isEqualToString:@""]) {
+        if (studentCardImage == nil || [[userDefaults objectForKey:@"stunum"] isEqualToString:@""] || [userDefaults objectForKey:@"stunum"] == nil) {
             NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/user/cardurl"];
+            NSLog(@"请求图片ip:%@", urlStr);
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-            NSString *dataStr = [NSString stringWithFormat:@"phone=%@", [userDefaults objectForKey:@"phoneNumber"]];
+            NSString *dataStr = [NSString stringWithFormat:@"phone=%@&access_token=%@", [userDefaults objectForKey:@"phoneNumber"], [userDefaults objectForKey:@"accessToken"]];
             NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
             [request setHTTPBody:data];
             [request setHTTPMethod:@"POST"];
             MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"getImageUrl"];
         }else {
+            [cover removeFromSuperview];
             [studentImageView setImage:studentCardImage];
             nameTF.text = [userDefaults objectForKey:@"name"];
             numberTF.text = [userDefaults objectForKey:@"stunum"];
             [schoolButton setTitle:[userDefaults objectForKey:@"college"] forState:UIControlStateNormal];
         }
+        // 请求服务器是否通过认证
+        NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
+        NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/user/userstate"];
+        NSURL *url = [NSURL URLWithString:urlStr];
+        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+        NSString *dataStr = [NSString stringWithFormat:@"phone=%@&access_token=%@", phoneNumber, [userDefaults objectForKey:@"accessToken"]];
+        NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
+        [request setHTTPBody:data];
+        [request setHTTPMethod:@"POST"];
+        MyURLConnection *connecttion = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"getIsIdentify"];
     }else if (MyDelegate.isIdentify) {
         // 限制控件不能使用
         schoolButton.enabled = NO;
@@ -635,23 +894,25 @@
         hintMes.hidden = YES;
         commitButton.hidden = YES;
         resultLabel.hidden = NO;
+        buttonHint.hidden = YES;
         resultLabel.text = @"您已通过审核，开始使用大象单车吧";
         resultLabel.font = [UIFont fontWithName:@"QingYuanMono" size:14];
         if (SCREEN_WIDTH == 320) {
             resultLabel.font = [UIFont fontWithName:@"QingYuanMono" size:12];
         }
         UIImage *studentCardImage = [[SDImageCache sharedImageCache] imageFromDiskCacheForKey:@"学生证"];
-        if (studentCardImage == nil || [[userDefaults objectForKey:@"stunum"] isEqualToString:@""]) {
+        if (studentCardImage == nil || [[userDefaults objectForKey:@"stunum"] isEqualToString:@""] || [userDefaults objectForKey:@"stunum"] == nil) {
             NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/user/cardurl"];
             NSLog(@"请求图片ip:%@", urlStr);
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-            NSString *dataStr = [NSString stringWithFormat:@"phone=%@", [userDefaults objectForKey:@"phoneNumber"]];
+            NSString *dataStr = [NSString stringWithFormat:@"phone=%@&access_token=%@", [userDefaults objectForKey:@"phoneNumber"], [userDefaults objectForKey:@"accessToken"]];
             NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
             [request setHTTPBody:data];
             [request setHTTPMethod:@"POST"];
             MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"getImageUrl"];
         }else {
+            [cover removeFromSuperview];
             [studentImageView setImage:studentCardImage];
             nameTF.text = [userDefaults objectForKey:@"name"];
             numberTF.text = [userDefaults objectForKey:@"stunum"];
@@ -660,11 +921,15 @@
     }else {
         NSLog(@"请求学校列表");
         // 没有认证也没有上传，请求学校列表
-        NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/allcollege"];
-        NSURL *url = [NSURL URLWithString:urlStr];
-        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-        [request setHTTPMethod:@"POST"];
-        MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"getAllCollege"];
+        if (schoolArary.count == 0) {
+            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/allcollege"];
+            NSURL *url = [NSURL URLWithString:urlStr];
+            NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+            [request setHTTPMethod:@"POST"];
+            MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"getAllCollege"];
+        }else {
+            [cover removeFromSuperview];
+        }
     }
 }
 

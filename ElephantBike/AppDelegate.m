@@ -54,6 +54,15 @@
     self.isLogout = NO;
     self.isLinked = YES;
     self.isMoneyView = NO;
+    self.isGoToPay = NO;
+    self.imageUrlShouYe = @"";
+    self.imageUrlCharge = @"";
+    self.imageUrlInfo = @"";
+    self.linkUrlShouYe = @"";
+    self.linkUrlCharge = @"";
+    self.linkUrlInfo = @"";
+    self.isUserPower = YES;
+    self.isShowShouYeAD = YES;
 
     
     self.balance = @"";
@@ -64,9 +73,12 @@
         [userDefaults setBool:NO forKey:@"isVip"];
         [userDefaults setObject:@"" forKey:@"name"];
         [userDefaults setObject:@"" forKey:@"college"];
+        [userDefaults setBool:NO forKey:@"isMessage"];
+        [userDefaults setObject:@"" forKey:@"shouyeAD"];
+        [userDefaults setObject:@"" forKey:@"bikeNo"];
     }
     self.isLogin = [userDefaults boolForKey:@"isLogin"];
-    NSLog(@"%d", self.isLogin);
+    NSLog(@"是否登录%d", self.isLogin);
     if (self.isLogin) {
         
 //        self.balance = [userDefaults objectForKey:@"balance"];
@@ -95,7 +107,7 @@
         NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/balance"];
         NSURL *url = [NSURL URLWithString:urlStr];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
-        NSString *dataStr = [NSString stringWithFormat:@"phone=%@", phoneNumber];
+        NSString *dataStr = [NSString stringWithFormat:@"phone=%@&access_token=%@", phoneNumber, [userDefaults objectForKey:@"accessToken"]];
         NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
         [request setHTTPBody:data];
         [request setHTTPMethod:@"POST"];
@@ -131,11 +143,15 @@
                     NSString *isFrozen = receive[@"isfrozen"];
                     NSString *isFinish = receive[@"isfinish"];
                     NSString *isPay = receive[@"ispay"];
+                    NSString *isVip = receive[@"isvip"];
                     NSString *name = receive[@"name"];
                     NSString *college = receive[@"college"];
+                    NSNumber *ismessage = receive[@"ismessage"];
+                    NSString *accessToken = receive[@"access_token"];
+                    [userDefaults setObject:accessToken forKey:@"accessToken"];
                     NSLog(@"isfrozen:%@", isFrozen);
                     if ([status isEqualToString:@"success"]) {
-                        if ([isFrozen isEqualToString:@"-1"]) {
+                        if ([isFrozen isEqualToString:@"-1"] || [isFrozen isEqualToString:@"3"]) {
                             self.isFreeze = true;
                             self.isIdentify = true;
                         }else if([isFrozen isEqualToString:@"0"]) {
@@ -157,12 +173,36 @@
                             self.isEndPay = false;
                             self.isRestart = YES;
                         }
+                        if ([ismessage intValue] != 0) {
+                            // 有新消息
+                            [userDefaults setBool:YES forKey:@"isMessage"];
+                        }else {
+                            [userDefaults setBool:NO forKey:@"isMessage"];
+                        }
+                        if ([isVip isEqualToString:@"1"]) {
+                            [userDefaults setBool:YES forKey:@"isVip"];
+                        }else {
+                            [userDefaults setBool:NO forKey:@"isVip"];
+                        }
+                        
                         [userDefaults setObject:name forKey:@"name"];
                         [userDefaults setObject:college forKey:@"college"];
                         NSLog(@"骑行结束：%d 付款：%d 重启：%d", self.isEndRiding, self.isEndPay, self.isRestart);
+                        NSLog(@"%d", [userDefaults boolForKey:@"isMessage"]);
+                    }else {
+                        NSString *message = receive[@"message"];
+                        if ([message rangeOfString:@"invalid token"].location != NSNotFound) {
+                            self.isUserPower = NO;
+                        }
                     }
                     // 设置相应页面的跳转，正常情况 跳转扫描页面，其他分三种情况
                     // 该判断放到qrcontroller
+                }
+            }else {
+                NSString *message = receive[@"message"];
+                if ([message rangeOfString:@"invalid token"].location != NSNotFound) {
+                    // 账号在别的地方登陆
+                    self.isUserPower = NO;
                 }
             }
         }
@@ -187,9 +227,18 @@
         NSString *imageurl = receive[@"imageurl"];
         NSString *linkurl = receive[@"linkurl"];
         NSLog(@"status:%@", status);
-        if ([status isEqualToString:@"success"]) {
+        if ([imageurl isEqualToString:[[NSUserDefaults standardUserDefaults] objectForKey:@"shouyeAD" ]]) {
+            self.isShowShouYeAD = NO;
+        }
+        if ([status isEqualToString:@"success"] && self.isShowShouYeAD) {
+            self.linkUrlShouYe = @"";
+            self.imageUrlShouYe = @"";
+            [[NSUserDefaults standardUserDefaults] setObject:imageurl forKey:@"shouyeAD"];
+//            NSString *temp = [IP stringByAppendingString:@"/"];
             self.imageUrlShouYe = imageurl;
-            self.linkUrlShouYe = linkurl;
+            if (![linkurl isEqualToString:@""]) {
+                self.linkUrlShouYe = linkurl;
+            }
             self.isActivity = YES;
         }
         NSLog(@"url:%@%@ activity:%d", self.imageUrlShouYe, self.linkUrlShouYe, self.isActivity);
@@ -280,7 +329,8 @@
     // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
     
     // 调用一个代理方法，让支付页面去请求服务器看有没有支付成功
-    if (self.isMoneyView) {
+    NSLog(@"%d %d", self.isMoneyView, self.isGoToPay);
+    if (self.isMoneyView && self.isGoToPay) {
         NSLog(@"进入前台");
         if (self.isWXPay) {
             [self.myDelegate isWXPay];

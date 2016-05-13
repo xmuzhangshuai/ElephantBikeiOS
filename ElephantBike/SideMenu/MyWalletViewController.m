@@ -11,6 +11,8 @@
 #import "RechargeViewController.h"
 #import "AppDelegate.h"
 #import "LoadingView.h"
+#import "MyURLConnection.h"
+#import "UIImageView+WebCache.h"
 
 #define BALANCEIMAGEVIEW_WIDTH  0.25*SCREEN_WIDTH
 #define BALANCEIMAGEVIEW_HEIGHT BALANCEIMAGEVIEW_WIDTH
@@ -23,9 +25,10 @@
 #define BALANCEDETAILSLABEL_WIDTH   0.9*SCREEN_WIDTH
 #define BALANCEDETAILSLABEL_HEIGHT  SAME_HEIGHT
 #define DETAILSTABLEVIEW_WIDTH  0.9*SCREEN_WIDTH
-#define DETAILSTABLEVIEW_HEIGHT 44*5
+//#define DETAILSTABLEVIEW_HEIGHT 44*5
+#define DETAILSTABLEVIEW_HEIGHT 0.057*SCREEN_HEIGHT*5+BALANCEDETAILSLABEL_HEIGHT
 
-@interface MyWalletViewController () <UITableViewDataSource, UITableViewDelegate, UIScrollViewDelegate, NSURLConnectionDataDelegate>
+@interface MyWalletViewController () <UITableViewDataSource, UITableViewDelegate, UIScrollViewDelegate, MyURLConnectionDelegate, UIAlertViewDelegate>
 
 @end
 
@@ -44,6 +47,7 @@
     int         page;
     BOOL        isNone;    // 判断是否还有余额明细的数据
     UIView      *cover;
+    UILabel     *yueLabel;  // 余额label
 }
 
 - (id)init {
@@ -66,6 +70,7 @@
     page                = 0;
     isNone              = NO;
     cover               = [[UIView alloc] init];
+    yueLabel            = [[UILabel alloc] init];
 
     
     [self UILayout];
@@ -74,47 +79,65 @@
 
 - (void)EventInit {
     [self requestForData];
+    [self requestForBalance];
 }
 
 - (void)UILayout {
     balanceImageView.frame = CGRectMake((SCREEN_WIDTH-BALANCEIMAGEVIEW_WIDTH)/2, STATUS_HEIGHT*2+NAVIGATIONBAR_HEIGHT, BALANCEIMAGEVIEW_WIDTH, BALANCEIMAGEVIEW_HEIGHT);
-    balanceImageView.image = [UIImage imageNamed:@"余额"];
+      balanceImageView.center = CGPointMake(0.499*SCREEN_WIDTH, 0.223*SCREEN_HEIGHT);
+    balanceImageView.image = [UIImage imageNamed:@"余额框"];
     balanceImageView.contentMode = UIViewContentModeScaleAspectFit;
     
-    balanceLabel.frame = CGRectMake((BALANCEIMAGEVIEW_WIDTH-BALANCELABEL_WIDTH)/2, 0.5*BALANCEIMAGEVIEW_HEIGHT, BALANCELABEL_WIDTH, BALANCELABEL_HEIGHT);
+    yueLabel.frame = CGRectMake(0, 0, 100, 50);
+    yueLabel.center = CGPointMake(0.5*BALANCEIMAGEVIEW_WIDTH, 0.25*BALANCEIMAGEVIEW_HEIGHT);
+    yueLabel.text = @"余额";
+    yueLabel.textColor = [UIColor whiteColor];
+    yueLabel.textAlignment = NSTextAlignmentCenter;
+    yueLabel.font = [UIFont fontWithName:@"QingYuanMono" size:15];
+    [balanceImageView addSubview:yueLabel];
+    
+    balanceLabel.frame = CGRectMake((BALANCEIMAGEVIEW_WIDTH-BALANCELABEL_WIDTH)/2, 0.4*BALANCEIMAGEVIEW_HEIGHT, BALANCELABEL_WIDTH, BALANCELABEL_HEIGHT);
     balanceLabel.text = myAppDelegate.balance;
     balanceLabel.textAlignment = NSTextAlignmentCenter;
     balanceLabel.font = [UIFont fontWithName:@"QingYuanMono" size:25];
     balanceLabel.textColor = [UIColor whiteColor];
     
-    hintMes.frame = CGRectMake((SCREEN_WIDTH-HINTMES_WIDTH-RECHARGEBUTTON_WIDTH)/2, STATUS_HEIGHT*2+NAVIGATIONBAR_HEIGHT+BALANCEIMAGEVIEW_HEIGHT, HINTMES_WIDTH, HINTMES_HEIGHT);
+    hintMes.frame = CGRectMake((SCREEN_WIDTH-HINTMES_WIDTH-RECHARGEBUTTON_WIDTH)/2, 0.308*SCREEN_HEIGHT, HINTMES_WIDTH, HINTMES_HEIGHT);
     hintMes.text = @"使用大象钱包免密码快捷支付，";
     hintMes.textAlignment = NSTextAlignmentRight;
-    hintMes.font = [UIFont fontWithName:@"QingYuanMono" size:12];
+    if (iPhone5) {
+        hintMes.font = [UIFont fontWithName:@"QingYuanMono" size:12];
+    }else{
+        hintMes.font = [UIFont fontWithName:@"QingYuanMono" size:13];
+    }
+
     
-    rechargeButton.frame = CGRectMake((SCREEN_WIDTH-HINTMES_WIDTH-RECHARGEBUTTON_WIDTH)/2+HINTMES_WIDTH, STATUS_HEIGHT*2+NAVIGATIONBAR_HEIGHT+BALANCEIMAGEVIEW_HEIGHT, RECHARGEBUTTON_WIDTH, RECHARGEBUTTON_HEIGHT);
+    rechargeButton.frame = CGRectMake((SCREEN_WIDTH-HINTMES_WIDTH-RECHARGEBUTTON_WIDTH)/2+HINTMES_WIDTH-20, 0.308*SCREEN_HEIGHT, RECHARGEBUTTON_WIDTH, RECHARGEBUTTON_HEIGHT);
     rechargeButton.titleLabel.textColor = UICOLOR;
     rechargeButton.titleLabel.textAlignment = NSTextAlignmentLeft;
     NSMutableAttributedString *title = [[NSMutableAttributedString alloc] initWithString:@"立即充值>"];
     NSRange titleRnage = {0, [title length]};
     [title addAttribute:NSUnderlineStyleAttributeName value:[NSNumber numberWithInteger:NSUnderlineStyleSingle] range:titleRnage];
     [rechargeButton setAttributedTitle:title forState:UIControlStateNormal];
-    rechargeButton.titleLabel.font = [UIFont fontWithName:@"QingYuanMono" size:12];
+    rechargeButton.titleLabel.font = [UIFont fontWithName:@"QingYuanMono" size:13];
     [rechargeButton addTarget:self action:@selector(RechargeView) forControlEvents:UIControlEventTouchUpInside];
+
+//    
+//    balanceDetailsLabel.frame = CGRectMake(0.05*SCREEN_WIDTH, STATUS_HEIGHT*3+NAVIGATIONBAR_HEIGHT+BALANCEIMAGEVIEW_HEIGHT+RECHARGEBUTTON_HEIGHT, BALANCEDETAILSLABEL_WIDTH, BALANCEDETAILSLABEL_HEIGHT);
+//    balanceDetailsLabel.text = @"—————————— 余额明细 ——————————";
+//    balanceDetailsLabel.textAlignment = NSTextAlignmentCenter;
+//    balanceDetailsLabel.font = [UIFont fontWithName:@"QingYuanMono" size:10];
+//    if (SCREEN_WIDTH == 320) {
+//        balanceDetailsLabel.text = @"————————— 余额明细 —————————";
+//    }
     
-    balanceDetailsLabel.frame = CGRectMake(0.05*SCREEN_WIDTH, STATUS_HEIGHT*3+NAVIGATIONBAR_HEIGHT+BALANCEIMAGEVIEW_HEIGHT+RECHARGEBUTTON_HEIGHT, BALANCEDETAILSLABEL_WIDTH, BALANCEDETAILSLABEL_HEIGHT);
-    balanceDetailsLabel.text = @"—————————— 余额明细 ——————————";
-    balanceDetailsLabel.textAlignment = NSTextAlignmentCenter;
-    balanceDetailsLabel.font = [UIFont fontWithName:@"QingYuanMono" size:10];
-    if (SCREEN_WIDTH == 320) {
-        balanceDetailsLabel.text = @"————————— 余额明细 —————————";
-    }
     
-    
-    detailsTableView.frame = CGRectMake(0.05*SCREEN_WIDTH, STATUS_HEIGHT*3+NAVIGATIONBAR_HEIGHT+BALANCEIMAGEVIEW_HEIGHT+RECHARGEBUTTON_HEIGHT+BALANCEDETAILSLABEL_HEIGHT, DETAILSTABLEVIEW_WIDTH, DETAILSTABLEVIEW_HEIGHT);
+    detailsTableView.frame = CGRectMake(0.05*SCREEN_WIDTH, 0.3753*SCREEN_HEIGHT, DETAILSTABLEVIEW_WIDTH, DETAILSTABLEVIEW_HEIGHT);
     detailsTableView.dataSource = self;
     detailsTableView.delegate = self;
     detailsTableView.scrollEnabled = NO;
+    detailsTableView.backgroundColor = [UIColor colorWithRed:240/255.0 green:240/255.0 blue:240/255.0 alpha:1.0];
+
     
 //    footView = [[LoadingView alloc] initWithFrame:CGRectMake(0, 0, DETAILSTABLEVIEW_WIDTH, 50)];
 //    [footView setRefreshStateWhite];
@@ -165,14 +188,28 @@
         // 充值或奖励
         NSString *moneyMode = @"充值\n";
         NSString *payTime = [moneyMode stringByAppendingString:feeTime];
-        cell.textLabel.text = payTime;
+//        cell.textLabel.text = payTime;
+        NSMutableAttributedString *payTimeContent = [[NSMutableAttributedString alloc] initWithString:payTime];
+        NSMutableParagraphStyle *paragragraphStyle = [[NSMutableParagraphStyle alloc] init];
+        [paragragraphStyle setLineSpacing:2];
+        [payTimeContent addAttribute:NSParagraphStyleAttributeName value:paragragraphStyle range:NSMakeRange(0, [payTime length])];
+        cell.textLabel.attributedText = payTimeContent;
+        
         NSString *feeTemp = [NSString stringWithFormat:@"%@", feeNumber];
         cell.detailTextLabel.text = [@"\n" stringByAppendingString:feeTemp];
     }else {
         // 支出
         NSString *moneyMode = @"消费\n";
         NSString *payTime = [moneyMode stringByAppendingString:feeTime];
-        cell.textLabel.text = payTime;
+//        cell.textLabel.text = payTime;
+        NSMutableAttributedString *payTimeContent = [[NSMutableAttributedString alloc] initWithString:payTime];
+        /** 设置行间距*/
+        NSMutableParagraphStyle *paragragraphStyle = [[NSMutableParagraphStyle alloc] init];
+        [paragragraphStyle setLineSpacing:2];
+        [payTimeContent addAttribute:NSParagraphStyleAttributeName value:paragragraphStyle range:NSMakeRange(0, [payTime length])];
+        cell.textLabel.attributedText = payTimeContent;
+        
+        
         NSString *feeTemp = [NSString stringWithFormat:@"%@", feeNumber];
         cell.detailTextLabel.text = [@"\n" stringByAppendingString:feeTemp];
     }
@@ -182,12 +219,49 @@
     cell.detailTextLabel.font = [UIFont fontWithName:@"QingYuanMono" size:14];
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
     cellHeight = cell.frame.size.height;
+    
+    cell.contentView.backgroundColor = [UIColor colorWithRed:240.0/255 green:240.0/255 blue:240.0/255 alpha:1];
+    
+    [tableView setSeparatorColor:[UIColor colorWithRed:165.0/255 green:165.0/255 blue:165.0/255 alpha:1]];
+    
     return cell;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return 44;
+   return 0.057*SCREEN_HEIGHT;
 }
+
+#pragma mark - 设置头视图
+/** 设置section头视图*/
+-(UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section{
+    UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, tableView.frame.size.width, tableView.frame.size.height)];
+    view.backgroundColor = [UIColor colorWithRed:240.0/255 green:240.0/255 blue:240.0/255 alpha:1];
+    //    balanceDetailsLabel.frame = CGRectMake(0.05*SCREEN_WIDTH, STATUS_HEIGHT*3+NAVIGATIONBAR_HEIGHT+BALANCEIMAGEVIEW_HEIGHT+RECHARGEBUTTON_HEIGHT, BALANCEDETAILSLABEL_WIDTH, BALANCEDETAILSLABEL_HEIGHT);
+    balanceDetailsLabel.frame = CGRectMake(0, 0.012*SCREEN_HEIGHT, BALANCEDETAILSLABEL_WIDTH, BALANCEDETAILSLABEL_HEIGHT);
+    //    balanceDetailsLabel.numberOfLines = 0;
+    balanceDetailsLabel.text = @"————————————  余额明细  ————————————";
+    balanceDetailsLabel.textAlignment = NSTextAlignmentCenter;
+    balanceDetailsLabel.font = [UIFont fontWithName:@"QingYuanMono" size:11];
+    balanceDetailsLabel.textColor = [UIColor grayColor];
+    if (SCREEN_WIDTH == 320) {
+        balanceDetailsLabel.text = @"——————————  余额明细  ——————————";
+    }
+    if (iPhone6P) {
+        balanceDetailsLabel.text = @"—————————————  余额明细  —————————————";
+    }
+    balanceDetailsLabel.tintColor = [UIColor colorWithRed:177.0/255 green:177.0/255 blue:177.0/255 alpha:1];
+    [view addSubview:balanceDetailsLabel];
+    return view;
+}
+
+
+-(CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section{
+    return BALANCEDETAILSLABEL_HEIGHT;
+}
+
+
+
+
 
 #pragma mark - UIScrollDelegate
 //- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
@@ -224,39 +298,83 @@
     NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/balancelist"];
     NSURL *url = [NSURL URLWithString:urlStr];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-    NSString *dataStr = [NSString stringWithFormat:@"phone=%@&count=%d", phoneNumber, 0];
+    NSString *dataStr = [NSString stringWithFormat:@"phone=%@&count=%d&access_token=%@", phoneNumber, 0, [userDefaults objectForKey:@"accessToken"]];
     NSLog(@"phonenumber:%@", phoneNumber);
     NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
     [request setHTTPBody:data];
     [request setHTTPMethod:@"POST"];
-    NSURLConnection *connection = [NSURLConnection connectionWithRequest:request delegate:self];
+    MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"getBalanceList"];
 }
+
+- (void)requestForBalance {
+    NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
+    // 在登录了的情况下 去服务器获取余额
+    // 只能用同步post 不然的话余额获取会有问题
+    NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/balance"];
+    NSURL *url = [NSURL URLWithString:urlStr];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
+    NSString *dataStr = [NSString stringWithFormat:@"phone=%@&access_token=%@", phoneNumber, [userDefaults objectForKey:@"accessToken"]];
+    NSData *data = [dataStr dataUsingEncoding:NSUTF8StringEncoding];
+    [request setHTTPBody:data];
+    [request setHTTPMethod:@"POST"];
+    MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"getBalance"];
+}
+
 #pragma mark - 服务器返回数据
-- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
-    NSLog(@"收到数据");
-    [cover removeFromSuperview];
-    NSDictionary *receiveData = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableLeaves error:nil];
-    NSString *status = receiveData[@"status"];
-    NSArray *receiveArray = receiveData[@"data"];
-    NSLog(@"receiveArray数据：%@", receiveArray);
-    if ([status isEqualToString:@"success"]) {
-        isNone = NO;
-        if (page == 0) {
-            dataArray = [NSMutableArray arrayWithArray:receiveArray];
-            NSLog(@"page = 0 dataarray.count:%lu", (unsigned long)dataArray.count);
+- (void)MyConnection:(MyURLConnection *)connection didReceiveData:(NSData *)data {
+    if ([connection.name isEqualToString:@"getBalanceList"]) {
+        NSLog(@"收到数据");
+        [cover removeFromSuperview];
+        NSDictionary *receiveData = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableLeaves error:nil];
+        NSString *status = receiveData[@"status"];
+        NSString *message = receiveData[@"message"];
+        NSArray *receiveArray = receiveData[@"data"];
+        NSLog(@"receiveArray数据：%@", receiveArray);
+        if ([status isEqualToString:@"success"]) {
+            isNone = NO;
+            if (page == 0) {
+                dataArray = [NSMutableArray arrayWithArray:receiveArray];
+                NSLog(@"page = 0 dataarray.count:%lu", (unsigned long)dataArray.count);
+            }else {
+                [dataArray addObjectsFromArray:receiveArray];
+            }
+            [detailsTableView reloadData];
+            if (receiveArray.count == 10) {
+            }
         }else {
-            [dataArray addObjectsFromArray:receiveArray];
+            if ([message rangeOfString:@"invalid token"].location != NSNotFound) {
+                // 账号在别的地方登陆
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"您的身份验证已过期，请重新登录" delegate:self cancelButtonTitle:@"好的" otherButtonTitles:nil, nil];
+                alertView.tag = 10;
+                [alertView show];
+            }else {
+               isNone = YES;
+            }
         }
-        [detailsTableView reloadData];
-        if (receiveArray.count == 10) {
+    }else if([connection.name isEqualToString:@"getBalance"]){
+        NSDictionary *receiveData = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableLeaves error:nil];
+        NSString *status = receiveData[@"status"];
+        NSString *message = receiveData[@"message"];
+        if ([status isEqualToString:@"success"]) {
+            NSString *balance = receiveData[@"balance"];
+            // 并且通知
+            myAppDelegate.balance = [NSString stringWithFormat:@"%.2f", [balance floatValue]];
+            balanceLabel.text = myAppDelegate.balance;
+            [userDefaults setObject:myAppDelegate.balance forKey:@"balance"];
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"balanceUpdate" object:nil];
+        }else {
+            if ([message rangeOfString:@"invalid token"].location != NSNotFound) {
+                // 账号在别的地方登陆
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"您的身份验证已过期，请重新登录" delegate:self cancelButtonTitle:@"好的" otherButtonTitles:nil, nil];
+                alertView.tag = 10;
+                [alertView show];
+            }
         }
-    }else {
-        isNone = YES;
     }
 }
 
 #pragma mark - 服务器超时
-- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {
+- (void)MyConnection:(MyURLConnection *)connection didFailWithError:(NSError *)error {
     [cover removeFromSuperview];
     cover = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
     cover.alpha = 1;
@@ -268,7 +386,7 @@
     [cover addSubview:containerView];
     // 一个控件
     UILabel *hintMes1 = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.4*containerView.frame.size.height, containerView.frame.size.width, 0.2*containerView.frame.size.height)];
-    hintMes1.text = @"无法连接网络";
+    hintMes1.text = @"请检查您的网络";
     hintMes1.textColor = [UIColor whiteColor];
     hintMes1.textAlignment = NSTextAlignmentCenter;
     [containerView addSubview:hintMes1];
@@ -281,6 +399,32 @@
 
 - (void)removeView {
     [cover removeFromSuperview];
+}
+
+#pragma mark - alertViewDelegate
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
+    if (alertView.tag == 10) {
+        myAppDelegate.isLogout = YES;
+        // 退出登录
+        myAppDelegate.isIdentify = NO;
+        myAppDelegate.isFreeze = NO;
+        myAppDelegate.isEndPay = YES;
+        myAppDelegate.isEndRiding = YES;
+        myAppDelegate.isRestart = NO;
+        myAppDelegate.isMissing = NO;
+        myAppDelegate.isUpload = NO;
+        myAppDelegate.isLogin = NO;
+        myAppDelegate.isLogout = YES;
+        myAppDelegate.isLinked = YES;
+        [userDefaults setBool:NO forKey:@"isLogin"];
+        [userDefaults setBool:NO forKey:@"isVip"];
+        [userDefaults setObject:@"" forKey:@"name"];
+        [userDefaults setObject:@"" forKey:@"stunum"];
+        [userDefaults setObject:@"" forKey:@"college"];
+        [userDefaults setBool:NO forKey:@"isMessage"];
+        [[SDImageCache sharedImageCache] removeImageForKey:@"学生证" fromDisk:YES];
+        [self.navigationController popToRootViewControllerAnimated:YES];
+    }
 }
 
 #pragma mark - Button Event

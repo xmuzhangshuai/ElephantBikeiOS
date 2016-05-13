@@ -64,18 +64,21 @@
     
 }
 -(void)UILayout{
-  
-    MemberTableView.frame = CGRectMake(0.048*SCREEN_WIDTH, 0.13*SCREEN_HEIGHT, 0.92*SCREEN_WIDTH, 0.335*SCREEN_HEIGHT);
-//    MemberTableView.center = CGPointMake(0.5*SCREEN_WIDTH, 0.39*SCREEN_HEIGHT);
+    if (iPhone5) {
+        MemberTableView.frame = CGRectMake(0.045*SCREEN_WIDTH, 0.13*SCREEN_HEIGHT, 0.92*SCREEN_WIDTH, 0.335*SCREEN_HEIGHT);
+    }else {
+        MemberTableView.frame = CGRectMake(0.048*SCREEN_WIDTH, 0.13*SCREEN_HEIGHT, 0.92*SCREEN_WIDTH, 0.3283*SCREEN_HEIGHT);
+    }
+    //    MemberTableView.center = CGPointMake(0.5*SCREEN_WIDTH, 0.39*SCREEN_HEIGHT);
     self.view.backgroundColor = [UIColor colorWithRed:240.0/255 green:240.0/255 blue:240.0/255 alpha:1];
     MemberTableView.dataSource = self;
     MemberTableView.delegate = self;
     MemberTableView.scrollEnabled = NO;
+    [MemberTableView setSeparatorColor:[UIColor clearColor]];
     
     OpenMemberBtn.frame = CGRectMake(0, 0, 0.8*SCREEN_WIDTH, 0.06*SCREEN_HEIGHT);
     OpenMemberBtn.center = CGPointMake(0.50*SCREEN_WIDTH, 0.95*SCREEN_HEIGHT);
     OpenMemberBtn.backgroundColor = [UIColor colorWithRed:112.0/255 green:177.0/255 blue:52.0/255 alpha:1];
-
     OpenMemberBtn.layer.masksToBounds = YES;
     OpenMemberBtn.layer.cornerRadius = 6;
     //确认开通/会员续费的点击事件
@@ -108,14 +111,28 @@
         self.customCell = [nib objectAtIndex:0];
         cell = self.customCell;
     }
-    self.MemberNoLabel.font = [UIFont fontWithName:@"QingYuanMono" size:12];
-    self.deadTimeLabel.font = [UIFont fontWithName:@"QingYuanMono" size:10];
+    if (iPhone5) {
+        self.MemberNoLabel.font = [UIFont fontWithName:@"QingYuanMono" size:12];
+        self.deadTimeLabel.font = [UIFont fontWithName:@"QingYuanMono" size:10];
+    }else {
+        self.MemberNoLabel.font = [UIFont fontWithName:@"QingYuanMono" size:13];
+        self.deadTimeLabel.font = [UIFont fontWithName:@"QingYuanMono" size:11];
+    }
+
+    
+    
+//    self.MemberNoLabel.font = [UIFont fontWithName:@"QingYuanMono" size:12];
+//    self.deadTimeLabel.font = [UIFont fontWithName:@"QingYuanMono" size:10];
     self.MemberNoLabel.text = listArray[indexPath.section];
     self.MoneyLabel.text = moneyArray[indexPath.section];
     
     /** 更改label的字体颜色*/
     NSMutableAttributedString *content = [[NSMutableAttributedString alloc] initWithString:self.MoneyLabel.text];
-    [content addAttribute:NSFontAttributeName value:[UIFont fontWithName:@"MicrosoftYaHei" size:18] range:NSMakeRange(0, [content length])];
+    if (iPhone5) {
+        [content addAttribute:NSFontAttributeName value:[UIFont fontWithName:@"MicrosoftYaHei" size:18] range:NSMakeRange(0, [content length])];
+    }else {
+        [content addAttribute:NSFontAttributeName value:[UIFont fontWithName:@"MicrosoftYaHei" size:19] range:NSMakeRange(0, [content length])];
+    }
     [content addAttribute:NSForegroundColorAttributeName value:[UIColor colorWithRed:242.0/255 green:139.0/255 blue:0/255 alpha:1] range:NSMakeRange(0, [content length])];
     self.MoneyLabel.attributedText = content;
     

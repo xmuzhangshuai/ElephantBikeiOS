@@ -19,12 +19,13 @@
     UITableView *QuestionTableView;
     UIButton *nextButton;
     NSMutableArray *listArray;
-    
+    BOOL    isSelect;   //判断是否选择问题选项
 }
 
 -(id)init{
     if (self = [super init]) {
         listArray = [[NSMutableArray alloc] initWithObjects:@"输入密码后无法开锁",@"在计费期间单车丢失", @"锁车后不显示还车密码或还车密码错误", @"不影响还车的损坏问题", nil];
+        isSelect = NO;
     }
     return self;
 }
@@ -50,12 +51,19 @@
 
 -(void)UILayout{
 //    QuestionTableView.frame = CGRectMake(0.049*SCREEN_WIDTH, 0.13*SCREEN_HEIGHT, 0.907*SCREEN_WIDTH, 0.517*SCREEN_HEIGHT);
-    QuestionTableView.frame = CGRectMake(0.043*SCREEN_WIDTH, 0.13*SCREEN_HEIGHT, 0.91*SCREEN_WIDTH, 0.341*SCREEN_HEIGHT);
-//    QuestionTableView.center = CGPointMake(0.5*SCREEN_WIDTH, 0.39*SCREEN_HEIGHT);
+    if (iPhone5) {
+        QuestionTableView.frame = CGRectMake(0.043*SCREEN_WIDTH, 0.13*SCREEN_HEIGHT, 0.91*SCREEN_WIDTH, 0.3435*SCREEN_HEIGHT);
+    }else {
+        QuestionTableView.frame = CGRectMake(0.043*SCREEN_WIDTH, 0.13*SCREEN_HEIGHT, 0.91*SCREEN_WIDTH, 0.3357*SCREEN_HEIGHT);
+    }
+    //    QuestionTableView.frame = CGRectMake(0.043*SCREEN_WIDTH, 0.13*SCREEN_HEIGHT, 0.91*SCREEN_WIDTH, 0.341*SCREEN_HEIGHT);
+    //    QuestionTableView.center = CGPointMake(0.5*SCREEN_WIDTH, 0.39*SCREEN_HEIGHT);
     self.view.backgroundColor = [UIColor colorWithRed:240.0/255 green:240.0/255 blue:240.0/255 alpha:1];
     QuestionTableView.dataSource = self;
     QuestionTableView.delegate = self;
     QuestionTableView.scrollEnabled = NO;
+    /** 去掉cell的分割线*/
+    QuestionTableView.separatorStyle = UITableViewCellSelectionStyleNone;
     
     nextButton.frame = CGRectMake(0, 0, 0.8*SCREEN_WIDTH, 0.06*SCREEN_HEIGHT);
     nextButton.center = CGPointMake(0.50*SCREEN_WIDTH, 0.95*SCREEN_HEIGHT);
@@ -65,6 +73,7 @@
     
     nextButton.layer.masksToBounds = YES;
     nextButton.layer.cornerRadius = 6;
+
     //确认开通/会员续费的点击事件
     [nextButton addTarget:self action:@selector(nextView) forControlEvents:UIControlEventTouchUpInside];
     
@@ -87,6 +96,9 @@
     }
     cell.textLabel.text = listArray[indexPath.section];
     cell.textLabel.font = [UIFont fontWithName:@"QingYuanMono" size:15];
+    if (iPhone6P) {
+        cell.textLabel.font = [UIFont fontWithName:@"QingYuanMono" size:18];
+    }
     cell.textLabel.textAlignment = NSTextAlignmentCenter;
     
     return cell;
@@ -98,7 +110,7 @@
     cell.layer.borderWidth = 3;
     cell.layer.borderColor = [UIColor colorWithRed:112.0/255 green:177.0/255 blue:52.0/255 alpha:1].CGColor;
     cell.contentView.backgroundColor = [UIColor colorWithRed:255.0/255 green:255.0/255 blue:255.0/255 alpha:1];
-    
+    isSelect = YES;
 }
 -(void)tableView:(UITableView *)tableView didDeselectRowAtIndexPath:(NSIndexPath *)indexPath{
     UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
@@ -122,11 +134,16 @@
 
 #pragma mark - nextButton方法
 -(void)nextView{
-    QuestionDetailViewController *questionDetail = [[QuestionDetailViewController alloc] init];
-    NSIndexPath *indexPath = [QuestionTableView indexPathForSelectedRow];
-    UITableViewCell *cell = [QuestionTableView cellForRowAtIndexPath:indexPath];
-    questionDetail.QuestionName = cell.textLabel.text;
-    [self.navigationController pushViewController:questionDetail animated:YES];
+    if (isSelect) {
+        QuestionDetailViewController *questionDetail = [[QuestionDetailViewController alloc] init];
+        NSIndexPath *indexPath = [QuestionTableView indexPathForSelectedRow];
+        UITableViewCell *cell = [QuestionTableView cellForRowAtIndexPath:indexPath];
+        questionDetail.QuestionName = cell.textLabel.text;
+        [self.navigationController pushViewController:questionDetail animated:YES];
+    }else {
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"请选择问题" delegate:nil cancelButtonTitle:@"好的" otherButtonTitles:nil, nil];
+        [alertView show];
+    }
 }
 #pragma mark - backMainView方法
 -(void)backMainView{

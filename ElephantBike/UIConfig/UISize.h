@@ -19,7 +19,6 @@
 #define SAME_HEIGHT             0.05*SCREEN_HEIGHT
 #define CORNERRADIUS            6
 #define UICOLOR                 [UIColor colorWithRed:112/255.0 green:177/255.0 blue:52/255.0 alpha:1.000]
-
 #define BACKGROUNDCOLOR         [UIColor colorWithRed:240/255.0 green:240/255.0 blue:240/255.0 alpha:1.000]
 
 #define IDENTIFICATION_HEIGHT   (SCREEN_HEIGHT-NAVIGATIONBAR_HEIGHT-STATUS_HEIGHT)/3
@@ -29,6 +28,11 @@
 #define MARGIN                   0.075*SCREEN_HEIGHT
 
 #define CENTER_X                0.5*SCREEN_WIDTH
+
+#define iPhone5 ([UIScreen instancesRespondToSelector:@selector(currentMode)] ? CGSizeEqualToSize(CGSizeMake(640, 1136), [[UIScreen mainScreen] currentMode].size) : NO)
+
+#define iPhone6P ([UIScreen instancesRespondToSelector:@selector(currentMode)] ? CGSizeEqualToSize(CGSizeMake(1242, 2208), [[UIScreen mainScreen] currentMode].size) : NO)
+
 
 //#define IP                      @"http://192.168.0.123:8080"
 #define IP                      @"http://120.25.197.43"

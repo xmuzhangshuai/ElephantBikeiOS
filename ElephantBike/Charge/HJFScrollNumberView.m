@@ -100,8 +100,6 @@
 - (void)initScrollNumView {
     self.numberSize = 5;
     self.numberValue = 0;
-    self.splitSpaceWidth = 2.0;
-    self.digitFont = [UIFont systemFontOfSize:15];
 }
 
 - (void)setNumber:(NSUInteger)number withAnimationType:(HJFScrollNumAnimationType)type animationTime:(NSTimeInterval)time {
@@ -142,7 +140,7 @@
 - (void)didConfigFinish {
     _numberViews = [[NSMutableArray alloc] initWithCapacity:self.numberSize];
     CGFloat allWidth = self.frame.size.width;
-    CGFloat digitWidth = (allWidth - (self.numberSize + 1)*self.splitSpaceWidth)/self.numberSize;
+    CGFloat digitWidth = (allWidth - (self.numberSize - 1)*self.splitSpaceWidth)/self.numberSize;
     for (int i = 0; i < self.numberSize; ++i) {
         CGRect rect = {{allWidth - (digitWidth + self.splitSpaceWidth) * (i + 1), 0}, {(digitWidth, self.frame.size.height)}};
     
