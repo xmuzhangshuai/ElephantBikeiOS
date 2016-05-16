@@ -302,7 +302,7 @@
             // 有图片才上传
             if (imageViewNumber > 0) {
                 // 先上传图片 获取到url 再提交问题，然后回到计费页面
-                NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/file/upload"];
+                NSString *urlStr = [IP stringByAppendingString:@"/api/file/upload"];
                 NSURL *url = [NSURL URLWithString:urlStr];
                 NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
                 // 设置字典信息
@@ -319,7 +319,7 @@
                 // 选中问题类型
                 NSIndexPath *indexPath = [questionTableView indexPathForSelectedRow];
                 
-                NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/question/ques"];
+                NSString *urlStr = [IP stringByAppendingString:@"/api/question/ques"];
                 NSURL *url = [NSURL URLWithString:urlStr];
                 NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
                 NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&phone=%@&type=%@&description=%@&addr=%@&evidence=%@&access_token=%@", bikeNo, phoneNumber, [questionType objectAtIndex:indexPath.row], describeLabel.text, bikePosition, /*访问凭证*/@"", accessToken];
@@ -597,7 +597,7 @@
             // 选中问题类型
             NSIndexPath *indexPath = [questionTableView indexPathForSelectedRow];
             
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/question/ques"];
+            NSString *urlStr = [IP stringByAppendingString:@"/api/question/ques"];
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
             NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&phone=%@&type=%@&description=%@&addr=%@&evidence=%@&access_token=%@", bikeNo, phoneNumber, [questionType objectAtIndex:indexPath.row], describeLabel.text, bikePosition, /*访问凭证*/@"", accessToken];
@@ -640,7 +640,7 @@
         NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
         NSString *accessToken = [userDefaults objectForKey:@"accessToken"];
         // 用户冻结向服务器提交冻结数据 然后再跳转支付页面
-        NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/user/frozen"];
+        NSString *urlStr = [IP stringByAppendingString:@"/api/user/frozen"];
         NSURL *url = [NSURL URLWithString:urlStr];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
         NSString *dataStr = [NSString stringWithFormat:@"phone=%@&access_token=%@",phoneNumber, accessToken];
@@ -680,7 +680,7 @@
         isBack = YES;
         
         if (imageViewNumber > 0) {
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/file/upload"];
+            NSString *urlStr = [IP stringByAppendingString:@"/api/file/upload"];
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
             // 设置字典信息
@@ -697,7 +697,7 @@
             // 选中问题类型
             NSIndexPath *indexPath = [questionTableView indexPathForSelectedRow];
             
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/question/ques"];
+            NSString *urlStr = [IP stringByAppendingString:@"/api/question/ques"];
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
             NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&phone=%@&type=%@&description=%@&addr=%@&evidence=%@&access_token=%@", bikeNo, phoneNumber, [questionType objectAtIndex:indexPath.row], describeLabel.text, bikePosition, /*访问凭证*/@"", accessToken];
@@ -777,7 +777,7 @@
             // 选中问题类型
             NSIndexPath *indexPath = [questionTableView indexPathForSelectedRow];
             
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/question/ques"];
+            NSString *urlStr = [IP stringByAppendingString:@"/api/question/ques"];
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
             NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&phone=%@&type=%@&description=%@&addr=%@&evidence=%@&access_token=%@", bikeNo, phoneNumber, [questionType objectAtIndex:indexPath.row], describeLabel.text, bikePosition, /*访问凭证*/@"", accessToken];
@@ -823,7 +823,7 @@
                 NSString *accessToken = [userDefaults objectForKey:@"accessToken"];
                 NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
                 NSString *bikeNo = [userDefaults objectForKey:@"bikeNo"];
-                NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/bikefee"];
+                NSString *urlStr = [IP stringByAppendingString:@"/api/money/bikefee"];
                 NSURL *url = [NSURL URLWithString:urlStr];
                 NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
                 NSString *dataStr = [NSString stringWithFormat:@"phone=%@&bikeid=%@&access_token=%@", phoneNumber, bikeNo, accessToken];
@@ -850,7 +850,7 @@
             NSLog(@"%@", urlsStr);
             if (imageViewNumber == 1) {
                 // 提交问题
-                NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/question/ques"];
+                NSString *urlStr = [IP stringByAppendingString:@"/api/question/ques"];
                 NSURL *url = [NSURL URLWithString:urlStr];
                 NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
                 NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&phone=%@&type=%@&description=%@&addr=%@&evidence=%@&access_token=%@", bikeNo, phoneNumber, [questionType objectAtIndex:indexPath.row], describeLabel.text, bikePosition, urlsStr, accessToken];
@@ -859,7 +859,7 @@
                 [request setHTTPMethod:@"POST"];
                 MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"commitQuestion"];
             }else {
-                NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/file/upload"];
+                NSString *urlStr = [IP stringByAppendingString:@"/api/file/upload"];
                 NSURL *url = [NSURL URLWithString:urlStr];
                 NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
                 // 设置字典信息
@@ -890,7 +890,7 @@
             NSLog(@"%@", urlsStr);
             if (imageViewNumber == 2) {
                 // 提交问题
-                NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/question/ques"];
+                NSString *urlStr = [IP stringByAppendingString:@"/api/question/ques"];
                 NSURL *url = [NSURL URLWithString:urlStr];
                 NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
                 NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&phone=%@&type=%@&description=%@&addr=%@&evidence=%@&access_token=%@", bikeNo, phoneNumber, [questionType objectAtIndex:indexPath.row], describeLabel.text, bikePosition, urlsStr, accessToken];
@@ -899,7 +899,7 @@
                 [request setHTTPMethod:@"POST"];
                 MyURLConnection *connection = [[MyURLConnection alloc] MyConnectioin:request delegate:self andName:@"commitQuestion"];
             }else {
-                NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/file/upload"];
+                NSString *urlStr = [IP stringByAppendingString:@"/api/file/upload"];
                 NSURL *url = [NSURL URLWithString:urlStr];
                 NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
                 // 设置字典信息
@@ -929,7 +929,7 @@
             NSString    *urlsStr = [[NSString alloc] initWithData:urlData encoding:NSUTF8StringEncoding];
             NSLog(@"%@", urlsStr);
             // 提交问题
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/question/ques"];
+            NSString *urlStr = [IP stringByAppendingString:@"/api/question/ques"];
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
             NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&phone=%@&type=%@&description=%@&addr=%@&evidence=%@&access_token=%@", bikeNo, phoneNumber, [questionType objectAtIndex:indexPath.row], describeLabel.text, bikePosition, urlsStr, accessToken];

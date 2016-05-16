@@ -35,8 +35,9 @@
 
 
 //#define IP                      @"http://192.168.0.123:8080"
-#define IP                      @"http://120.25.197.43"
+#define IP                      @"http://120.25.197.43/ElephantBike"
 //#define IP                      @"http://210.121.164.111"
+//#define IP                      @"http://www.daxiangdanche.com/"
 
 
 #endif /* UISize_h */

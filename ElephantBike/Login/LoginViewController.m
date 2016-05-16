@@ -378,7 +378,7 @@
     
     [self.view addSubview:cover];
     
-    NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/msg/sms"];
+    NSString *urlStr = [IP stringByAppendingString:@"/api/msg/sms"];
     NSURL *url = [NSURL URLWithString:urlStr];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     NSString *dataStr = [NSString stringWithFormat:@"phone=%@", phoneNumber];
@@ -455,7 +455,7 @@
         // 请求服务器 异步post
         // 获取缓存的isLogin
         BOOL isLogin = [userDefaults boolForKey:@"isLogin"];
-        NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/user/login"];
+        NSString *urlStr = [IP stringByAppendingString:@"/api/user/login"];
         NSURL *url = [NSURL URLWithString:urlStr];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
         NSString *dataStr = [NSString stringWithFormat:@"phone=%@&islogin=%d&verify_code=%@", phoneNumber, isLogin, verifyTF.text];
@@ -538,7 +538,7 @@
             // 通知个人信息页面 修改个人信息
             [[NSNotificationCenter defaultCenter] postNotificationName:@"updateInfo" object:nil];
             // 需要登陆的时候  登陆后请求服务器获取余额
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/balance"];
+            NSString *urlStr = [IP stringByAppendingString:@"/api/money/balance"];
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
             NSString *dataStr = [NSString stringWithFormat:@"phone=%@&access_token=%@", phoneNumber, [userDefaults objectForKey:@"accessToken"]];
@@ -750,7 +750,7 @@
     
     [self.view addSubview:cover];
     
-    NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/msg/voicesms"];
+    NSString *urlStr = [IP stringByAppendingString:@"/api/msg/voicesms"];
     NSURL *url = [NSURL URLWithString:urlStr];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     NSString *dataStr = [NSString stringWithFormat:@"phone=%@", phoneNumber];

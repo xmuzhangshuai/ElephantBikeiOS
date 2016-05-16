@@ -496,7 +496,7 @@
             
             NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
             // 请求
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/pass/unlockcode2"];
+            NSString *urlStr = [IP stringByAppendingString:@"/api/pass/unlockcode2"];
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
             NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&phone=%@&access_token=%@", bikeNO, phoneNumber, [userDefaults objectForKey:@"accessToken"]];

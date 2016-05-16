@@ -46,7 +46,7 @@
         myAppDelegate = [[UIApplication sharedApplication] delegate];
         userDefaults = [NSUserDefaults standardUserDefaults];
         if ([userDefaults boolForKey:@"isVip"]) {
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/user/vipdate"];
+            NSString *urlStr = [IP stringByAppendingString:@"/api/user/vipdate"];
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
             NSString *dataStr = [NSString stringWithFormat:@"phone=%@", [userDefaults objectForKey:@"phoneNumber"]];

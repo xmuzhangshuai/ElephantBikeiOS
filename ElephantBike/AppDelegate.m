@@ -104,7 +104,7 @@
         NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
         // 在登录了的情况下 去服务器获取余额
         // 只能用同步post 不然的话余额获取会有问题
-        NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/balance"];
+        NSString *urlStr = [IP stringByAppendingString:@"/api/money/balance"];
         NSURL *url = [NSURL URLWithString:urlStr];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
         NSString *dataStr = [NSString stringWithFormat:@"phone=%@&access_token=%@", phoneNumber, [userDefaults objectForKey:@"accessToken"]];
@@ -126,7 +126,7 @@
                 self.balance = [NSString stringWithFormat:@"%.2f", tempBalance];
                 //拿取本地缓存数据 只需手机和isLogin，和短信验证用的是一个api，不需要验证码
                 NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
-                NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/user/login"];
+                NSString *urlStr = [IP stringByAppendingString:@"/api/user/login"];
                 NSURL *url = [NSURL URLWithString:urlStr];
                 NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
                 NSString *dataStr = [NSString stringWithFormat:@"phone=%@&islogin=%d", phoneNumber, self.isLogin];
@@ -210,7 +210,7 @@
         NSLog(@"请求活动");
     // 请求服务器
     // 判断是否有活动
-    NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/act/topic"];
+    NSString *urlStr = [IP stringByAppendingString:@"/api/act/topic"];
     NSURL *url = [NSURL URLWithString:urlStr];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     NSString *dataStr = [NSString stringWithFormat:@"type=%d", 1];

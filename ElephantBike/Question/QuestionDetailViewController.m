@@ -459,7 +459,7 @@
 #pragma mark - sendRequest
 -(void)requestForDetailQuestion{
     if (![self.QuestionName isEqualToString:@"在计费期间单车丢失"]) {
-        NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/file/uploadvoice"];
+        NSString *urlStr = [IP stringByAppendingString:@"/api/file/uploadvoice"];
         NSURL *url = [NSURL URLWithString:urlStr];
         ASIFormDataRequest *request = [ASIFormDataRequest requestWithURL:url];
         [request setFile:mp3FilePath forKey:@"file"];
@@ -470,7 +470,7 @@
         // 提交问题类型，跳回到计费页面
         NSString *bikeno = [userDefaults objectForKey:@"bikeNo"];
         NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
-        NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/question/ques"];
+        NSString *urlStr = [IP stringByAppendingString:@"/api/question/ques"];
         NSURL *url = [NSURL URLWithString:urlStr];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
         NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&phone=%@&type=%@&voiceurl=%@&needfrozen=%d&access_token=%@", bikeno, phoneNumber, self.QuestionName, voiceUrl, 0, [userDefaults objectForKey:@"accessToken"]];
@@ -496,7 +496,7 @@
             myAppDelegate.isFreeze = YES;
         }
         // 提交问题类型，跳回到计费页面
-        NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/question/ques"];
+        NSString *urlStr = [IP stringByAppendingString:@"/api/question/ques"];
         NSURL *url = [NSURL URLWithString:urlStr];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
         NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&phone=%@&type=%@&voiceurl=%@&needfrozen=%d&access_token=%@", bikeno, phoneNumber, self.QuestionName, voiceUrl, myAppDelegate.isFreeze, [userDefaults objectForKey:@"accessToken"]];
@@ -551,7 +551,7 @@
                 if ([self.QuestionName isEqualToString:@"在计费期间单车丢失"]) {
                     NSString *bikeno = [userDefaults objectForKey:@"bikeNo"];
                     NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
-                    NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/bike/missbikefee"];
+                    NSString *urlStr = [IP stringByAppendingString:@"/api/bike/missbikefee"];
                     NSURL *url = [NSURL URLWithString:urlStr];
                     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
                     NSLog(@"bikeid=%@, phone=%@, type=%@, ismissing=%d", bikeno, phoneNumber, self.QuestionName, myAppDelegate.isMissing);
@@ -567,7 +567,7 @@
                     NSString *accessToken = [userDefaults objectForKey:@"accessToken"];
                     NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
                     NSString *bikeNo = [userDefaults objectForKey:@"bikeNo"];
-                    NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/bikefee"];
+                    NSString *urlStr = [IP stringByAppendingString:@"/api/money/bikefee"];
                     NSURL *url = [NSURL URLWithString:urlStr];
                     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
                     NSString *dataStr = [NSString stringWithFormat:@"phone=%@&bikeid=%@&access_token=%@&isfinish=%d&isnatural=%d", phoneNumber, bikeNo, accessToken, 1, 2];

@@ -298,7 +298,7 @@
             NSLog(@"%@, %@, %@, %@", schoolButton.titleLabel.text, numberTF.text, nameTF.text, phoneNumber);
             studentCardUrl = url;
             // 将url上传服务器
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/user/authentication"];
+            NSString *urlStr = [IP stringByAppendingString:@"/api/user/authentication"];
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
             NSString *dataStr = [NSString stringWithFormat:@"phone=%@&stucard=%@&college=%@&stunum=%@&name=%@&access_token=%@", phoneNumber, studentCardUrl, schoolButton.titleLabel.text, numberTF.text, nameTF.text, accessToken];
@@ -714,7 +714,7 @@
         [containerView addSubview:hintMes1];
         [self.view addSubview:cover];
         NSLog(@"提交照片");
-        NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/file/upload"];
+        NSString *urlStr = [IP stringByAppendingString:@"/api/file/upload"];
         NSURL *url = [NSURL URLWithString:urlStr];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
         // 设置字典信息
@@ -858,7 +858,7 @@
         }
         UIImage *studentCardImage = [[SDImageCache sharedImageCache] imageFromDiskCacheForKey:@"学生证"];
         if (studentCardImage == nil || [[userDefaults objectForKey:@"stunum"] isEqualToString:@""] || [userDefaults objectForKey:@"stunum"] == nil) {
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/user/cardurl"];
+            NSString *urlStr = [IP stringByAppendingString:@"/api/user/cardurl"];
             NSLog(@"请求图片ip:%@", urlStr);
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
@@ -876,7 +876,7 @@
         }
         // 请求服务器是否通过认证
         NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
-        NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/user/userstate"];
+        NSString *urlStr = [IP stringByAppendingString:@"/api/user/userstate"];
         NSURL *url = [NSURL URLWithString:urlStr];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
         NSString *dataStr = [NSString stringWithFormat:@"phone=%@&access_token=%@", phoneNumber, [userDefaults objectForKey:@"accessToken"]];
@@ -902,7 +902,7 @@
         }
         UIImage *studentCardImage = [[SDImageCache sharedImageCache] imageFromDiskCacheForKey:@"学生证"];
         if (studentCardImage == nil || [[userDefaults objectForKey:@"stunum"] isEqualToString:@""] || [userDefaults objectForKey:@"stunum"] == nil) {
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/user/cardurl"];
+            NSString *urlStr = [IP stringByAppendingString:@"/api/user/cardurl"];
             NSLog(@"请求图片ip:%@", urlStr);
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
@@ -922,7 +922,7 @@
         NSLog(@"请求学校列表");
         // 没有认证也没有上传，请求学校列表
         if (schoolArary.count == 0) {
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/allcollege"];
+            NSString *urlStr = [IP stringByAppendingString:@"/allcollege"];
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
             [request setHTTPMethod:@"POST"];

@@ -151,7 +151,7 @@
             NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
             BOOL isEndRiding = myAppdelegate.isEndRiding;
             NSString *isEndRidingStr = [NSString stringWithFormat:@"%d", isEndRiding];
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/bike/costandtime"];
+            NSString *urlStr = [IP stringByAppendingString:@"/api/bike/costandtime"];
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
             NSString *dataStr = [NSString stringWithFormat:@"phone=%@&isfinish=%@&access_token=%@", phoneNumber, isEndRidingStr, [userDefaults objectForKey:@"accessToken"]];
@@ -165,7 +165,7 @@
         NSLog(@"缓存的bikeid:%@", bikeno);
         if ([bikeno isEqualToString:@""] || bikeno == nil) {
             NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/bike/bikeidandpass2"];
+            NSString *urlStr = [IP stringByAppendingString:@"/api/bike/bikeidandpass2"];
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
             NSString *dataStr = [NSString stringWithFormat:@"phone=%@&access_token=%@",phoneNumber, [userDefaults objectForKey:@"accessToken"]];
@@ -534,7 +534,7 @@
         // 点击付款，应该先从服务器获取余额 然后付款
         NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
         // 在登录了的情况下 去服务器获取余额
-        NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/balance"];
+        NSString *urlStr = [IP stringByAppendingString:@"/api/money/balance"];
         NSURL *url = [NSURL URLWithString:urlStr];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
         NSString *dataStr = [NSString stringWithFormat:@"phone=%@&access_token=%@", phoneNumber, [userDefaults objectForKey:@"accessToken"]];
@@ -552,7 +552,7 @@
             myAppdelegate.isWXPay = YES;
             NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
             NSString *bikeno = [userDefaults objectForKey:@"bikeNo"];
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/pay/wxpayorder"];
+            NSString *urlStr = [IP stringByAppendingString:@"/api/pay/wxpayorder"];
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
             NSString *dataStr = [NSString stringWithFormat:@"phone=%@&bikeid=%@&access_token=%@", phoneNumber, bikeno, [userDefaults objectForKey:@"accessToken"]];
@@ -572,7 +572,7 @@
             myAppdelegate.isWXPay = NO;
             NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
             NSString *bikeno = [userDefaults objectForKey:@"bikeNo"];
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/pay/alipaypay"];
+            NSString *urlStr = [IP stringByAppendingString:@"/api/pay/alipaypay"];
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
             NSString *dataStr = [NSString stringWithFormat:@"phone=%@&totalfee=%@&bikeid=%@&subject=%@&body=%@&access_token=%@", phoneNumber, _money, bikeno, @"大象单车订单付款", @"金额", [userDefaults objectForKey:@"accessToken"]];
@@ -671,7 +671,7 @@
             NSString *bikeno = [userDefaults objectForKey:@"bikeNo"];
             if (!bikeno) {
                 NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
-                NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/bike/bikeidandpass2"];
+                NSString *urlStr = [IP stringByAppendingString:@"/api/bike/bikeidandpass2"];
                 NSURL *url = [NSURL URLWithString:urlStr];
                 NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
                 NSString *dataStr = [NSString stringWithFormat:@"phone=%@&access_token=%@",phoneNumber, [userDefaults objectForKey:@"accessToken"]];
@@ -716,7 +716,7 @@
                 NSString *isMissngStr = [NSString stringWithFormat:@"%d", myAppdelegate.isMissing];
                 NSLog(@"ismissing:%@ bikeid:%@", isMissngStr, bikeno);
                 
-                NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/returnpay"];
+                NSString *urlStr = [IP stringByAppendingString:@"/api/money/returnpay"];
                 NSURL *url = [NSURL URLWithString:urlStr];
                 NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
                 NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&phone=%@&paymode=%@&access_token=%@&ismissing=%@", bikeno, phoneNumber, [payWay objectAtIndex:selectPayWayNumber],  accessToken, isMissngStr];
@@ -997,7 +997,7 @@
 //    NSString *isMissngStr = [NSString stringWithFormat:@"%d", myAppdelegate.isMissing];
 //    NSLog(@"ismissing:%@", isMissngStr);
 //    
-//    NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/returnpay"];
+//    NSString *urlStr = [IP stringByAppendingString:@"/api/money/returnpay"];
 //    NSURL *url = [NSURL URLWithString:urlStr];
 //    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
 //    NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&phone=%@&paymode=%@&access_token=%@&ismissing=%@", bikeNo, phoneNumber, [payWay objectAtIndex:selectPayWayNumber],  accessToken, isMissngStr];
@@ -1265,7 +1265,7 @@
 #pragma mark - 返回app时调用接口判断是否支付成功
 - (void)isWXPay {
 //    [waitCover removeFromSuperview];
-    NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/pay/wxorderquery"];
+    NSString *urlStr = [IP stringByAppendingString:@"/api/pay/wxorderquery"];
     NSURL *url = [NSURL URLWithString:urlStr];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
     NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
@@ -1278,7 +1278,7 @@
 }
 
 - (void)isAliPay {
-    NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/pay/alipayquery"];
+    NSString *urlStr = [IP stringByAppendingString:@"/api/pay/alipayquery"];
     NSURL *url = [NSURL URLWithString:urlStr];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
     NSString *dataStr = [NSString stringWithFormat:@"out_trade_no=%@", outTradeNO];

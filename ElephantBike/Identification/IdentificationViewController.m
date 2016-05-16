@@ -70,7 +70,7 @@
         UIImage *IDCardImage = [[SDImageCache sharedImageCache] imageFromDiskCacheForKey:@"身份证"];
         UIImage *studentCardImage = [[SDImageCache sharedImageCache] imageFromDiskCacheForKey:@"学生证"];
         if (!IDCardImage || !studentCardImage) {
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/user/cardurl"];
+            NSString *urlStr = [IP stringByAppendingString:@"/api/user/cardurl"];
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
             NSString *dataStr = [NSString stringWithFormat:@"phone=%@", [userDefaults objectForKey:@"phoneNumber"]];
@@ -95,7 +95,7 @@
         UIImage *IDCardImage = [[SDImageCache sharedImageCache] imageFromDiskCacheForKey:@"身份证"];
         UIImage *studentCardImage = [[SDImageCache sharedImageCache] imageFromDiskCacheForKey:@"学生证"];
         if (!IDCardImage || !studentCardImage) {
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/user/cardurl"];
+            NSString *urlStr = [IP stringByAppendingString:@"/api/user/cardurl"];
             NSLog(@"请求图片ip:%@", urlStr);
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
@@ -239,7 +239,7 @@
         [containerView addSubview:hintMes];
         [self.view addSubview:cover];
         NSLog(@"提交照片");
-        NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/file/upload"];
+        NSString *urlStr = [IP stringByAppendingString:@"/api/file/upload"];
         NSURL *url = [NSURL URLWithString:urlStr];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
         // 设置字典信息
@@ -299,7 +299,7 @@
         if ([status isEqualToString:@"success"]) {
             NSLog(@"第一张上传成功");
             IDCardUrl = url;
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/file/upload"];
+            NSString *urlStr = [IP stringByAppendingString:@"/api/file/upload"];
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
             // 设置字典信息
@@ -321,7 +321,7 @@
             NSString *accessToken = [userDefaults objectForKey:@"accessToken"];
             studentCardUrl = url;
             // 将url上传服务器
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/user/authentication"];
+            NSString *urlStr = [IP stringByAppendingString:@"/api/user/authentication"];
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
             NSString *dataStr = [NSString stringWithFormat:@"phone=%@&idcard=%@&stucard=%@&access_token=%@", phoneNumber, IDCardUrl, studentCardUrl, accessToken];

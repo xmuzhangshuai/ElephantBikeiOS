@@ -105,7 +105,7 @@
     [containerView addSubview:hintMes];
     [self.view addSubview:cover];
     
-    NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/user/message"];
+    NSString *urlStr = [IP stringByAppendingString:@"/api/user/message"];
     NSURL *url = [NSURL URLWithString:urlStr];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     NSString *dataStr = [NSString stringWithFormat:@"phone=%@&access_token=%@", [userDefaults objectForKey:@"phoneNumber"], [userDefaults objectForKey:@"accessToken"]];

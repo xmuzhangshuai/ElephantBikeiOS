@@ -295,7 +295,7 @@
 - (void)requestForData {
     NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
     // 请求服务器 异步post
-    NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/balancelist"];
+    NSString *urlStr = [IP stringByAppendingString:@"/api/money/balancelist"];
     NSURL *url = [NSURL URLWithString:urlStr];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     NSString *dataStr = [NSString stringWithFormat:@"phone=%@&count=%d&access_token=%@", phoneNumber, 0, [userDefaults objectForKey:@"accessToken"]];
@@ -310,7 +310,7 @@
     NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
     // 在登录了的情况下 去服务器获取余额
     // 只能用同步post 不然的话余额获取会有问题
-    NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/balance"];
+    NSString *urlStr = [IP stringByAppendingString:@"/api/money/balance"];
     NSURL *url = [NSURL URLWithString:urlStr];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
     NSString *dataStr = [NSString stringWithFormat:@"phone=%@&access_token=%@", phoneNumber, [userDefaults objectForKey:@"accessToken"]];

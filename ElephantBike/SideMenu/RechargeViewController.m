@@ -171,7 +171,7 @@
             // 请求api 获取预付单
             myAppdelegate.isWXPay = YES;
             NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/pay/wxpayrecharge"];
+            NSString *urlStr = [IP stringByAppendingString:@"/api/pay/wxpayrecharge"];
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
             NSString *dataStr = [NSString stringWithFormat:@"phone=%@&totalfee=%@&access_token=%@", phoneNumber, moneyTF.text, [userDefaults objectForKey:@"accessToken"]];
@@ -188,7 +188,7 @@
             NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
             
             // 异步请求服务器
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/pay/alipayrecharge"];
+            NSString *urlStr = [IP stringByAppendingString:@"/api/pay/alipayrecharge"];
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
             NSString *dataStr = [NSString stringWithFormat:@"phone=%@&subject=%@&body=%@&totalfee=%@&access_token=%@", phoneNumber, @"大象钱包充值", @"多少钱", moneyTF.text, [userDefaults objectForKey:@"accessToken"]];
@@ -479,7 +479,7 @@
 
 #pragma mark - payDelegate
 - (void)isWXPay {
-    NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/pay/wxorderquery"];
+    NSString *urlStr = [IP stringByAppendingString:@"/api/pay/wxorderquery"];
     NSURL *url = [NSURL URLWithString:urlStr];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
     NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
@@ -492,7 +492,7 @@
 }
 
 - (void)isAliPay {
-    NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/pay/alipayquery"];
+    NSString *urlStr = [IP stringByAppendingString:@"/api/pay/alipayquery"];
     NSURL *url = [NSURL URLWithString:urlStr];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
     NSString *dataStr = [NSString stringWithFormat:@"out_trade_no=%@", outTradeNo];
@@ -533,7 +533,7 @@
     NSString *accessToken = [userDefaults objectForKey:@"accessToken"];
     
     // 异步请求服务器
-    NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/recharge"];
+    NSString *urlStr = [IP stringByAppendingString:@"/api/money/recharge"];
     NSURL *url = [NSURL URLWithString:urlStr];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
     NSString *dataStr = [NSString stringWithFormat:@"phone=%@&value=%@&access_token=%@", phoneNumber, moneyTF.text, accessToken];

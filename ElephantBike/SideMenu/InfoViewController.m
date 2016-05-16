@@ -63,7 +63,7 @@
         self.view.frame = frame;
         NSLog(@"是否认证：%d", myAppDelegate.isIdentify);
         // 请求广告
-        NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/act/topic"];
+        NSString *urlStr = [IP stringByAppendingString:@"/api/act/topic"];
         NSURL *url = [NSURL URLWithString:urlStr];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
         NSString *dataStr = [NSString stringWithFormat:@"type=%d", 3];
@@ -79,7 +79,7 @@
     if (self = [super init]) {
         myAppDelegate           = [[UIApplication sharedApplication] delegate];
         // 请求广告
-        NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/act/topic"];
+        NSString *urlStr = [IP stringByAppendingString:@"/api/act/topic"];
         NSURL *url = [NSURL URLWithString:urlStr];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
         NSString *dataStr = [NSString stringWithFormat:@"type=%d", 3];

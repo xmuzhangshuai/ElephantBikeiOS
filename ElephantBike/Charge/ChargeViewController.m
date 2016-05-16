@@ -175,7 +175,7 @@
             // 请求服务器 异步post
             NSLog(@"bikeidandpass");
             NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/bike/bikeidandpass2"];
+            NSString *urlStr = [IP stringByAppendingString:@"/api/bike/bikeidandpass2"];
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
             NSString *dataStr = [NSString stringWithFormat:@"phone=%@&access_token=%@", phoneNumber, [userDefaults objectForKey:@"accessToken"]];
@@ -206,7 +206,7 @@
         }
         // 请求广告
         AdImageView     = [[UIImageView alloc] init];
-        NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/act/topic"];
+        NSString *urlStr = [IP stringByAppendingString:@"/api/act/topic"];
         NSURL *url = [NSURL URLWithString:urlStr];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
         NSString *dataStr = [NSString stringWithFormat:@"type=%d", 2];
@@ -788,7 +788,7 @@
     NSString *isFinishStr = [NSString stringWithFormat:@"%d", isFinish];
     NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
     NSString *accessToken = [userDefaults objectForKey:@"accessToken"];
-    NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/bikefee"];
+    NSString *urlStr = [IP stringByAppendingString:@"/api/money/bikefee"];
     NSURL *url = [NSURL URLWithString:urlStr];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
     NSString *dataStr = [NSString stringWithFormat:@"phone=%@&bikeid=%@&access_token=%@&isfinish=%@", phoneNumber,bikeNo,accessToken, isFinishStr];
@@ -840,7 +840,7 @@
         NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
         
         // 请求服务器 异步post
-        NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/pass/returncode2"];
+        NSString *urlStr = [IP stringByAppendingString:@"/api/pass/returncode2"];
         NSURL *url = [NSURL URLWithString:urlStr];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
         NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&pass=%@&phone=%@&access_token=%@", bikeNo, password, phoneNumber, [userDefaults objectForKey:@"accessToken"]];
@@ -905,7 +905,7 @@
         NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
         
         // 请求服务器 异步post
-        NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/pass/restorecode2"];
+        NSString *urlStr = [IP stringByAppendingString:@"/api/pass/restorecode2"];
         NSURL *url = [NSURL URLWithString:urlStr];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
         NSString *dataStr = [NSString stringWithFormat:@"bikeid=%@&pass=%@&phone=%@&access_token=%@", bikeNo, password, phoneNumber, [userDefaults objectForKey:@"accessToken"]];
@@ -1050,7 +1050,7 @@
             // 请求服务器 异步post
             // 密码正确 请求位置是否正确
 //            NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
-//            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/bike/bikelocation"];
+//            NSString *urlStr = [IP stringByAppendingString:@"/api/bike/bikelocation"];
 //            NSURL *url = [NSURL URLWithString:urlStr];
 //            NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
 //            NSString *dataStr = [NSString stringWithFormat:@"phone=%@&bikeid=%@&location=%@", phoneNumber, bikeNo, bikePosition];
@@ -1067,7 +1067,7 @@
             // 请求服务器 异步post
             NSString *accessToken = [userDefaults objectForKey:@"accessToken"];
             NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/bikefee"];
+            NSString *urlStr = [IP stringByAppendingString:@"/api/money/bikefee"];
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
             NSString *dataStr = [NSString stringWithFormat:@"phone=%@&bikeid=%@&access_token=%@&isfinish=%@", phoneNumber, bikeNo, accessToken, isFinishStr];
@@ -1236,7 +1236,7 @@
             // 请求服务器 异步post
             NSString *accessToken = [userDefaults objectForKey:@"accessToken"];
             NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
-            NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/money/bikefee"];
+            NSString *urlStr = [IP stringByAppendingString:@"/api/money/bikefee"];
             NSURL *url = [NSURL URLWithString:urlStr];
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
             NSString *dataStr = [NSString stringWithFormat:@"phone=%@&bikeid=%@&access_token=%@&isfinish=%@", phoneNumber, bikeNo, accessToken, isFinishStr];

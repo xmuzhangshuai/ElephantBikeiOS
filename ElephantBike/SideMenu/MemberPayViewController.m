@@ -362,7 +362,7 @@
         // 微信支付
         // 请求api 获取预付单
         NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
-        NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/pay/wxpayvip"];
+        NSString *urlStr = [IP stringByAppendingString:@"/api/pay/wxpayvip"];
         NSURL *url = [NSURL URLWithString:urlStr];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
         NSString *dataStr = [NSString stringWithFormat:@"phone=%@&month=%@", phoneNumber, Month];
@@ -376,7 +376,7 @@
         // 异步请求服务器
         myAppDelegate.isWXPay = NO;
         NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
-        NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/pay/alipayorder"];
+        NSString *urlStr = [IP stringByAppendingString:@"/api/pay/alipayorder"];
         NSURL *url = [NSURL URLWithString:urlStr];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
         NSString *dataStr = [NSString stringWithFormat:@"phone=%@&month=%@&subject=%@&body=%@", phoneNumber, Month,  @"会员充值", @"大象单车会员卡"];
@@ -564,7 +564,7 @@
 
 #pragma mark - 返回app时调用接口判断是否支付成功
 - (void)isWXPay {
-    NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/pay/wxorderquery"];
+    NSString *urlStr = [IP stringByAppendingString:@"/api/pay/wxorderquery"];
     NSURL *url = [NSURL URLWithString:urlStr];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
     NSString *phoneNumber = [userDefaults objectForKey:@"phoneNumber"];
@@ -576,7 +576,7 @@
     NSLog(@"返回支付结果memberpay");
 }
 - (void)isAliPay {
-    NSString *urlStr = [IP stringByAppendingString:@"/ElephantBike/api/pay/alipayquery"];
+    NSString *urlStr = [IP stringByAppendingString:@"/api/pay/alipayquery"];
     NSURL *url = [NSURL URLWithString:urlStr];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
     NSString *dataStr = [NSString stringWithFormat:@"out_trade_no=%@", outTradeNO];
