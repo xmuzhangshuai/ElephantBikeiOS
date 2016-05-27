@@ -28,7 +28,6 @@
 
 @property (nonatomic, strong) UINavigationController    *navigationgController;
 @property (nonatomic, strong) QRCodeScanViewController  *qRCodeScanViewController;
-@property (nonatomic, strong) PayViewController         *payViewController;
 @end
 
 @implementation AppDelegate {
@@ -250,7 +249,6 @@
     if (!ret) {
         NSLog(@"无法定位");
     }
-    _payViewController = [[PayViewController alloc] init];
     _qRCodeScanViewController = [[QRCodeScanViewController alloc] init];
     
     _navigationgController = [[UINavigationController alloc] initWithRootViewController:_qRCodeScanViewController];

@@ -760,6 +760,7 @@
 
 - (void)viewDidAppear:(BOOL)animated {
     NSLog(@"骑行结束：%d 付款：%d", myDelegate.isEndRiding, myDelegate.isEndPay);
+    NSLog(@"userpower %d", myDelegate.isUserPower);
     if (!myDelegate.isLinked) {
         [session stopRunning];
         [waitCover removeFromSuperview];

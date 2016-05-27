@@ -385,7 +385,7 @@
         NSString *college = receiveJson[@"college"];
         NSString *stunum = receiveJson[@"stunum"];
         NSLog(@"获取身份认证信息：%@\n%@\n%@\n%@\n", studentImageurl, name, college, stunum);
-        NSString *studentimageurl = [IP stringByAppendingString:@"/"];
+        NSString *studentimageurl = [ip stringByAppendingString:@"/"];
         if ([status isEqualToString:@"success"]) {
             [cover removeFromSuperview];
             // 将信息缓存到本地
